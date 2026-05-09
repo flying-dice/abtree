@@ -1,0 +1,95 @@
+name: hello-world
+version: 1.0.0
+description: Greet a user based on time of day with weather and news context. Demonstrates all 4 BT primitives.
+
+state:
+  local:
+    time_of_day: null
+    greeting: null
+    weather: null
+    news: null
+    response: null
+  global:
+    user_name: retrieve by running the shell command "whoami"
+    tone: friendly
+    language: english
+
+tree:
+  type: sequence
+  name: Hello_World
+  children:
+    - type: action
+      name: Determine_Time
+      steps:
+        - instruct: >
+            Check the system clock to get the current hour.
+            Classify as: before 12:00 = "morning", 12:00-17:00 = "afternoon", after 17:00 = "evening".
+            Store the classification string at $LOCAL.time_of_day.
+
+    - type: selector
+      name: Choose_Greeting
+      children:
+        - type: action
+          name: Morning_Greeting
+          steps:
+            - evaluate: $LOCAL.time_of_day is "morning"
+            - instruct: >
+                Compose a cheerful morning greeting addressing $GLOBAL.user_name.
+                Store at $LOCAL.greeting.
+
+        - type: action
+          name: Afternoon_Greeting
+          steps:
+            - evaluate: $LOCAL.time_of_day is "afternoon"
+            - instruct: >
+                Compose a warm afternoon greeting addressing $GLOBAL.user_name.
+                Store at $LOCAL.greeting.
+
+        - type: action
+          name: Evening_Greeting
+          steps:
+            - evaluate: $LOCAL.time_of_day is "evening"
+            - instruct: >
+                Compose a relaxed evening greeting addressing $GLOBAL.user_name.
+                Store at $LOCAL.greeting.
+
+        - type: action
+          name: Default_Greeting
+          steps:
+            - instruct: >
+                Compose a neutral greeting addressing $GLOBAL.user_name.
+                Store at $LOCAL.greeting.
+
+    - type: parallel
+      name: Gather_Context
+      children:
+        - type: action
+          name: Check_Weather
+          steps:
+            - evaluate: $LOCAL.greeting is set
+            - instruct: >
+                Use a web search tool to find the current weather conditions for today.
+                Store a one-sentence summary at $LOCAL.weather.
+                If web search is unavailable, store the literal string "weather unavailable".
+
+        - type: action
+          name: Check_News
+          steps:
+            - evaluate: $LOCAL.greeting is set
+            - instruct: >
+                Use a web search tool to find one current news headline from today.
+                Store the headline at $LOCAL.news.
+                If web search is unavailable, store the literal string "news unavailable".
+
+    - type: action
+      name: Compose_Response
+      steps:
+        - evaluate: $LOCAL.weather is set and $LOCAL.news is set
+        - instruct: >
+            Compose a final response by combining the following $LOCAL values:
+            - Use $LOCAL.greeting as the opening line
+            - Append a sentence about $LOCAL.weather
+            - Mention $LOCAL.news
+            Address the response to $GLOBAL.user_name.
+            Write in $GLOBAL.language with a $GLOBAL.tone tone.
+            Store the complete composed text at $LOCAL.response.

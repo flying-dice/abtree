@@ -31,76 +31,36 @@ test("hello world", () => {
 });
 ```
 
-## Frontend
+## Development workflow
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
-
-Server:
-
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// import .css files directly and it works
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
+Use `bun index.ts` to run the CLI during development:
 
 ```sh
-bun --hot ./index.ts
+bun index.ts tree list
+bun index.ts flow create <tree> <summary>
+bun index.ts next <flow-id>
 ```
 
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+Example trees live in `examples/`. Copy to `.abt/trees/` to use them:
+
+```sh
+mkdir -p .abt/trees
+cp examples/*.yaml .abt/trees/
+bun index.ts tree list
+```
+
+For spec refinement and implementation work, use the `refine` and `implement` trees:
+
+```sh
+# Refine a change request into a spec
+bun index.ts flow create refine "add X feature"
+bun index.ts local write <flow> change_request "describe what you want"
+bun index.ts next <flow>
+
+# Implement from an approved spec
+bun index.ts flow create implement "implement X feature"
+bun index.ts local write <flow> change_request "X feature"
+bun index.ts next <flow>
+```
+
+See `.claude/SKILL.md` for full execution protocol.
