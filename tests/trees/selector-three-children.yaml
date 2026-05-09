@@ -1,0 +1,26 @@
+name: selector-three-children
+version: 1.0.0
+description: Selector tries three branches; first whose evaluate passes wins.
+
+state:
+  local:
+    chosen: null
+
+tree:
+  type: selector
+  name: Pick_One
+  children:
+    - type: action
+      name: Branch_A
+      steps:
+        - evaluate: $LOCAL.choose_a is true
+        - instruct: Set $LOCAL.chosen to "a".
+    - type: action
+      name: Branch_B
+      steps:
+        - evaluate: $LOCAL.choose_b is true
+        - instruct: Set $LOCAL.chosen to "b".
+    - type: action
+      name: Branch_C
+      steps:
+        - instruct: Set $LOCAL.chosen to "c".

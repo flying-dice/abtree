@@ -1,0 +1,34 @@
+description: |
+  Tree split across two files via $ref. The fragment is inlined at flow
+  creation time and the runtime sees one assembled snapshot.
+tree: split-root
+files:
+  split-root.yaml: |
+    name: split-root
+    version: 1.0.0
+    state:
+      local:
+        sub: null
+        outer: null
+    tree:
+      type: sequence
+      name: Outer
+      children:
+        - $ref: "./fragments/inner.yaml"
+        - type: action
+          name: Outer_Step
+          steps:
+            - instruct: Set $LOCAL.outer to "set".
+  fragments/inner.yaml: |
+    type: action
+    name: Inner_Step
+    steps:
+      - instruct: Set $LOCAL.sub to "set".
+steps:
+  - { type: instruct, name: Inner_Step, write: { sub: set } }
+  - { type: instruct, name: Outer_Step, write: { outer: set } }
+final:
+  status: done
+  local:
+    sub: set
+    outer: set

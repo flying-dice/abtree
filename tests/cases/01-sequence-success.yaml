@@ -1,0 +1,10 @@
+description: Sequence with two actions; both succeed; flow ends in done.
+tree: sequence-basic
+steps:
+  - { type: instruct, name: Step_A, write: { a: done } }
+  - { type: instruct, name: Step_B, write: { b: done } }
+final:
+  status: done
+  local:
+    a: done
+    b: done

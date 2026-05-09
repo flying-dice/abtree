@@ -1,0 +1,23 @@
+name: retries-counter
+version: 1.0.0
+description: Pass = increment + test. Wrap with retries to exercise the runtime retry mechanism.
+
+state:
+  local:
+    counter: 0
+    threshold: 3
+
+tree:
+  type: sequence
+  name: Reach_Threshold
+  retries: 3
+  children:
+    - type: action
+      name: Increment
+      steps:
+        - instruct: Read $LOCAL.counter, add 1, write back.
+    - type: action
+      name: Test
+      steps:
+        - evaluate: $LOCAL.counter is greater than $LOCAL.threshold
+        - instruct: Threshold reached.
