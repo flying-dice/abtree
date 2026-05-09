@@ -5,7 +5,6 @@ import EXECUTE_DOC from "./docs/agents/execute.md" with { type: "text" };
 import SKILL_CONTENT from "./SKILL.md" with { type: "text" };
 import {
 	cmdDocs,
-	cmdDocsSchema,
 	cmdEval,
 	cmdExecutionCreate,
 	cmdExecutionGet,
@@ -33,6 +32,7 @@ import {
 	parseSummary,
 	parseTreeSlug,
 } from "./src/validate.ts";
+import TREE_SCHEMA from "./tree.schema.json" with { type: "text" };
 
 const program = new Command()
 	.name("abtree")
@@ -69,7 +69,7 @@ docs
 	.command("schema")
 	.description("Print the JSON Schema for tree YAML files")
 	.action(() => {
-		cmdDocsSchema();
+		cmdDocs(TREE_SCHEMA);
 	});
 
 const tree = program.command("tree").description("Manage behaviour trees");
