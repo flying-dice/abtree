@@ -1,100 +1,96 @@
-name: backend-design
+name: code-review
 version: 1.0.0
-description: Design and implement a backend service from an approved spec with architectural critique and quality gates.
+description: Review a merge request for correctness, test coverage, and repo convention conformance. Approve or request changes.
 
 state:
   local:
-    change_request: null
-    spec_content: null
-    context_analysis: null
-    architecture_plan: null
-    hardened_architecture: null
-    implementation: null
-    quality_result: null
+    mr_ref: null
+    diff_content: null
+    initial_analysis: null
+    review_comments: null
+    final_verdict: null
 
 tree:
   type: sequence
-  name: Backend_Design_Workflow
+  name: Code_Review_Workflow
   children:
     - type: action
-      name: Check_Spec_Approval
+      name: Fetch_Diff
       steps:
-        - evaluate: $LOCAL.change_request is set
+        - evaluate: $LOCAL.mr_ref is set
         - instruct: >
-            Find the spec in specs/ matching $LOCAL.change_request. Check reviewed_by field.
-            - If reviewed_by is empty: report the spec needs codeowner approval. Return failure.
-            - If reviewed_by has a name: store the full spec at $LOCAL.spec_content.
+            Fetch the full diff for $LOCAL.mr_ref. Include all changed files,
+            added/removed lines, and the MR description. Note the base branch
+            and target branch. Store the complete diff at $LOCAL.diff_content.
 
     - type: action
-      name: Analyze_Context
+      name: Analyse_Changes
       steps:
-        - evaluate: $LOCAL.spec_content is set
+        - evaluate: $LOCAL.diff_content is set
         - instruct: >
-            Analyze $LOCAL.spec_content. Determine:
-            - Purpose: What does this service/API do?
-            - Consumers: Who calls it?
-            - Data: What data does it own, read, or transform?
-            - Scale: Expected load, latency requirements, consistency needs.
-            - Constraints: Runtime, framework, existing infrastructure.
-            Store analysis at $LOCAL.context_analysis.
+            Read $LOCAL.diff_content end-to-end. Determine:
+            - What is the intent of this change?
+            - Which modules, files, or subsystems are affected?
+            - Are there any dependency additions or removals?
+            - Are there schema or interface changes that affect other consumers?
+            - What invariants must hold for this change to be correct?
+            Store your analysis at $LOCAL.initial_analysis.
 
     - type: action
-      name: Choose_Architecture
+      name: Review_Correctness
       steps:
-        - evaluate: $LOCAL.context_analysis is set
+        - evaluate: $LOCAL.initial_analysis is set
         - instruct: >
-            Based on $LOCAL.context_analysis, define a clear architectural approach.
-            Define: pattern, API design, data layer, error handling, validation, observability, security, module boundaries.
-            Be opinionated. Match the solution to the problem.
-            Store at $LOCAL.architecture_plan.
+            Using $LOCAL.diff_content and $LOCAL.initial_analysis, evaluate correctness:
+            - Does the logic match the stated intent?
+            - Are error paths handled explicitly (no silent swallows, no bare throws)?
+            - Are there off-by-one errors, race conditions, or undefined-behaviour risks?
+            - Are external inputs validated at boundaries?
+            - Are there any security issues (injection, path traversal, privilege escalation)?
+            For each issue found, note the file, line number, severity (blocking/non-blocking),
+            and a concrete remediation. Store findings at $LOCAL.review_comments.
 
     - type: action
-      name: Critique_Architecture
+      name: Review_Test_Coverage
       steps:
-        - evaluate: $LOCAL.architecture_plan is set
+        - evaluate: $LOCAL.review_comments is not null
         - instruct: >
-            Act as a Staff Backend Engineer. Evaluate $LOCAL.architecture_plan:
-            Check for over-engineering, under-engineering, data integrity issues, failure modes, performance problems, security holes, testability, operational burden.
-            Simplify where over-engineered. Harden where fragile. Output a hardened architecture plan.
-            Store at $LOCAL.hardened_architecture.
+            Check test coverage for $LOCAL.diff_content:
+            - Does the change include tests for new behaviour?
+            - Are edge cases and failure paths covered?
+            - Do existing tests still pass given the changes (check for deleted or broken assertions)?
+            Append any test-coverage findings (file, line, severity, remediation) to $LOCAL.review_comments.
 
     - type: action
-      name: Implement_Backend
+      name: Review_Conventions
       steps:
-        - evaluate: $LOCAL.hardened_architecture is set
+        - evaluate: $LOCAL.review_comments is not null
         - instruct: >
-            Implement the backend based on $LOCAL.hardened_architecture and $LOCAL.context_analysis.
-            Write production-grade code: clean module boundaries, proper error handling, validation at boundaries, structured logging, health checks, env-based config, bounded queries, graceful shutdown.
-            Store implementation summary at $LOCAL.implementation.
-
-    - type: action
-      name: Quality_Check
-      steps:
-        - evaluate: $LOCAL.implementation is set
-        - instruct: >
-            Review $LOCAL.implementation against $LOCAL.hardened_architecture. Check:
-            1. Error handling covers actual failure modes
-            2. Database operations bounded and indexed
-            3. Validation present at boundaries
-            4. Deployable and rollback-safe
-            5. No injection or auth bypass vectors
-            6. Structured logging at decision points
-            7. Module structure matches plan
-            8. Would pass production readiness review
-            If any check fails, fix the issues directly in the code. Store quality assessment at $LOCAL.quality_result.
+            Check repo convention conformance for $LOCAL.diff_content:
+            - Naming: functions, types, files follow established patterns?
+            - Module boundaries: no circular deps, imports respect layer rules?
+            - Comments: only present where WHY is non-obvious?
+            - Commit messages: no auto-close keywords (closes/fixes/resolves), refs #N format?
+            - No secrets, credentials, or local-only paths committed?
+            Append any convention findings to $LOCAL.review_comments.
 
     - type: selector
-      name: Fix_Or_Pass
+      name: Approve_Or_Request_Changes
       children:
         - type: action
-          name: Quality_Passed
+          name: Approve
           steps:
-            - evaluate: $LOCAL.quality_result indicates all checks passed
-            - instruct: All quality checks passed. Implementation is complete.
+            - evaluate: $LOCAL.review_comments contains no blocking issues
+            - instruct: >
+                All blocking checks passed. Post any non-blocking comments as suggestions
+                on the relevant diff lines. Submit an approval via the MCP. Set
+                $LOCAL.final_verdict to "approved".
+
         - type: action
-          name: Apply_Fixes
+          name: Request_Changes
           steps:
             - instruct: >
-                Fix the issues identified in $LOCAL.quality_result.
-                Apply changes without losing what already works.
-                Update $LOCAL.implementation with the fixed version.
+                Post inline comments for every blocking issue found in $LOCAL.review_comments,
+                citing the file and line number. Post non-blocking findings as suggestions.
+                Submit a request-changes review via the MCP explaining the blocking issues.
+                Set $LOCAL.final_verdict to "changes_requested".
