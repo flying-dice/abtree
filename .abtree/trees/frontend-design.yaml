@@ -1,87 +1,90 @@
 name: frontend-design
-version: 1.0.0
-description: Design and implement a bold frontend from an approved spec with aesthetic critique and quality gates.
+version: 2.0.0
+description: |
+  Design and implement a frontend from an approved spec. Defers the
+  aesthetic-direction work (tone selection, typography, palette,
+  motion, spatial composition, atmospheric backgrounds, complexity
+  matching) to a remote guidance document fetched at flow time.
+  abtree provides the workflow shell — spec-approval gate, post-
+  implementation quality check, and a fix-or-pass selector.
+
+  The guidance document is referenced by HTTP URL. Pin a specific
+  commit SHA in $GLOBAL.design_guidance_url for stability; track
+  main for the latest.
 
 state:
   local:
     change_request: null
     spec_content: null
-    context_analysis: null
-    aesthetic_direction: null
-    hardened_design: null
-    implementation: null
-    quality_result: null
+    implementation: null         # summary of what was built
+    quality_result: null         # post-impl review against the spec
+
+  global:
+    design_guidance_url: "https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/frontend-design/skills/frontend-design/SKILL.md"
 
 tree:
   type: sequence
   name: Frontend_Design_Workflow
   children:
+
+    # 1. Spec-approval gate — abtree-specific contract.
     - type: action
       name: Check_Spec_Approval
       steps:
         - evaluate: $LOCAL.change_request is set
         - instruct: >
-            Find the spec in specs/ matching $LOCAL.change_request. Check reviewed_by field.
-            - If reviewed_by is empty: report the spec needs codeowner approval. Return failure.
-            - If reviewed_by has a name: store the full spec at $LOCAL.spec_content.
+            Find the spec in specs/ matching $LOCAL.change_request.
+            Read its frontmatter and check the reviewed_by field.
+            - If no spec exists: report that a spec must be created
+              first via /abt refine. Return failure.
+            - If reviewed_by is empty: report the spec needs codeowner
+              approval. Return failure.
+            - If reviewed_by has a name: store the full spec content
+              at $LOCAL.spec_content.
 
+    # 2. Apply the remote design guidance to the brief.
     - type: action
-      name: Analyze_Context
+      name: Design_And_Implement
       steps:
         - evaluate: $LOCAL.spec_content is set
         - instruct: >
-            Analyze $LOCAL.spec_content. Determine:
-            - Purpose: What problem does this interface solve? Who uses it?
-            - Technical constraints: Framework, performance, accessibility needs.
-            - Scale: Single component, page, or full application?
-            Store analysis at $LOCAL.context_analysis.
+            Fetch the markdown at $GLOBAL.design_guidance_url and read
+            it end-to-end.
 
-    - type: action
-      name: Choose_Aesthetic
-      steps:
-        - evaluate: $LOCAL.context_analysis is set
-        - instruct: >
-            Based on $LOCAL.context_analysis, commit to a BOLD aesthetic direction.
-            Pick an extreme tone — do NOT default to safe/generic choices.
-            Define: aesthetic direction (one sentence), typography (distinctive fonts, never Inter/Roboto/Arial), color palette (CSS variables, committed light OR dark), motion strategy, spatial composition, background/texture, the ONE memorable thing.
-            CRITICAL: No two designs should look the same. Be unexpected.
-            Store at $LOCAL.aesthetic_direction.
+            Apply its full design-and-implement pipeline against
+            $LOCAL.spec_content as the brief: design thinking
+            (purpose, tone, constraints, the memorable element),
+            commitment to a bold aesthetic direction, and production-
+            grade implementation following the typography / colour /
+            motion / spatial / background guidance the document
+            describes.
 
-    - type: action
-      name: Critique_Direction
-      steps:
-        - evaluate: $LOCAL.aesthetic_direction is set
-        - instruct: >
-            Act as an award-winning creative director. Ruthlessly evaluate $LOCAL.aesthetic_direction.
-            REJECT if: generic fonts, purple gradient on white, looks like typical AI-generated UI, cookie-cutter layout, no memorable element, timid color palette, predictable patterns.
-            If rejected, provide a revised direction. If approved, push it further.
-            Output a hardened aesthetic plan. Store at $LOCAL.hardened_design.
+            Write the actual code to the workspace. Capture an
+            implementation summary at $LOCAL.implementation:
+              { aesthetic_direction, files_written, key_decisions,
+                memorable_element }.
 
-    - type: action
-      name: Implement_Frontend
-      steps:
-        - evaluate: $LOCAL.hardened_design is set
-        - instruct: >
-            Implement the frontend based on $LOCAL.hardened_design and $LOCAL.context_analysis.
-            Write production-grade code. Use CSS variables for palette, include all animations, implement spatial composition, add background textures, use exact fonts specified with CDN links.
-            Match implementation complexity to the vision. Store summary at $LOCAL.implementation.
-
+    # 3. Post-implementation quality check — abtree's own review pass
+    #    that verifies the build delivered against the spec.
     - type: action
       name: Quality_Check
       steps:
         - evaluate: $LOCAL.implementation is set
         - instruct: >
-            Review $LOCAL.implementation against $LOCAL.hardened_design. Check:
-            1. Matches aesthetic direction precisely
-            2. All specified animations present
-            3. Typography distinctive (not generic)
-            4. Color palette committed fully
-            5. Spatial composition interesting
-            6. Background/texture effects creating atmosphere
-            7. Clear memorable element
-            8. Would pass as human-designed work from a top studio
-            If any check fails, fix the issues directly. Store assessment at $LOCAL.quality_result.
+            Review $LOCAL.implementation against $LOCAL.spec_content
+            and the guidance at $GLOBAL.design_guidance_url. Eight
+            checks:
+              1. Aesthetic direction matches the brief precisely.
+              2. All specified animations / motion present.
+              3. Typography is distinctive (no generic fallback).
+              4. Colour palette is committed (no timid mid-tones).
+              5. Spatial composition is interesting.
+              6. Background / texture creates atmosphere.
+              7. The memorable element is clear and intentional.
+              8. Would pass as human-designed work from a top studio.
+            Store assessment at $LOCAL.quality_result.
 
+    # 4. Fix-or-pass selector — explicit branch in the trace.
     - type: selector
       name: Fix_Or_Pass
       children:
@@ -89,11 +92,14 @@ tree:
           name: Quality_Passed
           steps:
             - evaluate: $LOCAL.quality_result indicates all checks passed
-            - instruct: All quality checks passed. Frontend implementation is complete.
+            - instruct: >
+                All quality checks passed. Frontend implementation is
+                complete. Report a summary to the human covering
+                $LOCAL.implementation.
         - type: action
           name: Apply_Fixes
           steps:
             - instruct: >
-                Fix the issues in $LOCAL.quality_result.
-                Apply changes without losing what works.
-                Update $LOCAL.implementation with the fixed version.
+                Fix the issues called out in $LOCAL.quality_result.
+                Apply changes without losing what works. Update
+                $LOCAL.implementation with the fixed version.

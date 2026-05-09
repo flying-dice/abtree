@@ -1,275 +1,98 @@
 name: code-review
-version: 2.0.0
+version: 3.0.0
 description: |
-  Review a merge request / pull request for high-signal issues only.
-  Skip-if-unreviewable gate, project-convention loading, three review
-  passes in parallel (bugs, test coverage, conventions), per-finding
-  validation pass to drop false positives, human-approved publish
-  step, and a final approve / request-changes verdict.
+  Review a merge request / pull request. Defers the heavy lifting
+  (project-conventions loading, parallel review passes, validation,
+  false-positive filtering) to a remote guidance document fetched at
+  flow time. abtree provides the workflow shell — skip-or-run gate,
+  human publish gate, formal verdict selector.
 
-  High-signal-only philosophy: a finding is flagged only if the code
-  will fail to compile, will produce wrong results regardless of
-  inputs, or breaks a quoted convention rule. Style / quality /
-  speculative concerns are deliberately suppressed. False positives
-  erode trust.
+  The guidance document is referenced by HTTP URL. Pin a specific
+  commit SHA in $GLOBAL.review_guidance_url for stability; track main
+  for the latest.
 
 state:
   local:
     # Input
     mr_ref: null
 
-    # Skip gate (branch 1 of the root selector)
+    # Skip gate
     should_skip: null
     skip_reason: null
 
-    # Review pipeline state
-    diff_content: null
-    project_conventions: null    # { paths: [...], content: "..." } or "none"
-    initial_analysis: null
-
-    # Parallel review outputs — separate slots, merged downstream.
-    # abtree's parallel does not serialise concurrent writes to a
-    # single key, so each pass writes its own.
-    bug_findings: null
-    test_findings: null
-    convention_findings: null
-
-    # Synthesised + validated findings
-    review_comments: null
+    # Output of the guidance run
+    review_comments: null         # validated findings list
 
     # Human gate
-    publish_approved: null       # true → post via review tool;
-                                 # false → report locally only.
+    publish_approved: null        # true → post via review tool;
+                                  # false → report locally only.
 
     # Verdict
     final_verdict: null
+
+  global:
+    review_guidance_url: "https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/code-review/commands/code-review.md"
 
 tree:
   type: selector
   name: Code_Review_Or_Skip
   children:
 
-    # ─── Branch 1: skip if the MR isn't worth reviewing ───────────────
-    # Pre-flight check. Closed / draft / automated / trivial-mechanical
-    # MRs return early with a reason; the selector wins here and the
-    # full review sequence never runs.
+    # ─── Branch 1: skip if the guidance's pre-flight says so ──────────
     - type: action
       name: Skip_Unreviewable
       steps:
         - evaluate: $LOCAL.mr_ref is set
         - instruct: >
-            Determine whether the MR/PR at $LOCAL.mr_ref is worth
-            reviewing. Set $LOCAL.should_skip = true and write a
-            one-line reason to $LOCAL.skip_reason if ANY of:
-              - The MR is closed.
-              - The MR is in draft.
-              - The MR is from an automated source (dependabot,
-                lockfile bumps, version-only changes, generated
-                code) and the diff is trivially mechanical.
-              - The MR has already been reviewed by this tool
-                (check existing comments).
-            Otherwise set $LOCAL.should_skip = false. Submit success
-            either way — the next evaluate decides which branch wins.
+            Fetch the markdown at $GLOBAL.review_guidance_url. Read
+            it. Apply ONLY its first-stage pre-flight check against
+            $LOCAL.mr_ref — verifying whether the MR is closed, in
+            draft, doesn't need review (automated, trivially
+            mechanical), or has already been reviewed by this tool.
+
+            Set $LOCAL.should_skip = true if the pre-flight says skip,
+            with $LOCAL.skip_reason populated. Otherwise
+            should_skip = false. Do NOT proceed past the pre-flight
+            in this action.
         - evaluate: $LOCAL.should_skip is true
         - instruct: >
-            Report $LOCAL.skip_reason to the human and exit.
-            The selector takes this branch; the review sequence does
-            not run.
+            Report $LOCAL.skip_reason to the human and exit. The
+            selector takes this branch; the review sequence does not
+            run.
 
     # ─── Branch 2: full review pipeline ───────────────────────────────
     - type: sequence
       name: Code_Review_Workflow
       children:
 
-        # 1. Pull the diff and the surrounding metadata.
+        # 1. Apply the remote guidance against the MR.
         - type: action
-          name: Fetch_Diff
+          name: Run_Code_Review
           steps:
             - evaluate: $LOCAL.mr_ref is set
             - instruct: >
-                Fetch the full diff for $LOCAL.mr_ref. Include all
-                changed files, added / removed lines, the MR title,
-                the description, the base branch, and the target
-                branch. Store at $LOCAL.diff_content.
+                Fetch the markdown at $GLOBAL.review_guidance_url and
+                read it end-to-end.
 
-        # 2. Load every convention document relevant to the changed files.
-        #    This is the single biggest determinant of high-signal
-        #    convention findings — a violation has to cite a real,
-        #    quoted rule.
-        - type: action
-          name: Load_Project_Conventions
-          steps:
-            - evaluate: $LOCAL.diff_content is set
-            - instruct: >
-                Find every convention document relevant to the changed
-                files: STYLEGUIDE.md / CLAUDE.md / CONTRIBUTING.md /
-                AGENTS.md at the repo root, plus the same in any
-                directory whose files this MR touches. Read them.
-                Store at $LOCAL.project_conventions =
-                  { paths: [<list>], content: "<concatenated>" }.
-                If no convention docs exist, store the literal
-                string "none" — convention-rule findings will then be
-                conservatively suppressed in Review_Conventions.
+                Apply its main review pipeline against $LOCAL.mr_ref:
+                load any project convention documents the guidance
+                names, summarise the MR, run the parallel review
+                passes the guidance describes (bugs, introduced-code
+                issues, convention compliance), perform the per-
+                finding validation pass, and filter the unvalidated.
 
-        # 3. Summarise the change so all parallel passes share intent.
-        - type: action
-          name: Analyse_Changes
-          steps:
-            - evaluate: $LOCAL.diff_content is set
-            - instruct: >
-                Read $LOCAL.diff_content end-to-end. Summarise:
-                  - Intent: what is the author trying to do?
-                  - Modules / files / subsystems affected.
-                  - Dependency additions / removals.
-                  - Schema or interface changes that affect downstream
-                    consumers.
-                  - Invariants that must hold for the change to be
-                    correct.
-                Store at $LOCAL.initial_analysis. Every parallel
-                review pass receives this same summary.
+                Skip the pre-flight (already handled by
+                Skip_Unreviewable) and the publishing step (handled
+                separately below so a human can gate it).
 
-        # 4. Three independent review passes — order doesn't matter,
-        #    each writes its own findings slot.
-        - type: parallel
-          name: Review_Passes
-          children:
+                Capture the validated findings list at
+                $LOCAL.review_comments. Shape per finding:
+                  { file, lines, severity (blocking|non-blocking),
+                    description, why_flagged, citation }.
+                If validation drops every finding, store an empty
+                list — that's a healthy outcome.
 
-            - type: action
-              name: Review_Bugs
-              steps:
-                - evaluate: $LOCAL.diff_content is set and $LOCAL.initial_analysis is set
-                - instruct: >
-                    Scan $LOCAL.diff_content for HIGH-SIGNAL bugs
-                    introduced by this change. Use $LOCAL.initial_analysis
-                    for context.
-
-                    FLAG only:
-                      - Compile / parse / type errors, missing imports,
-                        unresolved references.
-                      - Logic errors that produce wrong results
-                        regardless of input (off-by-one in a published
-                        boundary, inverted condition, missing await,
-                        deadlocked locks, etc.).
-                      - Security issues introduced by this change
-                        (injection, path traversal, privilege
-                        escalation in modified surface).
-
-                    DO NOT FLAG (false-positive list):
-                      - Pre-existing issues outside the diff.
-                      - Style or code-quality concerns.
-                      - Issues that depend on specific inputs / state
-                        you can't validate.
-                      - Pedantic nitpicks a senior engineer would not
-                        raise.
-                      - Issues that a linter would catch (do not run
-                        the linter to verify).
-                      - General "could be better" suggestions.
-
-                    If you cannot validate a finding without external
-                    context, do not flag it. False positives erode
-                    trust.
-
-                    Append findings to $LOCAL.bug_findings. Each
-                    finding: { file, lines, severity (blocking|non-
-                    blocking), description, why-flagged ("bug" or
-                    "security"), citation (link / line range) }.
-
-            - type: action
-              name: Review_Test_Coverage
-              steps:
-                - evaluate: $LOCAL.diff_content is set and $LOCAL.initial_analysis is set
-                - instruct: >
-                    Audit test coverage for the changed code.
-
-                    FLAG only:
-                      - Public-API behaviour change with no tests.
-                      - Bug-fix changes with no regression test.
-                      - Removed test cases without rationale in the
-                        commit message / MR description.
-
-                    DO NOT FLAG (false-positive list):
-                      - Internal refactors that don't change observable
-                        behaviour.
-                      - Test gaps that pre-date this MR.
-                      - Generic "more tests would be nice" notes.
-                      - Coverage drops where the project's convention
-                        document explicitly tolerates them.
-
-                    Append findings to $LOCAL.test_findings using the
-                    same shape as Review_Bugs.
-
-            - type: action
-              name: Review_Conventions
-              steps:
-                - evaluate: $LOCAL.diff_content is set and $LOCAL.project_conventions is set
-                - instruct: >
-                    Audit changed files against the rules in
-                    $LOCAL.project_conventions.
-
-                    If $LOCAL.project_conventions is "none" — there are
-                    no project convention documents — flag NOTHING in
-                    this pass. Generic style preferences are not
-                    high-signal.
-
-                    Otherwise, for each potential violation:
-                      - Find the SPECIFIC RULE in
-                        $LOCAL.project_conventions.content that the
-                        change breaks.
-                      - Quote the rule verbatim in the finding.
-                      - Confirm the rule's scope covers the file's path
-                        (a rule in `src/api/CLAUDE.md` does not bind
-                        files outside `src/api/`).
-
-                    DO NOT FLAG:
-                      - Style preferences not in any convention doc.
-                      - Convention rules silenced in code (e.g. lint
-                        ignore comments) — that's the author's
-                        deliberate opt-out.
-                      - Pre-existing violations outside the diff.
-
-                    Append findings to $LOCAL.convention_findings using
-                    the same shape as Review_Bugs.
-
-        # 5. Merge the three parallel slots into one accumulator.
-        - type: action
-          name: Compile_Findings
-          steps:
-            - evaluate: $LOCAL.bug_findings is set and $LOCAL.test_findings is set and $LOCAL.convention_findings is set
-            - instruct: >
-                Concatenate $LOCAL.bug_findings, $LOCAL.test_findings,
-                and $LOCAL.convention_findings into one ordered list
-                at $LOCAL.review_comments. Sort by severity
-                (blocking first), then by file, then by line. Don't
-                drop or rewrite individual findings — the validation
-                pass does that.
-
-        # 6. Per-finding validation. Each finding is independently
-        #    re-checked; the unconfirmed are dropped.
-        - type: action
-          name: Validate_Findings
-          steps:
-            - evaluate: $LOCAL.review_comments is set
-            - instruct: >
-                For each finding in $LOCAL.review_comments, validate
-                it is real with high confidence:
-
-                  - Bugs: confirm the cited line(s) would actually
-                    fail / produce wrong output. If you cannot validate
-                    without speculating, drop it.
-                  - Convention violations: re-read the cited rule in
-                    $LOCAL.project_conventions; confirm it applies to
-                    the file's path and is actually broken. Quote the
-                    rule.
-                  - Test gaps: confirm the cited test path actually
-                    doesn't exercise the changed behaviour.
-
-                Drop any finding that doesn't pass this bar. Overwrite
-                $LOCAL.review_comments with the validated set. Trust
-                that the user prefers an empty list over a list with
-                false positives.
-
-        # 7. Two-stage publish gate. Surface the validated findings
-        #    and wait for the human to decide whether to post.
+        # 2. Two-stage publish gate.
         - type: action
           name: Confirm_Publish
           steps:
@@ -279,13 +102,13 @@ tree:
                 them to call:
                   abtree local write <flow-id> publish_approved true
                   abtree local write <flow-id> publish_approved false
-                Submit `running` while waiting. For autonomous CI runs,
-                set publish_approved upfront when the flow is created.
+                Submit `running` while waiting. For autonomous CI
+                runs, set publish_approved upfront when the flow is
+                created.
             - evaluate: $LOCAL.publish_approved is set
 
-        # 8. Verdict — selector branches by whether there are blocking
-        #    findings. Each branch posts conditionally based on
-        #    $LOCAL.publish_approved.
+        # 3. Verdict — selector gates on blocking findings; each
+        #    branch posts conditionally based on publish_approved.
         - type: selector
           name: Approve_Or_Request_Changes
           children:
@@ -295,24 +118,22 @@ tree:
                 - evaluate: $LOCAL.review_comments contains no blocking issues
                 - instruct: >
                     All blocking checks passed. If
-                    $LOCAL.publish_approved is true, post any
-                    non-blocking comments as suggestions and submit
-                    an approval via the available review tool
-                    (e.g. `gh pr review --approve`,
-                    `glab mr approve`, or a connected MCP). If
-                    $LOCAL.publish_approved is false, report the
-                    verdict and the findings locally without posting.
-                    Set $LOCAL.final_verdict to "approved".
+                    $LOCAL.publish_approved is true, follow the
+                    guidance's posting / formatting rules (suggestion
+                    blocks, full-SHA links, one comment per finding)
+                    and submit an approval via the available review
+                    tool. If publish_approved is false, report
+                    locally without posting. Set
+                    $LOCAL.final_verdict to "approved".
 
             - type: action
               name: Request_Changes
               steps:
                 - instruct: >
                     Blocking issues found. If $LOCAL.publish_approved
-                    is true, post inline comments for every blocking
-                    finding (citing file and line) and submit a
-                    request-changes review via the available review
-                    tool. If $LOCAL.publish_approved is false, report
-                    the findings and the verdict locally without
-                    posting. Set $LOCAL.final_verdict to
-                    "changes_requested".
+                    is true, follow the guidance's posting rules to
+                    post one inline comment per validated blocking
+                    finding, then submit a request-changes review via
+                    the available tool. If publish_approved is false,
+                    report locally without posting. Set
+                    $LOCAL.final_verdict to "changes_requested".
