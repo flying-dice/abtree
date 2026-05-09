@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ensureDir, EXECUTIONS_DIR } from "./paths.ts";
+import { EXECUTIONS_DIR, ensureDir } from "./paths.ts";
 import { ExecutionStore } from "./repos.ts";
 import { TreeSnapshotStore } from "./snapshots.ts";
 import { getNodeResult, getPathForNode } from "./tree.ts";

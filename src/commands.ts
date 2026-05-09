@@ -89,7 +89,11 @@ export function cmdExecutionReset(executionId: string) {
 	if (!doc) die(`Execution '${executionId}' not found`);
 	const treeDef = TreeSnapshotStore.get(doc.snapshot);
 	ExecutionStore.replaceLocal(executionId, treeDef.local ?? {});
-	ExecutionStore.update(executionId, { status: "running", cursor: "[]", phase: "idle" });
+	ExecutionStore.update(executionId, {
+		status: "running",
+		cursor: "[]",
+		phase: "idle",
+	});
 	rebuildMermaid(executionId);
 	out({ status: "reset" });
 }
@@ -257,7 +261,11 @@ export function cmdLocalRead(executionId: string, path?: string) {
 	}
 }
 
-export function cmdLocalWrite(executionId: string, path: string, value: string) {
+export function cmdLocalWrite(
+	executionId: string,
+	path: string,
+	value: string,
+) {
 	let parsed: unknown;
 	try {
 		parsed = JSON.parse(value);

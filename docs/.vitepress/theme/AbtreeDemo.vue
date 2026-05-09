@@ -1,345 +1,432 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 interface YamlLine {
-  text: string
-  cls: string
-  node?: string
-  isName?: boolean
-  step?: 'evaluate' | 'instruct'
+	text: string;
+	cls: string;
+	node?: string;
+	isName?: boolean;
+	step?: "evaluate" | "instruct";
 }
 
 interface CliLine {
-  text: string
-  kind: 'cmd' | 'resp' | 'think' | 'blank'
+	text: string;
+	kind: "cmd" | "resp" | "think" | "blank";
 }
 
-type NodeStatus = 'pending' | 'success' | 'fail'
-type StepKey    = string
+type NodeStatus = "pending" | "success" | "fail";
+type StepKey = string;
 
 interface Frame {
-  node: string | null
-  pendingStep?:     StepKey
-  completesStep?:   StepKey
-  completesStepAs?: NodeStatus
-  completes?:       string
-  completesAs?:     NodeStatus
-  lines: CliLine[]
+	node: string | null;
+	pendingStep?: StepKey;
+	completesStep?: StepKey;
+	completesStepAs?: NodeStatus;
+	completes?: string;
+	completesAs?: NodeStatus;
+	lines: CliLine[];
 }
 
 const yaml: YamlLine[] = [
-  { text: 'name: deploy', cls: 'yp' },
-  { text: 'version: 1.0.0', cls: 'yp' },
-  { text: 'tree:', cls: 'yk' },
-  { text: '  type: sequence', cls: 'yp' },
-  { text: '  name: Deploy_Service', cls: 'yp' },
-  { text: '  children:', cls: 'yk' },
-  { text: '    - type: action', cls: 'yp', node: 'A' },
-  { text: '      name: Run_Tests', cls: 'yn', node: 'A', isName: true },
-  { text: '      steps:', cls: 'yk', node: 'A' },
-  { text: '        - instruct: |', cls: 'yi', node: 'A', step: 'instruct' },
-  { text: '            Run tests.', cls: 'yi', node: 'A' },
-  { text: '            Store pass/fail at $LOCAL.tests_passed.', cls: 'yi', node: 'A' },
-  { text: '            Store coverage percentage at $LOCAL.coverage.', cls: 'yi', node: 'A' },
-  { text: '        - evaluate: |', cls: 'ye', node: 'A', step: 'evaluate' },
-  { text: '            $LOCAL.tests_passed is true.', cls: 'ye', node: 'A' },
-  { text: '            $LOCAL.coverage is greater than $GLOBAL.threshold.', cls: 'ye', node: 'A' },
-  { text: '    - type: action', cls: 'yp', node: 'B' },
-  { text: '      name: Build_And_Push', cls: 'yn', node: 'B', isName: true },
-  { text: '      steps:', cls: 'yk', node: 'B' },
-  { text: '        - instruct: |', cls: 'yi', node: 'B', step: 'instruct' },
-  { text: '            Build and push image to $GLOBAL.registry.', cls: 'yi', node: 'B' },
-  { text: '            Store the pushed tag at $LOCAL.image_tag.', cls: 'yi', node: 'B' },
-  { text: 'state:', cls: 'yk' },
-  { text: '  local:', cls: 'yk' },
-  { text: '    tests_passed: null', cls: 'yp' },
-  { text: '    coverage: null', cls: 'yp' },
-  { text: '    image_tag: null', cls: 'yp' },
-  { text: '  global:', cls: 'yk' },
-  { text: '    threshold: 80', cls: 'yp' },
-  { text: '    registry: ghcr.io/my-app', cls: 'yp' },
-]
+	{ text: "name: deploy", cls: "yp" },
+	{ text: "version: 1.0.0", cls: "yp" },
+	{ text: "tree:", cls: "yk" },
+	{ text: "  type: sequence", cls: "yp" },
+	{ text: "  name: Deploy_Service", cls: "yp" },
+	{ text: "  children:", cls: "yk" },
+	{ text: "    - type: action", cls: "yp", node: "A" },
+	{ text: "      name: Run_Tests", cls: "yn", node: "A", isName: true },
+	{ text: "      steps:", cls: "yk", node: "A" },
+	{ text: "        - instruct: |", cls: "yi", node: "A", step: "instruct" },
+	{ text: "            Run tests.", cls: "yi", node: "A" },
+	{
+		text: "            Store pass/fail at $LOCAL.tests_passed.",
+		cls: "yi",
+		node: "A",
+	},
+	{
+		text: "            Store coverage percentage at $LOCAL.coverage.",
+		cls: "yi",
+		node: "A",
+	},
+	{ text: "        - evaluate: |", cls: "ye", node: "A", step: "evaluate" },
+	{ text: "            $LOCAL.tests_passed is true.", cls: "ye", node: "A" },
+	{
+		text: "            $LOCAL.coverage is greater than $GLOBAL.threshold.",
+		cls: "ye",
+		node: "A",
+	},
+	{ text: "    - type: action", cls: "yp", node: "B" },
+	{ text: "      name: Build_And_Push", cls: "yn", node: "B", isName: true },
+	{ text: "      steps:", cls: "yk", node: "B" },
+	{ text: "        - instruct: |", cls: "yi", node: "B", step: "instruct" },
+	{
+		text: "            Build and push image to $GLOBAL.registry.",
+		cls: "yi",
+		node: "B",
+	},
+	{
+		text: "            Store the pushed tag at $LOCAL.image_tag.",
+		cls: "yi",
+		node: "B",
+	},
+	{ text: "state:", cls: "yk" },
+	{ text: "  local:", cls: "yk" },
+	{ text: "    tests_passed: null", cls: "yp" },
+	{ text: "    coverage: null", cls: "yp" },
+	{ text: "    image_tag: null", cls: "yp" },
+	{ text: "  global:", cls: "yk" },
+	{ text: "    threshold: 80", cls: "yp" },
+	{ text: "    registry: ghcr.io/my-app", cls: "yp" },
+];
 
 const frames: Frame[] = [
-  // Create the execution
-  {
-    node: null,
-    lines: [
-      { text: '$ abtree execution create deploy "ship v2"', kind: 'cmd' },
-      { text: '{"id":"v2__deploy__1","tree":"deploy"}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-    ],
-  },
-  // A — Run_Tests: instruct returned
-  {
-    node: 'A', pendingStep: 'instruct',
-    lines: [
-      { text: '$ abtree next v2__deploy__1', kind: 'cmd' },
-      { text: '{"type":"instruct","name":"Run_Tests","instruction":"Run tests.\\nStore pass/fail at $LOCAL.tests_passed.\\nStore coverage percentage at $LOCAL.coverage."}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-    ],
-  },
-  // A — do the work, write results, submit (more steps remain → step_complete)
-  {
-    node: 'A', completesStep: 'instruct', completesStepAs: 'success',
-    lines: [
-      { text: '▸ run test suite → store at $LOCAL.tests_passed and $LOCAL.coverage', kind: 'think' },
-      { text: '$ bun test --coverage', kind: 'cmd' },
-      { text: 'All tests passed. Coverage: 87%', kind: 'resp' },
-      { text: '', kind: 'blank' },
-      { text: '▸ writing results to $LOCAL', kind: 'think' },
-      { text: '$ abtree local write v2__deploy__1 tests_passed true', kind: 'cmd' },
-      { text: '$ abtree local write v2__deploy__1 coverage 87', kind: 'cmd' },
-      { text: '$ abtree submit v2__deploy__1 success', kind: 'cmd' },
-      { text: '{"status":"step_complete"}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-    ],
-  },
-  // A — gate evaluate returned
-  {
-    node: 'A', pendingStep: 'evaluate',
-    lines: [
-      { text: '$ abtree next v2__deploy__1', kind: 'cmd' },
-      { text: '{"type":"evaluate","name":"Run_Tests","expression":"$LOCAL.tests_passed is true.\\n$LOCAL.coverage is greater than $GLOBAL.threshold."}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-    ],
-  },
-  // A — read all three refs, eval combined expression, completes A
-  {
-    node: 'A', completesStep: 'evaluate', completesStepAs: 'success', completes: 'A', completesAs: 'success',
-    lines: [
-      { text: '▸ refs: $LOCAL.tests_passed, $LOCAL.coverage, $GLOBAL.threshold', kind: 'think' },
-      { text: '$ abtree local read v2__deploy__1 tests_passed', kind: 'cmd' },
-      { text: '{"path":"tests_passed","value":true}', kind: 'resp' },
-      { text: '$ abtree local read v2__deploy__1 coverage', kind: 'cmd' },
-      { text: '{"path":"coverage","value":87}', kind: 'resp' },
-      { text: '$ abtree global read v2__deploy__1 threshold', kind: 'cmd' },
-      { text: '{"path":"threshold","value":80}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-      { text: '▸ true and 87 > 80 → pass', kind: 'think' },
-      { text: '$ abtree eval v2__deploy__1 true', kind: 'cmd' },
-      { text: '{"status":"evaluation_passed"}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-    ],
-  },
-  // B — Build_And_Push: instruct returned
-  {
-    node: 'B', pendingStep: 'instruct',
-    lines: [
-      { text: '$ abtree next v2__deploy__1', kind: 'cmd' },
-      { text: '{"type":"instruct","name":"Build_And_Push","instruction":"Build and push image to $GLOBAL.registry.\\nStore the pushed tag at $LOCAL.image_tag."}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-    ],
-  },
-  // B — read registry, build, write image_tag, submit, then next → done
-  {
-    node: 'B', completesStep: 'instruct', completesStepAs: 'success', completes: 'B', completesAs: 'success',
-    lines: [
-      { text: '▸ resolve $GLOBAL.registry before tagging', kind: 'think' },
-      { text: '$ abtree global read v2__deploy__1 registry', kind: 'cmd' },
-      { text: '{"path":"registry","value":"ghcr.io/my-app"}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-      { text: '▸ tag with current git SHA → ghcr.io/my-app:abc1234', kind: 'think' },
-      { text: '$ docker build -t ghcr.io/my-app:abc1234 .', kind: 'cmd' },
-      { text: 'Pushed ghcr.io/my-app:abc1234', kind: 'resp' },
-      { text: '', kind: 'blank' },
-      { text: '$ abtree local write v2__deploy__1 image_tag ghcr.io/my-app:abc1234', kind: 'cmd' },
-      { text: '$ abtree submit v2__deploy__1 success', kind: 'cmd' },
-      { text: '{"status":"action_complete"}', kind: 'resp' },
-      { text: '', kind: 'blank' },
-      { text: '$ abtree next v2__deploy__1', kind: 'cmd' },
-      { text: '{"status":"done"}', kind: 'resp' },
-    ],
-  },
-]
+	// Create the execution
+	{
+		node: null,
+		lines: [
+			{ text: '$ abtree execution create deploy "ship v2"', kind: "cmd" },
+			{ text: '{"id":"v2__deploy__1","tree":"deploy"}', kind: "resp" },
+			{ text: "", kind: "blank" },
+		],
+	},
+	// A — Run_Tests: instruct returned
+	{
+		node: "A",
+		pendingStep: "instruct",
+		lines: [
+			{ text: "$ abtree next v2__deploy__1", kind: "cmd" },
+			{
+				text: '{"type":"instruct","name":"Run_Tests","instruction":"Run tests.\\nStore pass/fail at $LOCAL.tests_passed.\\nStore coverage percentage at $LOCAL.coverage."}',
+				kind: "resp",
+			},
+			{ text: "", kind: "blank" },
+		],
+	},
+	// A — do the work, write results, submit (more steps remain → step_complete)
+	{
+		node: "A",
+		completesStep: "instruct",
+		completesStepAs: "success",
+		lines: [
+			{
+				text: "▸ run test suite → store at $LOCAL.tests_passed and $LOCAL.coverage",
+				kind: "think",
+			},
+			{ text: "$ bun test --coverage", kind: "cmd" },
+			{ text: "All tests passed. Coverage: 87%", kind: "resp" },
+			{ text: "", kind: "blank" },
+			{ text: "▸ writing results to $LOCAL", kind: "think" },
+			{
+				text: "$ abtree local write v2__deploy__1 tests_passed true",
+				kind: "cmd",
+			},
+			{ text: "$ abtree local write v2__deploy__1 coverage 87", kind: "cmd" },
+			{ text: "$ abtree submit v2__deploy__1 success", kind: "cmd" },
+			{ text: '{"status":"step_complete"}', kind: "resp" },
+			{ text: "", kind: "blank" },
+		],
+	},
+	// A — gate evaluate returned
+	{
+		node: "A",
+		pendingStep: "evaluate",
+		lines: [
+			{ text: "$ abtree next v2__deploy__1", kind: "cmd" },
+			{
+				text: '{"type":"evaluate","name":"Run_Tests","expression":"$LOCAL.tests_passed is true.\\n$LOCAL.coverage is greater than $GLOBAL.threshold."}',
+				kind: "resp",
+			},
+			{ text: "", kind: "blank" },
+		],
+	},
+	// A — read all three refs, eval combined expression, completes A
+	{
+		node: "A",
+		completesStep: "evaluate",
+		completesStepAs: "success",
+		completes: "A",
+		completesAs: "success",
+		lines: [
+			{
+				text: "▸ refs: $LOCAL.tests_passed, $LOCAL.coverage, $GLOBAL.threshold",
+				kind: "think",
+			},
+			{ text: "$ abtree local read v2__deploy__1 tests_passed", kind: "cmd" },
+			{ text: '{"path":"tests_passed","value":true}', kind: "resp" },
+			{ text: "$ abtree local read v2__deploy__1 coverage", kind: "cmd" },
+			{ text: '{"path":"coverage","value":87}', kind: "resp" },
+			{ text: "$ abtree global read v2__deploy__1 threshold", kind: "cmd" },
+			{ text: '{"path":"threshold","value":80}', kind: "resp" },
+			{ text: "", kind: "blank" },
+			{ text: "▸ true and 87 > 80 → pass", kind: "think" },
+			{ text: "$ abtree eval v2__deploy__1 true", kind: "cmd" },
+			{ text: '{"status":"evaluation_passed"}', kind: "resp" },
+			{ text: "", kind: "blank" },
+		],
+	},
+	// B — Build_And_Push: instruct returned
+	{
+		node: "B",
+		pendingStep: "instruct",
+		lines: [
+			{ text: "$ abtree next v2__deploy__1", kind: "cmd" },
+			{
+				text: '{"type":"instruct","name":"Build_And_Push","instruction":"Build and push image to $GLOBAL.registry.\\nStore the pushed tag at $LOCAL.image_tag."}',
+				kind: "resp",
+			},
+			{ text: "", kind: "blank" },
+		],
+	},
+	// B — read registry, build, write image_tag, submit, then next → done
+	{
+		node: "B",
+		completesStep: "instruct",
+		completesStepAs: "success",
+		completes: "B",
+		completesAs: "success",
+		lines: [
+			{ text: "▸ resolve $GLOBAL.registry before tagging", kind: "think" },
+			{ text: "$ abtree global read v2__deploy__1 registry", kind: "cmd" },
+			{ text: '{"path":"registry","value":"ghcr.io/my-app"}', kind: "resp" },
+			{ text: "", kind: "blank" },
+			{
+				text: "▸ tag with current git SHA → ghcr.io/my-app:abc1234",
+				kind: "think",
+			},
+			{ text: "$ docker build -t ghcr.io/my-app:abc1234 .", kind: "cmd" },
+			{ text: "Pushed ghcr.io/my-app:abc1234", kind: "resp" },
+			{ text: "", kind: "blank" },
+			{
+				text: "$ abtree local write v2__deploy__1 image_tag ghcr.io/my-app:abc1234",
+				kind: "cmd",
+			},
+			{ text: "$ abtree submit v2__deploy__1 success", kind: "cmd" },
+			{ text: '{"status":"action_complete"}', kind: "resp" },
+			{ text: "", kind: "blank" },
+			{ text: "$ abtree next v2__deploy__1", kind: "cmd" },
+			{ text: '{"status":"done"}', kind: "resp" },
+		],
+	},
+];
 
 function prettifyJsonLines(lines: CliLine[]): CliLine[] {
-  const out: CliLine[] = []
-  for (const line of lines) {
-    if (line.kind === 'resp' && /^[{[]/.test(line.text)) {
-      try {
-        const parsed = JSON.parse(line.text)
-        for (const ln of JSON.stringify(parsed, null, 2).split('\n')) {
-          out.push({ text: ln, kind: 'resp' })
-        }
-        continue
-      } catch { /* fall through */ }
-    }
-    out.push(line)
-  }
-  return out
+	const out: CliLine[] = [];
+	for (const line of lines) {
+		if (line.kind === "resp" && /^[{[]/.test(line.text)) {
+			try {
+				const parsed = JSON.parse(line.text);
+				for (const ln of JSON.stringify(parsed, null, 2).split("\n")) {
+					out.push({ text: ln, kind: "resp" });
+				}
+				continue;
+			} catch {
+				/* fall through */
+			}
+		}
+		out.push(line);
+	}
+	return out;
 }
 
 for (const frame of frames) {
-  frame.lines = prettifyJsonLines(frame.lines.filter(l => l.kind !== 'blank'))
+	frame.lines = prettifyJsonLines(
+		frame.lines.filter((l) => l.kind !== "blank"),
+	);
 }
 
-const yamlCount     = ref(0)
-const activeNode    = ref<string | null>(null)
-const nodeStatuses  = ref<Record<string, NodeStatus>>({})
-const stepStatuses  = ref<Record<string, Partial<Record<StepKey, NodeStatus>>>>({})
-const cliLines      = ref<CliLine[]>([])
-const showCursor    = ref(true)
-const expanded      = ref(false)
-const terminalEl    = ref<HTMLElement | null>(null)
-const yamlEl        = ref<HTMLElement | null>(null)
+const yamlCount = ref(0);
+const activeNode = ref<string | null>(null);
+const nodeStatuses = ref<Record<string, NodeStatus>>({});
+const stepStatuses = ref<Record<string, Partial<Record<StepKey, NodeStatus>>>>(
+	{},
+);
+const cliLines = ref<CliLine[]>([]);
+const showCursor = ref(true);
+const expanded = ref(false);
+const terminalEl = ref<HTMLElement | null>(null);
+const yamlEl = ref<HTMLElement | null>(null);
 
-let timers: ReturnType<typeof setTimeout>[] = []
+let timers: ReturnType<typeof setTimeout>[] = [];
 
 function later(fn: () => void, ms: number) {
-  timers.push(setTimeout(fn, ms))
+	timers.push(setTimeout(fn, ms));
 }
 
 function scrollBottom() {
-  nextTick(() => {
-    terminalEl.value?.scrollTo({ top: terminalEl.value.scrollHeight, behavior: 'smooth' })
-  })
+	nextTick(() => {
+		terminalEl.value?.scrollTo({
+			top: terminalEl.value.scrollHeight,
+			behavior: "smooth",
+		});
+	});
 }
 
 function lineIndent(text: string): string {
-  return text.match(/^(\s*)/)?.[1] ?? ''
+	return text.match(/^(\s*)/)?.[1] ?? "";
 }
 function lineHasMarker(text: string): boolean {
-  return /^\s*- /.test(text)
+	return /^\s*- /.test(text);
 }
 function lineRest(text: string): string {
-  return text.replace(/^\s*- /, '')
+	return text.replace(/^\s*- /, "");
 }
 function markerStatusFor(line: YamlLine): NodeStatus | undefined {
-  if (!line.node) return undefined
-  if (line.step) return stepStatuses.value[line.node]?.[line.step]
-  return nodeStatuses.value[line.node]
+	if (!line.node) return undefined;
+	if (line.step) return stepStatuses.value[line.node]?.[line.step];
+	return nodeStatuses.value[line.node];
 }
 
 function scrollYamlToActive() {
-  nextTick(() => {
-    const container = yamlEl.value
-    if (!container || !activeNode.value) return
-    const first = container.querySelector<HTMLElement>(`[data-node="${activeNode.value}"]`)
-    if (!first) return
-    const offset = first.getBoundingClientRect().top - container.getBoundingClientRect().top
-    container.scrollTo({ top: container.scrollTop + offset - 8, behavior: 'smooth' })
-  })
+	nextTick(() => {
+		const container = yamlEl.value;
+		if (!container || !activeNode.value) return;
+		const first = container.querySelector<HTMLElement>(
+			`[data-node="${activeNode.value}"]`,
+		);
+		if (!first) return;
+		const offset =
+			first.getBoundingClientRect().top - container.getBoundingClientRect().top;
+		container.scrollTo({
+			top: container.scrollTop + offset - 8,
+			behavior: "smooth",
+		});
+	});
 }
 
-watch(activeNode, scrollYamlToActive)
+watch(activeNode, scrollYamlToActive);
 
 function run() {
-  timers.forEach(clearTimeout)
-  timers = []
-  yamlCount.value    = yaml.length     // render full YAML immediately
-  activeNode.value   = null
-  nodeStatuses.value = {}
-  stepStatuses.value = {}
-  cliLines.value     = []
-  showCursor.value   = true
+	timers.forEach(clearTimeout);
+	timers = [];
+	yamlCount.value = yaml.length; // render full YAML immediately
+	activeNode.value = null;
+	nodeStatuses.value = {};
+	stepStatuses.value = {};
+	cliLines.value = [];
+	showCursor.value = true;
 
-  nextTick(() => {
-    yamlEl.value?.scrollTo({ top: 0, behavior: 'auto' })
-    terminalEl.value?.scrollTo({ top: 0, behavior: 'auto' })
-  })
+	nextTick(() => {
+		yamlEl.value?.scrollTo({ top: 0, behavior: "auto" });
+		terminalEl.value?.scrollTo({ top: 0, behavior: "auto" });
+	});
 
-  // CLI exchange begins after a brief pause so the YAML is read first
-  let t = 800
+	// CLI exchange begins after a brief pause so the YAML is read first
+	let t = 800;
 
-  frames.forEach((frame) => {
-    later(() => {
-      activeNode.value = frame.node
-      // Mark node as pending the first time it appears
-      if (frame.node && !nodeStatuses.value[frame.node]) {
-        nodeStatuses.value = { ...nodeStatuses.value, [frame.node]: 'pending' }
-      }
-      // Mark the step as pending
-      if (frame.node && frame.pendingStep) {
-        stepStatuses.value = {
-          ...stepStatuses.value,
-          [frame.node]: { ...(stepStatuses.value[frame.node] || {}), [frame.pendingStep]: 'pending' },
-        }
-      }
-    }, t)
+	frames.forEach((frame) => {
+		later(() => {
+			activeNode.value = frame.node;
+			// Mark node as pending the first time it appears
+			if (frame.node && !nodeStatuses.value[frame.node]) {
+				nodeStatuses.value = { ...nodeStatuses.value, [frame.node]: "pending" };
+			}
+			// Mark the step as pending
+			if (frame.node && frame.pendingStep) {
+				stepStatuses.value = {
+					...stepStatuses.value,
+					[frame.node]: {
+						...(stepStatuses.value[frame.node] || {}),
+						[frame.pendingStep]: "pending",
+					},
+				};
+			}
+		}, t);
 
-    const lineDelay = (l: CliLine) => l.kind === 'resp' ? 120 : 320
-    const offsets: number[] = []
-    let elapsed = 0
-    for (const l of frame.lines) {
-      offsets.push(elapsed)
-      elapsed += lineDelay(l)
-    }
+		const lineDelay = (l: CliLine) => (l.kind === "resp" ? 120 : 320);
+		const offsets: number[] = [];
+		let elapsed = 0;
+		for (const l of frame.lines) {
+			offsets.push(elapsed);
+			elapsed += lineDelay(l);
+		}
 
-    frame.lines.forEach((line, li) => {
-      later(() => {
-        cliLines.value = [...cliLines.value, line]
-        scrollBottom()
-      }, t + offsets[li])
-    })
+		frame.lines.forEach((line, li) => {
+			later(() => {
+				cliLines.value = [...cliLines.value, line];
+				scrollBottom();
+			}, t + offsets[li]);
+		});
 
-    const respIdx = frame.lines.reduce((last, l, i) => l.kind === 'resp' ? i : last, 0)
-    const completionAt = t + offsets[respIdx] + 420
+		const respIdx = frame.lines.reduce(
+			(last, l, i) => (l.kind === "resp" ? i : last),
+			0,
+		);
+		const completionAt = t + offsets[respIdx] + 420;
 
-    // After the response line appears, complete the step status
-    if (frame.node && frame.completesStep && frame.completesStepAs) {
-      later(() => {
-        stepStatuses.value = {
-          ...stepStatuses.value,
-          [frame.node!]: { ...(stepStatuses.value[frame.node!] || {}), [frame.completesStep!]: frame.completesStepAs! },
-        }
-      }, completionAt)
-    }
+		// After the response line appears, complete the step status
+		if (frame.node && frame.completesStep && frame.completesStepAs) {
+			later(() => {
+				stepStatuses.value = {
+					...stepStatuses.value,
+					[frame.node!]: {
+						...(stepStatuses.value[frame.node!] || {}),
+						[frame.completesStep!]: frame.completesStepAs!,
+					},
+				};
+			}, completionAt);
+		}
 
-    // After the response line appears, transition the node to its final status
-    if (frame.completes && frame.completesAs) {
-      later(() => {
-        nodeStatuses.value = { ...nodeStatuses.value, [frame.completes!]: frame.completesAs! }
-      }, completionAt)
-    }
+		// After the response line appears, transition the node to its final status
+		if (frame.completes && frame.completesAs) {
+			later(() => {
+				nodeStatuses.value = {
+					...nodeStatuses.value,
+					[frame.completes!]: frame.completesAs!,
+				};
+			}, completionAt);
+		}
 
-    t += elapsed + 680
-  })
+		t += elapsed + 680;
+	});
 
-  // Done — pause then restart
-  later(() => {
-    showCursor.value = false
-    later(run, 2200)
-  }, t + 400)
+	// Done — pause then restart
+	later(() => {
+		showCursor.value = false;
+		later(run, 2200);
+	}, t + 400);
 }
 
 function expand() {
-  timers.forEach(clearTimeout)
-  timers = []
-  expanded.value = true
-  yamlCount.value  = yaml.length
-  activeNode.value = null
-  showCursor.value = false
+	timers.forEach(clearTimeout);
+	timers = [];
+	expanded.value = true;
+	yamlCount.value = yaml.length;
+	activeNode.value = null;
+	showCursor.value = false;
 
-  const finalNodeStatuses: Record<string, NodeStatus> = {}
-  const finalStepStatuses: Record<string, Partial<Record<StepKey, NodeStatus>>> = {}
-  const allLines: CliLine[] = []
+	const finalNodeStatuses: Record<string, NodeStatus> = {};
+	const finalStepStatuses: Record<
+		string,
+		Partial<Record<StepKey, NodeStatus>>
+	> = {};
+	const allLines: CliLine[] = [];
 
-  for (const frame of frames) {
-    if (frame.node && frame.completesStep && frame.completesStepAs) {
-      finalStepStatuses[frame.node] = {
-        ...(finalStepStatuses[frame.node] || {}),
-        [frame.completesStep]: frame.completesStepAs,
-      }
-    }
-    if (frame.completes && frame.completesAs) {
-      finalNodeStatuses[frame.completes] = frame.completesAs
-    }
-    allLines.push(...frame.lines)
-  }
+	for (const frame of frames) {
+		if (frame.node && frame.completesStep && frame.completesStepAs) {
+			finalStepStatuses[frame.node] = {
+				...(finalStepStatuses[frame.node] || {}),
+				[frame.completesStep]: frame.completesStepAs,
+			};
+		}
+		if (frame.completes && frame.completesAs) {
+			finalNodeStatuses[frame.completes] = frame.completesAs;
+		}
+		allLines.push(...frame.lines);
+	}
 
-  nodeStatuses.value = finalNodeStatuses
-  stepStatuses.value = finalStepStatuses
-  cliLines.value     = allLines
+	nodeStatuses.value = finalNodeStatuses;
+	stepStatuses.value = finalStepStatuses;
+	cliLines.value = allLines;
 }
 
 function collapse() {
-  expanded.value = false
-  run()
+	expanded.value = false;
+	run();
 }
 
-onMounted(run)
-onUnmounted(() => timers.forEach(clearTimeout))
+onMounted(run);
+onUnmounted(() => timers.forEach(clearTimeout));
 </script>
 
 <template>

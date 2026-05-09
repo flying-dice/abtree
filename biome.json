@@ -9,10 +9,10 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**",
-			"!.abtree/**",
-			"!docs/.vitepress/dist/**",
-			"!docs/.vitepress/cache/**",
-			"!node_modules/**"
+			"!.abtree",
+			"!docs/.vitepress/dist",
+			"!docs/.vitepress/cache",
+			"!node_modules"
 		]
 	},
 	"formatter": {

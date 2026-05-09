@@ -1,159 +1,190 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from "vue";
 
-type NodeType   = 'sequence' | 'selector' | 'parallel' | 'action'
-type NodeStatus = 'pending' | 'success' | 'fail'
+type NodeType = "sequence" | "selector" | "parallel" | "action";
+type NodeStatus = "pending" | "success" | "fail";
 
 interface TreeNode {
-  id: string
-  type: NodeType
-  name: string
-  children?: TreeNode[]
+	id: string;
+	type: NodeType;
+	name: string;
+	children?: TreeNode[];
 }
 
 interface FlatNode {
-  id: string
-  type: NodeType
-  name: string
-  prefix: string
-  isRoot: boolean
+	id: string;
+	type: NodeType;
+	name: string;
+	prefix: string;
+	isRoot: boolean;
 }
 
 interface AnimEvent {
-  id: string
-  status: NodeStatus
-  delay: number
+	id: string;
+	status: NodeStatus;
+	delay: number;
 }
 
 const simpleTree: TreeNode = {
-  id: 's-root', type: 'sequence', name: 'Deploy_Service',
-  children: [
-    { id: 's-run',   type: 'action', name: 'Run_Tests' },
-    { id: 's-build', type: 'action', name: 'Build_Image' },
-    { id: 's-push',  type: 'action', name: 'Push_Image' },
-  ],
-}
+	id: "s-root",
+	type: "sequence",
+	name: "Deploy_Service",
+	children: [
+		{ id: "s-run", type: "action", name: "Run_Tests" },
+		{ id: "s-build", type: "action", name: "Build_Image" },
+		{ id: "s-push", type: "action", name: "Push_Image" },
+	],
+};
 
 const complexTree: TreeNode = {
-  id: 'c-root', type: 'sequence', name: 'Deploy_Service',
-  children: [
-    {
-      id: 'c-tests', type: 'sequence', name: 'Test_Suite',
-      children: [
-        { id: 'c-lint',  type: 'action', name: 'Lint' },
-        { id: 'c-unit',  type: 'action', name: 'Unit_Tests' },
-        { id: 'c-integ', type: 'action', name: 'Integration_Tests' },
-      ],
-    },
-    {
-      id: 'c-build', type: 'selector', name: 'Build_Strategy',
-      children: [
-        { id: 'c-cached', type: 'action', name: 'Try_Cached_Build' },
-        { id: 'c-full',   type: 'action', name: 'Full_Build' },
-      ],
-    },
-    {
-      id: 'c-verify', type: 'parallel', name: 'Verify',
-      children: [
-        { id: 'c-smoke',  type: 'action', name: 'Smoke_Test' },
-        { id: 'c-health', type: 'action', name: 'Health_Check' },
-      ],
-    },
-    { id: 'c-push', type: 'action', name: 'Push_Image' },
-  ],
-}
+	id: "c-root",
+	type: "sequence",
+	name: "Deploy_Service",
+	children: [
+		{
+			id: "c-tests",
+			type: "sequence",
+			name: "Test_Suite",
+			children: [
+				{ id: "c-lint", type: "action", name: "Lint" },
+				{ id: "c-unit", type: "action", name: "Unit_Tests" },
+				{ id: "c-integ", type: "action", name: "Integration_Tests" },
+			],
+		},
+		{
+			id: "c-build",
+			type: "selector",
+			name: "Build_Strategy",
+			children: [
+				{ id: "c-cached", type: "action", name: "Try_Cached_Build" },
+				{ id: "c-full", type: "action", name: "Full_Build" },
+			],
+		},
+		{
+			id: "c-verify",
+			type: "parallel",
+			name: "Verify",
+			children: [
+				{ id: "c-smoke", type: "action", name: "Smoke_Test" },
+				{ id: "c-health", type: "action", name: "Health_Check" },
+			],
+		},
+		{ id: "c-push", type: "action", name: "Push_Image" },
+	],
+};
 
 const simpleEvents: AnimEvent[] = [
-  { id: 's-root',  status: 'pending', delay: 600 },
-  { id: 's-run',   status: 'pending', delay: 400 },
-  { id: 's-run',   status: 'success', delay: 700 },
-  { id: 's-build', status: 'pending', delay: 300 },
-  { id: 's-build', status: 'success', delay: 700 },
-  { id: 's-push',  status: 'pending', delay: 300 },
-  { id: 's-push',  status: 'success', delay: 700 },
-  { id: 's-root',  status: 'success', delay: 400 },
-]
+	{ id: "s-root", status: "pending", delay: 600 },
+	{ id: "s-run", status: "pending", delay: 400 },
+	{ id: "s-run", status: "success", delay: 700 },
+	{ id: "s-build", status: "pending", delay: 300 },
+	{ id: "s-build", status: "success", delay: 700 },
+	{ id: "s-push", status: "pending", delay: 300 },
+	{ id: "s-push", status: "success", delay: 700 },
+	{ id: "s-root", status: "success", delay: 400 },
+];
 
 const complexEvents: AnimEvent[] = [
-  { id: 'c-root',   status: 'pending', delay: 600 },
-  { id: 'c-tests',  status: 'pending', delay: 300 },
-  { id: 'c-lint',   status: 'pending', delay: 300 },
-  { id: 'c-lint',   status: 'success', delay: 600 },
-  { id: 'c-unit',   status: 'pending', delay: 250 },
-  { id: 'c-unit',   status: 'success', delay: 600 },
-  { id: 'c-integ',  status: 'pending', delay: 250 },
-  { id: 'c-integ',  status: 'success', delay: 600 },
-  { id: 'c-tests',  status: 'success', delay: 300 },
-  { id: 'c-build',  status: 'pending', delay: 350 },
-  { id: 'c-cached', status: 'pending', delay: 250 },
-  { id: 'c-cached', status: 'fail',    delay: 700 },
-  { id: 'c-full',   status: 'pending', delay: 400 },
-  { id: 'c-full',   status: 'success', delay: 800 },
-  { id: 'c-build',  status: 'success', delay: 300 },
-  { id: 'c-verify', status: 'pending', delay: 350 },
-  { id: 'c-smoke',  status: 'pending', delay: 100 },
-  { id: 'c-health', status: 'pending', delay: 80  },
-  { id: 'c-smoke',  status: 'success', delay: 800 },
-  { id: 'c-health', status: 'success', delay: 250 },
-  { id: 'c-verify', status: 'success', delay: 300 },
-  { id: 'c-push',   status: 'pending', delay: 350 },
-  { id: 'c-push',   status: 'success', delay: 700 },
-  { id: 'c-root',   status: 'success', delay: 400 },
-]
+	{ id: "c-root", status: "pending", delay: 600 },
+	{ id: "c-tests", status: "pending", delay: 300 },
+	{ id: "c-lint", status: "pending", delay: 300 },
+	{ id: "c-lint", status: "success", delay: 600 },
+	{ id: "c-unit", status: "pending", delay: 250 },
+	{ id: "c-unit", status: "success", delay: 600 },
+	{ id: "c-integ", status: "pending", delay: 250 },
+	{ id: "c-integ", status: "success", delay: 600 },
+	{ id: "c-tests", status: "success", delay: 300 },
+	{ id: "c-build", status: "pending", delay: 350 },
+	{ id: "c-cached", status: "pending", delay: 250 },
+	{ id: "c-cached", status: "fail", delay: 700 },
+	{ id: "c-full", status: "pending", delay: 400 },
+	{ id: "c-full", status: "success", delay: 800 },
+	{ id: "c-build", status: "success", delay: 300 },
+	{ id: "c-verify", status: "pending", delay: 350 },
+	{ id: "c-smoke", status: "pending", delay: 100 },
+	{ id: "c-health", status: "pending", delay: 80 },
+	{ id: "c-smoke", status: "success", delay: 800 },
+	{ id: "c-health", status: "success", delay: 250 },
+	{ id: "c-verify", status: "success", delay: 300 },
+	{ id: "c-push", status: "pending", delay: 350 },
+	{ id: "c-push", status: "success", delay: 700 },
+	{ id: "c-root", status: "success", delay: 400 },
+];
 
 function flatten(root: TreeNode): FlatNode[] {
-  const out: FlatNode[] = []
-  function recurse(node: TreeNode, contextPrefix: string, branch: string, isRoot: boolean, isLast: boolean) {
-    out.push({ id: node.id, type: node.type, name: node.name, prefix: contextPrefix + branch, isRoot })
-    if (node.children) {
-      const childContext = contextPrefix + (isRoot ? '' : (isLast ? '   ' : '│  '))
-      for (let i = 0; i < node.children.length; i++) {
-        const childIsLast = i === node.children.length - 1
-        const childBranch = childIsLast ? '└─ ' : '├─ '
-        recurse(node.children[i], childContext, childBranch, false, childIsLast)
-      }
-    }
-  }
-  recurse(root, '', '', true, false)
-  return out
+	const out: FlatNode[] = [];
+	function recurse(
+		node: TreeNode,
+		contextPrefix: string,
+		branch: string,
+		isRoot: boolean,
+		isLast: boolean,
+	) {
+		out.push({
+			id: node.id,
+			type: node.type,
+			name: node.name,
+			prefix: contextPrefix + branch,
+			isRoot,
+		});
+		if (node.children) {
+			const childContext =
+				contextPrefix + (isRoot ? "" : isLast ? "   " : "│  ");
+			for (let i = 0; i < node.children.length; i++) {
+				const childIsLast = i === node.children.length - 1;
+				const childBranch = childIsLast ? "└─ " : "├─ ";
+				recurse(
+					node.children[i],
+					childContext,
+					childBranch,
+					false,
+					childIsLast,
+				);
+			}
+		}
+	}
+	recurse(root, "", "", true, false);
+	return out;
 }
 
-const simpleFlat  = flatten(simpleTree)
-const complexFlat = flatten(complexTree)
+const simpleFlat = flatten(simpleTree);
+const complexFlat = flatten(complexTree);
 
-const simpleStatuses  = ref<Record<string, NodeStatus>>({})
-const complexStatuses = ref<Record<string, NodeStatus>>({})
+const simpleStatuses = ref<Record<string, NodeStatus>>({});
+const complexStatuses = ref<Record<string, NodeStatus>>({});
 
-let timers: ReturnType<typeof setTimeout>[] = []
+let timers: ReturnType<typeof setTimeout>[] = [];
 
 function later(fn: () => void, ms: number) {
-  timers.push(setTimeout(fn, ms))
+	timers.push(setTimeout(fn, ms));
 }
 
 function schedule(events: AnimEvent[], target: typeof simpleStatuses): number {
-  let t = 0
-  for (const ev of events) {
-    t += ev.delay
-    const at = t
-    later(() => { target.value = { ...target.value, [ev.id]: ev.status } }, at)
-  }
-  return t
+	let t = 0;
+	for (const ev of events) {
+		t += ev.delay;
+		const at = t;
+		later(() => {
+			target.value = { ...target.value, [ev.id]: ev.status };
+		}, at);
+	}
+	return t;
 }
 
 function run() {
-  timers.forEach(clearTimeout)
-  timers = []
-  simpleStatuses.value  = {}
-  complexStatuses.value = {}
+	timers.forEach(clearTimeout);
+	timers = [];
+	simpleStatuses.value = {};
+	complexStatuses.value = {};
 
-  const simpleEnd  = schedule(simpleEvents,  simpleStatuses)
-  const complexEnd = schedule(complexEvents, complexStatuses)
+	const simpleEnd = schedule(simpleEvents, simpleStatuses);
+	const complexEnd = schedule(complexEvents, complexStatuses);
 
-  later(run, Math.max(simpleEnd, complexEnd) + 2400)
+	later(run, Math.max(simpleEnd, complexEnd) + 2400);
 }
 
-onMounted(run)
-onUnmounted(() => timers.forEach(clearTimeout))
+onMounted(run);
+onUnmounted(() => timers.forEach(clearTimeout));
 </script>
 
 <template>

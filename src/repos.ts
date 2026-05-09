@@ -7,8 +7,13 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { ensureDir, EXECUTIONS_DIR } from "./paths.ts";
-import type { ExecutionDoc, ExecutionRow, NodeStatus, RuntimeState } from "./types.ts";
+import { EXECUTIONS_DIR, ensureDir } from "./paths.ts";
+import type {
+	ExecutionDoc,
+	ExecutionRow,
+	NodeStatus,
+	RuntimeState,
+} from "./types.ts";
 
 function emptyRuntime(): RuntimeState {
 	return { node_status: {}, step_index: {}, retry_count: {} };
@@ -93,7 +98,9 @@ export const ExecutionStore = {
 		for (const name of readdirSync(EXECUTIONS_DIR)) {
 			if (!name.endsWith(".json")) continue;
 			try {
-				docs.push(JSON.parse(readFileSync(join(EXECUTIONS_DIR, name), "utf-8")));
+				docs.push(
+					JSON.parse(readFileSync(join(EXECUTIONS_DIR, name), "utf-8")),
+				);
 			} catch {
 				// skip corrupt files in list view
 			}

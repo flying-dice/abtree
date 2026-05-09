@@ -139,7 +139,10 @@ function maybeRetry(
 // where there's no parent to detect failure and apply maybeRetry on the
 // child's behalf. Composite-internal retries are still handled inside
 // tickNode via the per-child status checks.
-export function tickRoot(executionId: string, root: NormalizedNode): TickResult {
+export function tickRoot(
+	executionId: string,
+	root: NormalizedNode,
+): TickResult {
 	let result = tickNode(executionId, [], root);
 	while (result.type === "failure" && maybeRetry(executionId, [], root)) {
 		result = tickNode(executionId, [], root);
@@ -198,7 +201,10 @@ export function tickNode(
 			const childPath = [...path, i];
 			const child = node.children[i] as NormalizedNode;
 			let childStatus = getNodeResult(executionId, childPath);
-			if (childStatus === "failure" && maybeRetry(executionId, childPath, child)) {
+			if (
+				childStatus === "failure" &&
+				maybeRetry(executionId, childPath, child)
+			) {
 				childStatus = null; // child reset — re-tick fresh
 			}
 			if (childStatus === "failure") return { type: "failure" };
@@ -222,7 +228,10 @@ export function tickNode(
 			const childPath = [...path, i];
 			const child = node.children[i] as NormalizedNode;
 			let childStatus = getNodeResult(executionId, childPath);
-			if (childStatus === "failure" && maybeRetry(executionId, childPath, child)) {
+			if (
+				childStatus === "failure" &&
+				maybeRetry(executionId, childPath, child)
+			) {
 				childStatus = null;
 			}
 			if (childStatus === "success") return { type: "done" };
@@ -248,7 +257,10 @@ export function tickNode(
 			const childPath = [...path, i];
 			const child = node.children[i] as NormalizedNode;
 			let childStatus = getNodeResult(executionId, childPath);
-			if (childStatus === "failure" && maybeRetry(executionId, childPath, child)) {
+			if (
+				childStatus === "failure" &&
+				maybeRetry(executionId, childPath, child)
+			) {
 				childStatus = null;
 			}
 			if (childStatus === "failure") return { type: "failure" };

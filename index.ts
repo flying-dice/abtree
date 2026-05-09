@@ -19,7 +19,12 @@ import {
 	cmdSubmit,
 	cmdTreeList,
 } from "./src/commands.ts";
-import { ensureDir, EXECUTIONS_DIR, SNAPSHOTS_DIR, TREES_DIR } from "./src/paths.ts";
+import {
+	EXECUTIONS_DIR,
+	ensureDir,
+	SNAPSHOTS_DIR,
+	TREES_DIR,
+} from "./src/paths.ts";
 import {
 	parseEvalResult,
 	parseExecutionId,
