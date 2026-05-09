@@ -25,7 +25,9 @@
     "@semantic-release/release-notes-generator": "^14.0.0",
     "@types/bun": "latest",
     "semantic-release": "^24.0.0",
-    "vitepress": "^2.0.0-alpha.17"
+    "vitepress": "^2.0.0-alpha.17",
+    "vitepress-mermaid-renderer": "^1.1.23",
+    "vitepress-plugin-llms": "^1.12.2"
   },
   "peerDependencies": {
     "typescript": "^5"
