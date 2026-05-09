@@ -17,6 +17,17 @@ Trees live in `.abtree/trees/<slug>.yaml`. The slug becomes the tree name shown 
     first-run__hello-world__1.mermaid
 ```
 
+### Project-local vs user-global
+
+`abtree tree list` searches two directories:
+
+1. `.abtree/trees/` in the **current working directory** — project-local, committed with the code.
+2. `~/.abtree/trees/` in your **home directory** — user-global, available in every project.
+
+The project-local copy wins if both define the same slug. Drop a tree in `~/.abtree/trees/` to make it your default everywhere; commit a same-named file under `.abtree/trees/` to override it for one project.
+
+Flows always go into the cwd's `.abtree/flows/` regardless of where the tree was sourced from.
+
 ## Top-level structure
 
 ```yaml

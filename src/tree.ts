@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { TREES_DIR } from "./paths.ts";
+import { TREE_SOURCES } from "./paths.ts";
 import { FlowStore } from "./repos.ts";
 import type {
 	NodeStatus,
@@ -11,22 +11,34 @@ import type {
 import { normalizeNode, validateTreeFile } from "./validate.ts";
 
 export function loadTree(slug: string): ParsedTree | null {
-	const yamlPath = join(TREES_DIR, `${slug}.yaml`);
-	if (!existsSync(yamlPath)) return null;
-	const raw = Bun.YAML.parse(readFileSync(yamlPath, "utf-8"));
-	const parsed = validateTreeFile(raw);
-	return {
-		local: parsed.state?.local ?? {},
-		global: parsed.state?.global ?? {},
-		root: normalizeNode(parsed.tree),
-	};
+	for (const dir of TREE_SOURCES) {
+		const yamlPath = join(dir, `${slug}.yaml`);
+		if (!existsSync(yamlPath)) continue;
+		const raw = Bun.YAML.parse(readFileSync(yamlPath, "utf-8"));
+		const parsed = validateTreeFile(raw);
+		return {
+			local: parsed.state?.local ?? {},
+			global: parsed.state?.global ?? {},
+			root: normalizeNode(parsed.tree),
+		};
+	}
+	return null;
 }
 
 export function listTreeSlugs(): string[] {
-	if (!existsSync(TREES_DIR)) return [];
-	return readdirSync(TREES_DIR)
-		.filter((f) => f.endsWith(".yaml"))
-		.map((f) => f.slice(0, -5));
+	const seen = new Set<string>();
+	const slugs: string[] = [];
+	for (const dir of TREE_SOURCES) {
+		if (!existsSync(dir)) continue;
+		for (const f of readdirSync(dir)) {
+			if (!f.endsWith(".yaml")) continue;
+			const slug = f.slice(0, -5);
+			if (seen.has(slug)) continue;
+			seen.add(slug);
+			slugs.push(slug);
+		}
+	}
+	return slugs;
 }
 
 export function generateFlowId(tree: string, summary: string): string {
