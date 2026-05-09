@@ -36,3 +36,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# release binaries
+abt-linux-x64
+abt-linux-arm64
+abt-darwin-x64
+abt-darwin-arm64
+abt-windows-x64.exe

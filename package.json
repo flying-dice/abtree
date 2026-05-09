@@ -1,16 +1,26 @@
 {
   "name": "abtree",
+  "version": "0.0.0",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "bin": {
     "abt": "index.ts"
   },
+  "scripts": {
+    "release": "semantic-release"
+  },
   "dependencies": {
     "commander": "^12"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/github": "^10.0.0",
+    "@semantic-release/npm": "^12.0.0",
+    "@semantic-release/release-notes-generator": "^14.0.0",
+    "@types/bun": "latest",
+    "semantic-release": "^24.0.0"
   },
   "peerDependencies": {
     "typescript": "^5"
