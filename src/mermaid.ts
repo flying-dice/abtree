@@ -23,6 +23,19 @@ export function rebuildMermaid(flowId: string) {
 			index: number,
 			prefix: string,
 		) => {
+			// Cyclic ref placeholder — render as a labelled marker so the
+			// shape of the cycle is visible without traversing into it.
+			if (node.type === "ref") {
+				const refLabel = `ref → ${node.ref}`.replace(/"/g, "");
+				const id = `${prefix}ref_${index}`;
+				lines.push(`    ${id}(("${refLabel}"))`);
+				if (parentId) lines.push(`    ${parentId} -.-> ${id}`);
+				lines.push(
+					`    style ${id} stroke-dasharray:4,fill:#fde68a,stroke:#b45309,color:#451a03`,
+				);
+				return;
+			}
+
 			const id = `${prefix}${(node.name || `${node.type}_${index}`).replace(/[^a-zA-Z0-9_]/g, "_")}`;
 			const label = node.name ? node.name.replace(/_/g, " ") : node.type;
 

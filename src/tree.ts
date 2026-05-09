@@ -27,7 +27,14 @@ export async function loadTree(slug: string): Promise<ParsedTree | null> {
 	for (const dir of TREE_SOURCES) {
 		const yamlPath = join(dir, `${slug}.yaml`);
 		if (!existsSync(yamlPath)) continue;
-		const raw = await $RefParser.dereference(yamlPath);
+		// circular: 'ignore' leaves cyclic edges as literal { $ref: "..." }
+		// objects in the resolved tree. Non-cyclic refs are still expanded.
+		// This stops a cycle from blowing the stack at validate / snapshot
+		// time; the ref node is preserved in the snapshot and surfaces a
+		// clean failure if the runtime ever ticks it.
+		const raw = await $RefParser.dereference(yamlPath, {
+			dereference: { circular: "ignore" },
+		});
 		const parsed = validateTreeFile(raw);
 		return {
 			local: parsed.state?.local ?? {},
@@ -71,7 +78,7 @@ export function getNodeAtPath(
 ): NormalizedNode {
 	let node = root;
 	for (const idx of path) {
-		if (node.type === "action") break;
+		if (node.type === "action" || node.type === "ref") break;
 		node = node.children[idx];
 	}
 	return node;
@@ -118,6 +125,16 @@ export function tickNode(
 	node: NormalizedNode,
 ): TickResult {
 	if (!node) return { type: "done" };
+
+	if (node.type === "ref") {
+		// Cyclic $ref preserved at flow-create time. We can't traverse a
+		// cycle, so fail cleanly with a marker on the local store so the
+		// caller can see what broke.
+		console.error(
+			`abtree: cyclic ref '${node.ref}' encountered at path [${path.join(",")}] — cannot tick. Marking action as failure.`,
+		);
+		return { type: "failure" };
+	}
 
 	if (node.type === "action") {
 		const status = getNodeResult(flowId, path);
@@ -218,7 +235,7 @@ export function getPathForNode(
 	path: number[] = [],
 ): number[] | null {
 	if (root === target) return path;
-	if (root.type !== "action") {
+	if (root.type !== "action" && root.type !== "ref") {
 		for (let i = 0; i < root.children.length; i++) {
 			const found = getPathForNode(root.children[i], target, [...path, i]);
 			if (found) return found;
