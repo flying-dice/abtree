@@ -230,12 +230,36 @@
 	border: 1px solid var(--vp-c-divider);
 	background-color: var(--abtree-bg-alt);
 	box-shadow: none !important;
-	transition: transform 120ms ease, border-color 120ms ease;
+	transition: transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1),
+		border-color 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .VPFeature:hover {
 	transform: translateY(-2px);
 	border-color: var(--abtree-purple);
+}
+
+/* Inline-SVG feature icons inherit currentColor → brand pink. */
+.VPFeature .icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	background: transparent !important;
+	border-radius: var(--abtree-radius-tight);
+	color: var(--abtree-pink);
+	margin-bottom: 16px;
+}
+
+.VPFeature .icon svg {
+	width: 32px;
+	height: 32px;
+	color: var(--abtree-pink);
+}
+
+.VPFeature:hover .icon svg {
+	color: var(--abtree-purple);
 }
 
 /* -----------------------------------------------------------------------------
