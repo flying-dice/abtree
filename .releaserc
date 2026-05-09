@@ -1,0 +1,32 @@
+{
+  "branches": ["main"],
+  "repositoryUrl": "https://github.com/flying-dice/abtree.git",
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "bun build --compile --target=bun-linux-x64 index.ts --outfile=abt-linux-x64 && bun build --compile --target=bun-linux-arm64 index.ts --outfile=abt-linux-arm64 && bun build --compile --target=bun-darwin-x64 index.ts --outfile=abt-darwin-x64 && bun build --compile --target=bun-darwin-arm64 index.ts --outfile=abt-darwin-arm64 && bun build --compile --target=bun-windows-x64 index.ts --outfile=abt-windows-x64.exe"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          { "path": "abt-linux-x64",      "label": "abt-linux-x64" },
+          { "path": "abt-linux-arm64",     "label": "abt-linux-arm64" },
+          { "path": "abt-darwin-x64",      "label": "abt-darwin-x64" },
+          { "path": "abt-darwin-arm64",    "label": "abt-darwin-arm64" },
+          { "path": "abt-windows-x64.exe", "label": "abt-windows-x64.exe" }
+        ]
+      }
+    ]
+  ]
+}
