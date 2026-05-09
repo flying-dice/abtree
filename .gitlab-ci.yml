@@ -1,9 +1,42 @@
 stages:
+  - check
+  - test
   - release
 
-release:
-  stage: release
+# ---- Reused pieces -----------------------------------------------------------
+
+.bun:
   image: oven/bun:latest
+  before_script:
+    - bun install --frozen-lockfile
+
+# ---- Stage: check ------------------------------------------------------------
+
+# Biome — formatter + lint. Fails the pipeline on formatting or lint errors.
+biome:
+  extends: .bun
+  stage: check
+  script:
+    - bunx biome ci .
+
+# ---- Stage: test -------------------------------------------------------------
+
+# Run bun test against the integration test (hello-world) and the
+# deterministic harness in tests/cases/*.yaml.
+test:
+  extends: .bun
+  stage: test
+  script:
+    - bun test
+
+# ---- Stage: release ----------------------------------------------------------
+
+# semantic-release runs only on main, only after check + test pass.
+# Builds the cross-platform binaries via the prepare step in .releaserc
+# and publishes them to the GitHub mirror's releases page.
+release:
+  extends: .bun
+  stage: release
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
@@ -13,6 +46,6 @@ release:
     - git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/flying-dice/abtree.git"
     - git config --global user.email "semantic-release@abtree"
     - git config --global user.name "semantic-release"
-    - bun install
+    - bun install --frozen-lockfile
   script:
     - bunx semantic-release

@@ -266,6 +266,7 @@ export function tickNode(
 			if (!firstPending) firstPending = result;
 		}
 		if (allDone) return { type: "done" };
+		// biome-ignore lint/style/noNonNullAssertion: !allDone implies at least one pending child was recorded.
 		return firstPending!;
 	}
 
