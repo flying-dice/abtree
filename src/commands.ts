@@ -9,6 +9,8 @@ import {
 	type SkillVariant,
 } from "./paths.ts";
 import { ExecutionStore } from "./repos.ts";
+import { buildJsonSchema } from "./schemas.ts";
+import { TreeSnapshotStore } from "./snapshots.ts";
 import {
 	generateExecutionId,
 	getNodeAtPath,
@@ -24,6 +26,14 @@ export function cmdTreeList() {
 	out(listTreeSlugs());
 }
 
+export function cmdDocs(content: string) {
+	process.stdout.write(content.endsWith("\n") ? content : `${content}\n`);
+}
+
+export function cmdDocsSchema() {
+	out(buildJsonSchema());
+}
+
 export async function cmdExecutionCreate(treeSlug: string, summary: string) {
 	const treeDef = await loadTree(treeSlug);
 	if (!treeDef) die(`Tree '${treeSlug}' not found`);
@@ -36,7 +46,7 @@ export async function cmdExecutionCreate(treeSlug: string, summary: string) {
 		tree: treeSlug,
 		summary,
 		status: "running",
-		snapshot: JSON.stringify(treeDef),
+		snapshot: TreeSnapshotStore.put(treeDef),
 		cursor: "[]",
 		phase: "idle",
 		created_at: now,
@@ -77,7 +87,7 @@ export function cmdExecutionGet(executionId: string) {
 export function cmdExecutionReset(executionId: string) {
 	const doc = ExecutionStore.findById(executionId);
 	if (!doc) die(`Execution '${executionId}' not found`);
-	const treeDef = JSON.parse(doc.snapshot);
+	const treeDef = TreeSnapshotStore.get(doc.snapshot);
 	ExecutionStore.replaceLocal(executionId, treeDef.local ?? {});
 	ExecutionStore.update(executionId, { status: "running", cursor: "[]", phase: "idle" });
 	rebuildMermaid(executionId);
@@ -88,7 +98,7 @@ export function cmdNext(executionId: string) {
 	const doc = ExecutionStore.findById(executionId);
 	if (!doc) die(`Execution '${executionId}' not found`);
 
-	const treeDef = JSON.parse(doc.snapshot);
+	const treeDef = TreeSnapshotStore.get(doc.snapshot);
 	const phase = doc.phase;
 	const cursor = JSON.parse(doc.cursor);
 
@@ -96,6 +106,8 @@ export function cmdNext(executionId: string) {
 		const node = getNodeAtPath(treeDef.root, cursor.path);
 		if (node.type !== "action") die("cursor points to non-action node");
 		const step = node.steps[cursor.step];
+		if (!step || step.kind !== "evaluate")
+			die(`cursor.step out of range or wrong kind for phase ${phase}`);
 		out({ type: "evaluate", name: node.name, expression: step.expression });
 		return;
 	}
@@ -104,6 +116,8 @@ export function cmdNext(executionId: string) {
 		const node = getNodeAtPath(treeDef.root, cursor.path);
 		if (node.type !== "action") die("cursor points to non-action node");
 		const step = node.steps[cursor.step];
+		if (!step || step.kind !== "instruct")
+			die(`cursor.step out of range or wrong kind for phase ${phase}`);
 		out({ type: "instruct", name: node.name, instruction: step.instruction });
 		return;
 	}
@@ -214,7 +228,7 @@ export function cmdSubmit(
 		return;
 	}
 
-	const treeDef = JSON.parse(doc.snapshot);
+	const treeDef = TreeSnapshotStore.get(doc.snapshot);
 	const node = getNodeAtPath(treeDef.root, path);
 	if (node.type !== "action") die("cursor points to non-action node");
 	const nextStep = stepIdx + 1;

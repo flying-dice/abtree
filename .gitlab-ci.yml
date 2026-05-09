@@ -19,6 +19,16 @@ biome:
   script:
     - bunx biome ci .
 
+# Schema freshness — regenerate tree.schema.json from src/schemas.ts and fail
+# if the committed file differs. Forces contributors to run `bun run schema`
+# whenever they touch the zod schema.
+schema:
+  extends: .bun
+  stage: check
+  script:
+    - bun run schema
+    - git diff --exit-code -- tree.schema.json
+
 # ---- Stage: test -------------------------------------------------------------
 
 # Run bun test against the integration test (hello-world) and the

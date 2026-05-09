@@ -1,8 +1,11 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
-import EXECUTION_GUIDE from "./AGENT.md" with { type: "text" };
+import AUTHOR_DOC from "./docs/agents/author.md" with { type: "text" };
+import EXECUTE_DOC from "./docs/agents/execute.md" with { type: "text" };
 import SKILL_CONTENT from "./SKILL.md" with { type: "text" };
 import {
+	cmdDocs,
+	cmdDocsSchema,
 	cmdEval,
 	cmdExecutionCreate,
 	cmdExecutionGet,
@@ -16,7 +19,7 @@ import {
 	cmdSubmit,
 	cmdTreeList,
 } from "./src/commands.ts";
-import { ensureDir, EXECUTIONS_DIR, TREES_DIR } from "./src/paths.ts";
+import { ensureDir, EXECUTIONS_DIR, SNAPSHOTS_DIR, TREES_DIR } from "./src/paths.ts";
 import {
 	parseEvalResult,
 	parseExecutionId,
@@ -32,7 +35,37 @@ const program = new Command()
 		"Durable execution engine for Agent Behaviour Trees. Creates executions that track work via a structured tree walk.",
 	)
 	.version("1.0.0")
-	.addHelpText("after", EXECUTION_GUIDE);
+	.addHelpText(
+		"after",
+		`
+Documentation:
+  abtree docs execute   Runtime protocol — what an agent does at each step.
+  abtree docs author    YAML authoring guide for tree files.
+  abtree docs schema    JSON Schema for tree YAML files.
+`,
+	);
+
+const docs = program
+	.command("docs")
+	.description("Print embedded documentation");
+docs
+	.command("execute")
+	.description("Print the execution protocol (for agents driving abtree)")
+	.action(() => {
+		cmdDocs(EXECUTE_DOC);
+	});
+docs
+	.command("author")
+	.description("Print the tree-authoring guide")
+	.action(() => {
+		cmdDocs(AUTHOR_DOC);
+	});
+docs
+	.command("schema")
+	.description("Print the JSON Schema for tree YAML files")
+	.action(() => {
+		cmdDocsSchema();
+	});
 
 const tree = program.command("tree").description("Manage behaviour trees");
 tree
@@ -160,5 +193,6 @@ install
 	});
 
 ensureDir(EXECUTIONS_DIR);
+ensureDir(SNAPSHOTS_DIR);
 ensureDir(TREES_DIR);
 program.parse();

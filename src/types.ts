@@ -1,31 +1,17 @@
-export type Step = { evaluate: string } | { instruct: string };
+// Input types (Step, ActionNode, CompositeNode, RefNode, AbtNode, TreeFile) live in
+// ./schemas.ts where they are derived from the zod schemas — single source of truth.
+export type {
+	AbtNode,
+	ActionNode,
+	CompositeNode,
+	RefNode,
+	Step,
+	TreeFile,
+} from "./schemas.ts";
 
 export type NormalizedStep =
 	| { kind: "evaluate"; expression: string }
 	| { kind: "instruct"; instruction: string };
-
-export type ActionNode = {
-	type: "action";
-	name: string;
-	steps: Step[];
-	retries?: number;
-};
-
-export type CompositeNode = {
-	type: "sequence" | "selector" | "parallel";
-	name: string;
-	children: AbtNode[];
-	retries?: number;
-};
-
-// A reference node — preserved literally in the snapshot when it's part of
-// a cycle the ref-parser declined to expand. Cannot be ticked; surfacing it
-// at runtime is a hard failure with a clear message.
-export type RefNode = {
-	$ref: string;
-};
-
-export type AbtNode = ActionNode | CompositeNode | RefNode;
 
 export type NormalizedActionNode = {
 	type: "action";
@@ -51,17 +37,6 @@ export type NormalizedNode =
 	| NormalizedCompositeNode
 	| NormalizedRefNode;
 
-export type TreeFile = {
-	name: string;
-	version: string;
-	description?: string;
-	state?: {
-		local?: Record<string, unknown>;
-		global?: Record<string, unknown>;
-	};
-	tree: AbtNode;
-};
-
 export type ParsedTree = {
 	local: Record<string, unknown>;
 	global: Record<string, unknown>;
@@ -73,6 +48,7 @@ export interface ExecutionRow {
 	tree: string;
 	summary: string;
 	status: string;
+	// Etag (lowercase hex SHA-256) of the ParsedTree, addressing a file in SNAPSHOTS_DIR.
 	snapshot: string;
 	cursor: string;
 	phase: string;

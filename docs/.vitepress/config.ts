@@ -213,6 +213,7 @@ export default defineConfig({
 			{ text: "Get started", link: "/getting-started" },
 			{ text: "Concepts", link: "/concepts/" },
 			{ text: "Guide", link: "/guide/writing-trees" },
+			{ text: "Agents", link: "/agents/execute" },
 			{ text: "Examples", link: "/examples" },
 			{
 				text: 'LLMs',
@@ -246,6 +247,14 @@ export default defineConfig({
 					{ text: "Designing workflows", link: "/guide/designing-workflows" },
 					{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
 					{ text: "CLI reference", link: "/guide/cli" },
+				],
+			},
+			{
+				text: "Agents",
+				items: [
+					{ text: "Execution protocol", link: "/agents/execute" },
+					{ text: "Authoring trees", link: "/agents/author" },
+					{ text: "JSON Schema", link: "/agents/schema" },
 				],
 			},
 			{

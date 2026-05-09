@@ -16,6 +16,11 @@ export const EXECUTIONS_DIR = process.env.ABTREE_EXECUTIONS_DIR
 	? resolve(expandHome(process.env.ABTREE_EXECUTIONS_DIR))
 	: join(ABTREE_DIR, "executions");
 
+// Snapshots directory — override with ABTREE_SNAPSHOTS_DIR.
+export const SNAPSHOTS_DIR = process.env.ABTREE_SNAPSHOTS_DIR
+	? resolve(expandHome(process.env.ABTREE_SNAPSHOTS_DIR))
+	: join(ABTREE_DIR, "snapshots");
+
 export const HOME_ABTREE_DIR = join(homedir(), ".abtree");
 export const HOME_TREES_DIR = join(HOME_ABTREE_DIR, "trees");
 

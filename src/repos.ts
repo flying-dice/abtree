@@ -14,35 +14,6 @@ function emptyRuntime(): RuntimeState {
 	return { node_status: {}, step_index: {}, retry_count: {} };
 }
 
-// Lift the legacy `_node_status__*` and `_step__*` keys out of $LOCAL into
-// the new internal-only `runtime` field. Older execution documents predate the
-// runtime/local split; this migration is idempotent and runs lazily on
-// every read.
-function migrateRuntime(doc: ExecutionDoc): ExecutionDoc {
-	if (doc.runtime) {
-		return doc;
-	}
-	const runtime = emptyRuntime();
-	const remainingLocal: Record<string, unknown> = {};
-	for (const [key, value] of Object.entries(doc.local ?? {})) {
-		if (key === "_node_status" || key.startsWith("_node_status__")) {
-			const path =
-				key === "_node_status" ? "" : key.slice("_node_status__".length);
-			runtime.node_status[path.replace(/_/g, ".")] = value as NodeStatus;
-			continue;
-		}
-		if (key === "_step" || key.startsWith("_step__")) {
-			const path = key === "_step" ? "" : key.slice("_step__".length);
-			runtime.step_index[path.replace(/_/g, ".")] = value as number;
-			continue;
-		}
-		remainingLocal[key] = value;
-	}
-	doc.local = remainingLocal;
-	doc.runtime = runtime;
-	return doc;
-}
-
 const ID_PATTERN = /^[a-z0-9_-]+__[a-z0-9_-]+__\d+$/;
 
 function executionPath(id: string): string {
@@ -53,13 +24,11 @@ function executionPath(id: string): string {
 function readDoc(id: string): ExecutionDoc | null {
 	const path = executionPath(id);
 	if (!existsSync(path)) return null;
-	let doc: ExecutionDoc;
 	try {
-		doc = JSON.parse(readFileSync(path, "utf-8"));
+		return JSON.parse(readFileSync(path, "utf-8"));
 	} catch (_e) {
 		throw new Error(`Corrupt execution file: ${id}`);
 	}
-	return migrateRuntime(doc);
 }
 
 function writeDoc(doc: ExecutionDoc): void {

@@ -27,16 +27,14 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
-# SQLite remnants (post JSON migration)
-*.db
-*.db-shm
-*.db-wal
-
 # IntelliJ based IDEs
 .idea
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# stray bun build sourcemaps
+*.js.map
 
 # release binaries
 abtree
