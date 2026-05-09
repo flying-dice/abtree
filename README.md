@@ -71,6 +71,43 @@ children:
     evaluate: "Terminal contains 👋"
 ```
 
+The YAML defines the structure. At runtime, abtree generates a live execution diagram after every state change — nodes colour green on success, red on failure, grey when bypassed. Here's the `hello-world` tree (included in `.abt/trees/`) after a complete run. The selector chose Morning Greeting and stopped — the afternoon, evening, and default branches were never entered. The two context-gathering actions ran in parallel. Every node reached is green.
+
+```mermaid
+---
+title: "hello-world (complete)"
+---
+flowchart TD
+    Hello_World{{"Hello World\n[sequence]"}}
+    0_Determine_Time["Determine Time\n[action]"]
+    Hello_World --> 0_Determine_Time
+    style 0_Determine_Time fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Choose_Greeting{{"Choose Greeting\n[selector]"}}
+    Hello_World --> 0_Choose_Greeting
+    style 0_Choose_Greeting fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_1_Morning_Greeting["Morning Greeting\n[action]"]
+    0_Choose_Greeting --> 0_1_Morning_Greeting
+    style 0_1_Morning_Greeting fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_1_Afternoon_Greeting["Afternoon Greeting\n[action]"]
+    0_Choose_Greeting --> 0_1_Afternoon_Greeting
+    0_1_Evening_Greeting["Evening Greeting\n[action]"]
+    0_Choose_Greeting --> 0_1_Evening_Greeting
+    0_1_Default_Greeting["Default Greeting\n[action]"]
+    0_Choose_Greeting --> 0_1_Default_Greeting
+    0_Gather_Context{{"Gather Context\n[parallel]"}}
+    Hello_World --> 0_Gather_Context
+    style 0_Gather_Context fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_2_Check_Weather["Check Weather\n[action]"]
+    0_Gather_Context --> 0_2_Check_Weather
+    style 0_2_Check_Weather fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_2_Check_News["Check News\n[action]"]
+    0_Gather_Context --> 0_2_Check_News
+    style 0_2_Check_News fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Compose_Response["Compose Response\n[action]"]
+    Hello_World --> 0_Compose_Response
+    style 0_Compose_Response fill:#4ade80,stroke:#16a34a,color:#052e16
+```
+
 Sitting as a separate coordination layer, **abtree** functions as the structural backbone for agentic sessions, distinct from standard prompts or skills. It operates via a YAML spec and a CLI/MCP server to enforce a strict "start at the root" protocol, progressively disclosing instructions only after the agent satisfies specific evaluation invariants. This keeps the LLM on rails by preventing instruction fatigue and "jumping ahead," while a local SQLite database snapshots the workflow and persists state. The result is a durable execution environment where trees can grow to unbounded size, allowing for granular control and predictable resumption across sessions.
 
 ## Explore the Ecosystem
