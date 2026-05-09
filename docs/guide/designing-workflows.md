@@ -301,15 +301,17 @@ Each parallel branch can have its own `evaluate: $LOCAL.x is set` precondition f
 
 ### Idiom: globals as parameterless retrieval directives
 
-When a chunk of work has well-known, externally-maintained guidance — code-review checklists, design heuristics, security-review playbooks — don't reproduce it inside an `instruct`, and don't store the URL as a bare string either. Store the **fetch directive itself** in `$GLOBAL`. Actions invoke it by name.
+When a chunk of work has well-known guidance — code-review checklists, design heuristics, security-review playbooks — don't reproduce it inside an `instruct` and don't store a raw URL or path either. Store the **retrieval directive itself** in `$GLOBAL`. Actions invoke it by name.
+
+The default home for shared playbooks is `.abtree/playbooks/<name>.md`, alongside `.abtree/trees/`:
 
 ```yaml
 state:
   global:
     code_review: |
-      Fetch the markdown at
-      https://raw.githubusercontent.com/.../code-review.md
-      and return its full body as text.
+      Read the file at .abtree/playbooks/code-review.md
+      (relative to the project root) and return its full body
+      as text.
 
 tree:
   ...
@@ -322,16 +324,17 @@ tree:
           Capture findings at $LOCAL.findings.
 ```
 
-The global is a parameterless directive: "fetch X, return text." The action just composes against the result. Multiple actions in the same tree can invoke the same global without each repeating the fetch boilerplate.
+The global is a parameterless directive: "read X, return text." The action composes against the result. Multiple actions in the same tree can invoke the same global without repeating the read boilerplate.
 
 **Why this shape:**
 
 - **Action prose stays focused.** Each `instruct` says *what to do with the result*, not how to retrieve it.
-- **Single source of truth.** One place defines where the playbook lives. Swap the URL in one spot to repoint every action that uses it.
-- **Composable.** Multiple actions can invoke the same global (`Use $GLOBAL.code_review's pre-flight against …`, `Use $GLOBAL.code_review's posting rules to …`) without duplicating fetch instructions.
-- **No drift.** If the document updates, the next flow picks it up. Pin a commit SHA in the URL when you need version stability.
+- **Single source of truth.** One place defines where the playbook lives. Swap the path in one spot to repoint every action that uses it.
+- **Composable.** Multiple actions can invoke the same global (`Use $GLOBAL.code_review's pre-flight against …`, `Use $GLOBAL.code_review's posting rules to …`) without duplicating retrieval instructions.
+- **Curated.** Local files let you trim third-party guidance to your project's lens — strip vendor-specific tooling, tighten the bar, add house rules — without forking the upstream document.
+- **Reproducible.** A playbook checked into the repo is git-tracked; flows created against today's tree run against today's playbook.
 
-**Caveat:** the `snapshot` field freezes the *tree*, not the *document*. A flow created today references the URL's content at run time, not at create time. If you need bit-stable historical reproducibility, pin the SHA in the URL.
+**Variants:** the directive's body can describe any retrieval — read a file, fetch a URL, query an internal docs system. Local file is the default because it's reproducible and curatable; reach for HTTP only when you genuinely need the upstream's evolving copy.
 
 ### Idiom: split a large tree across files
 
