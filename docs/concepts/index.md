@@ -1,3 +1,7 @@
+---
+description: Why use behaviour trees for AI agents — the same hierarchical decision structure used by game AI and robotics, applied to LLM workflows.
+---
+
 # Why behaviour trees?
 
 A behaviour tree is a hierarchical structure for organising decisions. It was invented for video-game AI — the kind of NPCs that have to choose between *patrol*, *attack*, *flee*, or *call for backup* without breaking immersion. From there it spread to robotics, where reliability matters more than cleverness.

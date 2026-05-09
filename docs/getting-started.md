@@ -1,3 +1,7 @@
+---
+description: Five-minute walkthrough to install abtree, hand a behaviour tree to your agent, and watch it drive a workflow end-to-end.
+---
+
 # Getting started
 
 A five-minute walkthrough: install abtree, hand a tree to your agent, and watch it drive.

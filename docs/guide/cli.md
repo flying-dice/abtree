@@ -1,3 +1,7 @@
+---
+description: Complete CLI reference for abtree — every command outputs JSON, designed to be driven by another agent. Trees, executions, state, install.
+---
+
 # CLI reference
 
 Every command outputs JSON. That's deliberate — abtree is meant to be driven by another agent, and JSON is its native input.

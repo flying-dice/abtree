@@ -1,3 +1,7 @@
+---
+description: Walkthrough of the abtree YAML schema — name, version, state, and tree — using the bundled hello-world example as the reference.
+---
+
 # Writing your own tree
 
 This page walks through the YAML structure of a tree using the bundled `hello-world` example as the reference.

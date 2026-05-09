@@ -1,3 +1,7 @@
+---
+description: The four primitives of an abtree behaviour tree — sequence, selector, parallel, and action — and how each one defines control flow.
+---
+
 # Branches and actions
 
 Three branch types. One leaf type. That's the whole language.
