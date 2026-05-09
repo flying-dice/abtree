@@ -27,7 +27,7 @@ beforeAll(() => {
   mkdirSync(join(tmp, ".abt", "trees"), { recursive: true });
   // Copy only hello-world so the tree list is deterministic.
   copyFileSync(
-    resolve(import.meta.dir, "examples", "hello-world.yaml"),
+    resolve(import.meta.dir, ".abt", "trees", "hello-world.yaml"),
     join(tmp, ".abt", "trees", "hello-world.yaml")
   );
 });

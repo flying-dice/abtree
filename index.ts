@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
-import { initDb } from "./src/db.ts";
+import { ensureDir, FLOWS_DIR, TREES_DIR } from "./src/paths.ts";
 import {
   cmdTreeList,
   cmdFlowCreate,
@@ -115,5 +115,6 @@ global
   .argument("[path]", "Dot-notated path")
   .action((flowId: string, path?: string) => { cmdGlobalRead(parseFlowId(flowId), path); });
 
-initDb();
+ensureDir(FLOWS_DIR);
+ensureDir(TREES_DIR);
 program.parse();

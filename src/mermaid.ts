@@ -1,13 +1,13 @@
 import { join } from "node:path";
 import { writeFileSync } from "node:fs";
-import { FLOWS_DIR, ensureDir } from "./db.ts";
-import { FlowRepo } from "./repos.ts";
+import { FLOWS_DIR, ensureDir } from "./paths.ts";
+import { FlowStore } from "./repos.ts";
 import { getNodeResult, getPathForNode } from "./tree.ts";
 import type { NormalizedNode } from "./types.ts";
 
 export function rebuildMermaid(flowId: string) {
   try {
-    const flow = FlowRepo.findById(flowId);
+    const flow = FlowStore.findById(flowId);
     if (!flow) return;
     const tree = JSON.parse(flow.snapshot);
 

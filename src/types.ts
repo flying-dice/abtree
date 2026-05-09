@@ -63,10 +63,9 @@ export interface FlowRow {
   updated_at: string;
 }
 
-export interface ScopeRow {
-  flow_id: string;
-  path: string;
-  value: string;
+export interface FlowDoc extends FlowRow {
+  local: Record<string, unknown>;
+  global: Record<string, unknown>;
 }
 
 export type NodeStatus = "success" | "failure" | "running";
