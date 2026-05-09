@@ -1,0 +1,26 @@
+description: |
+  retries: 3 with a threshold the test never crosses. After 4 attempts
+  (1 initial + 3 retries) the failure propagates. Final status is failure;
+  runtime.retry_count for the root is 3 (we consumed all of them).
+tree: retries-counter
+initial:
+  local:
+    threshold: 100
+steps:
+  # 4 attempts, all fail
+  - { type: instruct, name: Increment, write: { counter: 1 } }
+  - { type: evaluate, name: Test, result: false }
+  - { type: instruct, name: Increment, write: { counter: 2 } }
+  - { type: evaluate, name: Test, result: false }
+  - { type: instruct, name: Increment, write: { counter: 3 } }
+  - { type: evaluate, name: Test, result: false }
+  - { type: instruct, name: Increment, write: { counter: 4 } }
+  - { type: evaluate, name: Test, result: false }
+final:
+  status: failure
+  local:
+    counter: 4
+    threshold: 100
+  runtime:
+    retry_count:
+      "": 3

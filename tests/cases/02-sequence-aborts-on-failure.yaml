@@ -1,0 +1,12 @@
+description: Sequence aborts when a child evaluate fails. Flow ends in failure.
+tree: sequence-fails-on-child
+initial:
+  local:
+    flag: false
+steps:
+  - { type: instruct, name: Step_A, write: { a: done } }
+  - { type: evaluate, name: Gated, result: false }
+final:
+  status: failure
+  local:
+    a: done

@@ -1,0 +1,28 @@
+description: |
+  retries: 3 on a sequence — runtime auto-resets the subtree on failure
+  and re-ticks. Counter starts at 0; threshold is 3; pass 4 wins because
+  4 > 3. User state ($LOCAL.counter) persists across retries; runtime
+  state is wiped between attempts.
+tree: retries-counter
+steps:
+  # attempt 1 — counter 0 → 1, 1 > 3 false
+  - { type: instruct, name: Increment, write: { counter: 1 } }
+  - { type: evaluate, name: Test, result: false }
+  # retry consumed → attempt 2 — counter 1 → 2, fail
+  - { type: instruct, name: Increment, write: { counter: 2 } }
+  - { type: evaluate, name: Test, result: false }
+  # retry consumed → attempt 3 — counter 2 → 3, fail
+  - { type: instruct, name: Increment, write: { counter: 3 } }
+  - { type: evaluate, name: Test, result: false }
+  # retry consumed → attempt 4 — counter 3 → 4, win
+  - { type: instruct, name: Increment, write: { counter: 4 } }
+  - { type: evaluate, name: Test, result: true }
+  - { type: instruct, name: Test }
+final:
+  status: done
+  local:
+    counter: 4
+    threshold: 3
+  runtime:
+    retry_count:
+      "": 3

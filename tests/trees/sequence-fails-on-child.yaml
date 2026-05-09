@@ -1,0 +1,22 @@
+name: sequence-fails-on-child
+version: 1.0.0
+description: Sequence aborts when a child evaluate returns false.
+
+state:
+  local:
+    a: null
+    flag: null
+
+tree:
+  type: sequence
+  name: With_Gate
+  children:
+    - type: action
+      name: Step_A
+      steps:
+        - instruct: Set $LOCAL.a to "done".
+    - type: action
+      name: Gated
+      steps:
+        - evaluate: $LOCAL.flag is true
+        - instruct: This step should never run.

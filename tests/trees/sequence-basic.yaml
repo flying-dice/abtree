@@ -1,0 +1,21 @@
+name: sequence-basic
+version: 1.0.0
+description: Two-action sequence; both succeed.
+
+state:
+  local:
+    a: null
+    b: null
+
+tree:
+  type: sequence
+  name: Two_Steps
+  children:
+    - type: action
+      name: Step_A
+      steps:
+        - instruct: Set $LOCAL.a to "done".
+    - type: action
+      name: Step_B
+      steps:
+        - instruct: Set $LOCAL.b to "done".

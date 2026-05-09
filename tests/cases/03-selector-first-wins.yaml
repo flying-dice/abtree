@@ -1,0 +1,12 @@
+description: Selector takes the first branch whose evaluate passes; later branches never evaluated.
+tree: selector-three-children
+initial:
+  local:
+    choose_a: true
+steps:
+  - { type: evaluate, name: Branch_A, result: true }
+  - { type: instruct, name: Branch_A, write: { chosen: a } }
+final:
+  status: done
+  local:
+    chosen: a
