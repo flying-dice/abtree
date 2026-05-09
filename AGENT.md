@@ -61,3 +61,4 @@ Response shapes:
 --- Reporting (per action) ---
 
   [flow-id] ✓ Action_Name → success|failure
+
