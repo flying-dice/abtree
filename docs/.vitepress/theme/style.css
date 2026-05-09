@@ -49,8 +49,11 @@
   --vp-c-default-3: var(--vp-c-gray-3);
   --vp-c-default-soft: var(--vp-c-gray-soft);
 
-  --vp-c-brand-1: var(--vp-c-indigo-1);
-  --vp-c-brand-2: var(--vp-c-indigo-2);
+  /* Brand 1/2 tuned to complement the pink hero logo (docs/public/abtree-mark.svg).
+     Light mode uses lower-saturation variants for AA contrast on white;
+     dark mode uses the high-key Dracula values that match the logo stroke. */
+  --vp-c-brand-1: #d62786;
+  --vp-c-brand-2: #8c5cf2;
   --vp-c-brand-3: var(--vp-c-indigo-3);
   --vp-c-brand-soft: var(--vp-c-indigo-soft);
 
@@ -127,5 +130,14 @@
   --vp-custom-block-tip-text: var(--vp-c-text-1);
   --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
   --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
+}
+
+/**
+ * Dark-mode brand tuning to match the hero logo stroke (#ff79c6).
+ * -------------------------------------------------------------------------- */
+
+.dark {
+  --vp-c-brand-1: #ff79c6;
+  --vp-c-brand-2: #bd93f9;
 }
 
