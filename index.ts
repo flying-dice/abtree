@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
 import EXECUTION_GUIDE from "./AGENT.md" with { type: "text" };
+import SKILL_CONTENT from "./SKILL.md" with { type: "text" };
 import {
 	cmdEval,
 	cmdFlowCreate,
@@ -8,6 +9,7 @@ import {
 	cmdFlowList,
 	cmdFlowReset,
 	cmdGlobalRead,
+	cmdInstallSkill,
 	cmdLocalRead,
 	cmdLocalWrite,
 	cmdNext,
@@ -137,6 +139,19 @@ global
 	.argument("[path]", "Dot-notated path")
 	.action((flowId: string, path?: string) => {
 		cmdGlobalRead(parseFlowId(flowId), path);
+	});
+
+const install = program
+	.command("install")
+	.description("Install abtree integrations");
+
+install
+	.command("skill")
+	.description(
+		"Install the abtree Agent Skill (default: ./.agents/skills/abtree/SKILL.md; override with AGENTS_SKILLS_DIR)",
+	)
+	.action(() => {
+		cmdInstallSkill(SKILL_CONTENT);
 	});
 
 ensureDir(FLOWS_DIR);
