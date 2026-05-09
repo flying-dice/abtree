@@ -1,0 +1,18 @@
+{
+  "id": "ref-demo__counter-demo__1",
+  "tree": "counter-demo",
+  "summary": "ref demo",
+  "status": "complete",
+  "snapshot": "{\"local\":{\"counter\":0},\"global\":{},\"root\":{\"type\":\"sequence\",\"name\":\"Counter_Demo\",\"children\":[{\"type\":\"selector\",\"name\":\"Test\",\"children\":[{\"type\":\"action\",\"name\":\"Check_Counter\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.counter is greater than 0\"},{\"kind\":\"instruct\",\"instruction\":\"Counter is already past zero; nothing else to do.\"}]},{\"type\":\"action\",\"name\":\"Increment\",\"steps\":[{\"kind\":\"instruct\",\"instruction\":\"Read $LOCAL.counter, add 1, write the new value back to\\n$LOCAL.counter via `abtree local write <flow> counter <n+1>`.\"}]}]}]}}",
+  "cursor": "null",
+  "phase": "idle",
+  "created_at": "2026-05-09T18:02:52.191Z",
+  "updated_at": "2026-05-09T18:03:05.933Z",
+  "local": {
+    "counter": 1,
+    "_node_status__0_0": "failure",
+    "_node_status__0_1": "success",
+    "_node_status__0": "success"
+  },
+  "global": {}
+}
