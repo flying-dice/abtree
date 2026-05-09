@@ -1,461 +1,131 @@
 /**
- * abtree docs theme — Claude Design system applied dark-first.
- *
- * The site is locked to dark via `appearance: 'force-dark'` in
- * docs/.vitepress/config.ts. The design system's preview cards are all
- * dark-only and the design's own README classes light mode as
- * "supported by the CSS variables but visually unowned". Honouring that
- * means there is no light surface to maintain — every token below is
- * the dark-mode value from abtree-design-system/project/colors_and_type.css.
- *
- * Token lineage:
- *   abtree-design-system/project/colors_and_type.css §1 (raw palette)
- *   abtree-design-system/project/colors_and_type.css §3 (semantic tokens)
- *   abtree-design-system/project/preview/_card.css   (component examples)
+ * Customize default theme styling by overriding CSS variables:
+ * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
  */
 
-/* ---------------------------------------------------------------------------
- * 1. Raw palette (Dracula) + scales — ALL dark-mode values from the design.
- * ------------------------------------------------------------------------- */
+/**
+ * Colors
+ *
+ * Each colors have exact same color scale system with 3 levels of solid
+ * colors with different brightness, and 1 soft color.
+ *
+ * - `XXX-1`: The most solid color used mainly for colored text. It must
+ *   satisfy the contrast ratio against when used on top of `XXX-soft`.
+ *
+ * - `XXX-2`: The color used mainly for hover state of the button.
+ *
+ * - `XXX-3`: The color for solid background, such as bg color of the button.
+ *   It must satisfy the contrast ratio with pure white (#ffffff) text on
+ *   top of it.
+ *
+ * - `XXX-soft`: The color used for subtle background such as custom container
+ *   or badges. It must satisfy the contrast ratio when putting `XXX-1` colors
+ *   on top of it.
+ *
+ *   The soft color must be semi transparent alpha channel. This is crucial
+ *   because it allows adding multiple "soft" colors on top of each other
+ *   to create an accent, such as when having inline code block inside
+ *   custom containers.
+ *
+ * - `default`: The color used purely for subtle indication without any
+ *   special meanings attached to it such as bg color for menu hover state.
+ *
+ * - `brand`: Used for primary brand colors, such as link text, button with
+ *   brand theme, etc.
+ *
+ * - `tip`: Used to indicate useful information. The default theme uses the
+ *   brand color for this by default.
+ *
+ * - `warning`: Used to indicate warning to the users. Used in custom
+ *   container, badges, etc.
+ *
+ * - `danger`: Used to show error, or dangerous message to the users. Used
+ *   in custom container, badges, etc.
+ * -------------------------------------------------------------------------- */
 
 :root {
-	/* Surfaces */
-	--abtree-bg: #282a36;
-	--abtree-bg-alt: #21222c;
-	--abtree-bg-soft: #44475a;
+  --vp-c-default-1: var(--vp-c-gray-1);
+  --vp-c-default-2: var(--vp-c-gray-2);
+  --vp-c-default-3: var(--vp-c-gray-3);
+  --vp-c-default-soft: var(--vp-c-gray-soft);
 
-	/* Foreground */
-	--abtree-fg: #f8f8f2;
-	--abtree-fg-muted: #6272a4;
+  --vp-c-brand-1: var(--vp-c-indigo-1);
+  --vp-c-brand-2: var(--vp-c-indigo-2);
+  --vp-c-brand-3: var(--vp-c-indigo-3);
+  --vp-c-brand-soft: var(--vp-c-indigo-soft);
 
-	/* Accents */
-	--abtree-pink: #ff79c6;
-	--abtree-purple: #bd93f9;
-	--abtree-cyan: #8be9fd;
-	--abtree-green: #50fa7b;
-	--abtree-yellow: #f1fa8c;
-	--abtree-orange: #ffb86c;
-	--abtree-red: #ff5555;
+  --vp-c-tip-1: var(--vp-c-brand-1);
+  --vp-c-tip-2: var(--vp-c-brand-2);
+  --vp-c-tip-3: var(--vp-c-brand-3);
+  --vp-c-tip-soft: var(--vp-c-brand-soft);
 
-	/* Radii — design rule: nothing exceeds 4px except badge pills */
-	--abtree-radius-tight: 2px;
-	--abtree-radius-card: 4px;
-	--abtree-radius-pill: 999px;
+  --vp-c-warning-1: var(--vp-c-yellow-1);
+  --vp-c-warning-2: var(--vp-c-yellow-2);
+  --vp-c-warning-3: var(--vp-c-yellow-3);
+  --vp-c-warning-soft: var(--vp-c-yellow-soft);
 
-	/* Motion — design ease (snappy in, easy out), no bounce */
-	--abtree-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-	--abtree-dur-snap: 100ms;
-	--abtree-dur-fast: 150ms;
-	--abtree-dur-base: 200ms;
-
-	/* Type stacks */
-	--vp-font-family-base: "IBM Plex Sans", -apple-system, "Segoe UI", system-ui,
-		sans-serif;
-	--vp-font-family-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace,
-		"SF Mono", Menlo, monospace;
+  --vp-c-danger-1: var(--vp-c-red-1);
+  --vp-c-danger-2: var(--vp-c-red-2);
+  --vp-c-danger-3: var(--vp-c-red-3);
+  --vp-c-danger-soft: var(--vp-c-red-soft);
 }
 
-/* ---------------------------------------------------------------------------
- * 2. VitePress substrate / text overrides — dark Dracula throughout.
- *    Applied at :root because the site is force-dark; .dark would also
- *    work but is redundant when there's no light alternative.
- * ------------------------------------------------------------------------- */
+/**
+ * Component: Button
+ * -------------------------------------------------------------------------- */
 
 :root {
-	--vp-c-bg: var(--abtree-bg);
-	--vp-c-bg-alt: var(--abtree-bg-alt);
-	--vp-c-bg-elv: var(--abtree-bg-alt);
-	--vp-c-bg-soft: var(--abtree-bg-soft);
-
-	--vp-c-text-1: var(--abtree-fg);
-	--vp-c-text-2: var(--abtree-fg-muted);
-
-	--vp-c-divider: color-mix(in srgb, var(--abtree-fg-muted) 22%, transparent);
-	--vp-c-gutter: var(--abtree-bg-alt);
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: var(--vp-c-white);
+  --vp-button-brand-bg: var(--vp-c-brand-3);
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: var(--vp-c-white);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: var(--vp-c-white);
+  --vp-button-brand-active-bg: var(--vp-c-brand-1);
 }
 
-/* ---------------------------------------------------------------------------
- * 3. Brand / status chains — design's accent palette.
- * ------------------------------------------------------------------------- */
+/**
+ * Component: Home
+ * -------------------------------------------------------------------------- */
 
 :root {
-	--vp-c-brand-1: var(--abtree-pink);
-	--vp-c-brand-2: var(--abtree-purple);
-	--vp-c-brand-3: var(--abtree-pink);
-	--vp-c-brand-soft: color-mix(in srgb, var(--abtree-pink) 14%, transparent);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    #bd34fe 30%,
+    #41d1ff
+  );
 
-	--vp-c-tip-1: var(--abtree-cyan);
-	--vp-c-tip-2: var(--abtree-cyan);
-	--vp-c-tip-3: var(--abtree-cyan);
-	--vp-c-tip-soft: color-mix(in srgb, var(--abtree-cyan) 14%, transparent);
-
-	--vp-c-warning-1: var(--abtree-yellow);
-	--vp-c-warning-2: var(--abtree-yellow);
-	--vp-c-warning-3: var(--abtree-yellow);
-	--vp-c-warning-soft: color-mix(
-		in srgb,
-		var(--abtree-yellow) 14%,
-		transparent
-	);
-
-	--vp-c-danger-1: var(--abtree-red);
-	--vp-c-danger-2: var(--abtree-red);
-	--vp-c-danger-3: var(--abtree-red);
-	--vp-c-danger-soft: color-mix(in srgb, var(--abtree-red) 14%, transparent);
-}
-
-/* ---------------------------------------------------------------------------
- * 4. Buttons — 2px corners, pink fill, dark substrate text.
- *    Contrast: #282a36 on #ff79c6 = 5.97 (AA), on #bd93f9 = 5.90 (AA).
- * ------------------------------------------------------------------------- */
-
-:root {
-	--vp-button-brand-border: transparent;
-	--vp-button-brand-text: #282a36;
-	--vp-button-brand-bg: var(--abtree-pink);
-	--vp-button-brand-hover-border: transparent;
-	--vp-button-brand-hover-text: #282a36;
-	--vp-button-brand-hover-bg: var(--abtree-purple);
-	--vp-button-brand-active-border: transparent;
-	--vp-button-brand-active-text: #282a36;
-	--vp-button-brand-active-bg: var(--abtree-purple);
-}
-
-.VPButton {
-	border-radius: var(--abtree-radius-tight) !important;
-	font-weight: 600;
-	letter-spacing: 0.01em;
-}
-
-/* ---------------------------------------------------------------------------
- * 5. Hero — Dracula plasma + scanline overlay + blink cursor.
- * ------------------------------------------------------------------------- */
-
-:root {
-	--vp-home-hero-name-color: transparent;
-	--vp-home-hero-name-background: -webkit-linear-gradient(
-		160deg,
-		var(--abtree-pink) 0%,
-		var(--abtree-purple) 55%,
-		var(--abtree-cyan) 100%
-	);
-	--vp-home-hero-image-background-image: linear-gradient(
-		-45deg,
-		var(--abtree-pink) 0%,
-		var(--abtree-purple) 50%,
-		var(--abtree-cyan) 100%
-	);
-	--vp-home-hero-image-filter: blur(56px);
+  --vp-home-hero-image-background-image: linear-gradient(
+    -45deg,
+    #bd34fe 50%,
+    #47caff 50%
+  );
+  --vp-home-hero-image-filter: blur(44px);
 }
 
 @media (min-width: 640px) {
-	:root {
-		--vp-home-hero-image-filter: blur(72px);
-	}
+  :root {
+    --vp-home-hero-image-filter: blur(56px);
+  }
 }
 
 @media (min-width: 960px) {
-	:root {
-		--vp-home-hero-image-filter: blur(96px);
-	}
+  :root {
+    --vp-home-hero-image-filter: blur(68px);
+  }
 }
 
-.VPHero {
-	position: relative;
-}
-
-.VPHero::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	background-image: linear-gradient(
-		to bottom,
-		transparent 0,
-		transparent 1.5px,
-		rgba(255, 255, 255, 0.04) 1.5px,
-		rgba(255, 255, 255, 0.04) 3px
-	);
-	mix-blend-mode: overlay;
-	opacity: 0.6;
-}
-
-.VPHero .name::after {
-	content: "█";
-	display: inline-block;
-	margin-left: 0.15em;
-	font-family: var(--vp-font-family-mono);
-	-webkit-text-fill-color: var(--abtree-pink);
-	color: var(--abtree-pink);
-	background: none;
-	animation: abtree-blink 1.06s steps(2, end) infinite;
-}
-
-@keyframes abtree-blink {
-	0%,
-	50% {
-		opacity: 1;
-	}
-	50.01%,
-	100% {
-		opacity: 0;
-	}
-}
-
-/* ---------------------------------------------------------------------------
- * 6. Feature cards — 4px corner, 1px hairline, hover lift.
- * ------------------------------------------------------------------------- */
-
-.VPFeature {
-	border-radius: var(--abtree-radius-card) !important;
-	border: 1px solid var(--vp-c-divider);
-	background-color: var(--abtree-bg-alt);
-	box-shadow: none !important;
-	transition: transform var(--abtree-dur-snap) var(--abtree-ease),
-		border-color var(--abtree-dur-snap) var(--abtree-ease);
-}
-
-.VPFeature:hover {
-	transform: translateY(-2px);
-	border-color: var(--abtree-purple);
-}
-
-.VPFeature .icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 48px;
-	height: 48px;
-	background: transparent !important;
-	border-radius: var(--abtree-radius-tight);
-	color: var(--abtree-pink);
-	margin-bottom: 16px;
-}
-
-.VPFeature .icon svg {
-	width: 32px;
-	height: 32px;
-	color: var(--abtree-pink);
-}
-
-.VPFeature:hover .icon svg {
-	color: var(--abtree-purple);
-}
-
-/* ---------------------------------------------------------------------------
- * 7. Custom blocks — 4px corners, per-type accent titles.
- *    Dark-mode contrast (validated):
- *      cyan title on tip bg     = 7.98  (AAA)
- *      yellow title on warn bg  = 9.52  (AAA)
- *      red title on danger bg   = 4.04  (AA-large) — acceptable for h-style
- *      body text on tip bg      = 10.36 (AAA)
- * ------------------------------------------------------------------------- */
+/**
+ * Component: Custom Block
+ * -------------------------------------------------------------------------- */
 
 :root {
-	--vp-custom-block-tip-border: transparent;
-	--vp-custom-block-tip-text: var(--abtree-fg);
-	--vp-custom-block-tip-bg: color-mix(
-		in srgb,
-		var(--abtree-cyan) 10%,
-		transparent
-	);
-	--vp-custom-block-tip-code-bg: color-mix(
-		in srgb,
-		var(--abtree-cyan) 18%,
-		transparent
-	);
-
-	--vp-custom-block-warning-border: transparent;
-	--vp-custom-block-warning-text: var(--abtree-fg);
-	--vp-custom-block-warning-bg: color-mix(
-		in srgb,
-		var(--abtree-yellow) 10%,
-		transparent
-	);
-
-	--vp-custom-block-danger-border: transparent;
-	--vp-custom-block-danger-text: var(--abtree-fg);
-	--vp-custom-block-danger-bg: color-mix(
-		in srgb,
-		var(--abtree-red) 10%,
-		transparent
-	);
+  --vp-custom-block-tip-border: transparent;
+  --vp-custom-block-tip-text: var(--vp-c-text-1);
+  --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
+  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
 }
 
-.custom-block {
-	border-radius: var(--abtree-radius-card) !important;
-}
-
-.custom-block.tip .custom-block-title {
-	color: var(--abtree-cyan);
-}
-.custom-block.warning .custom-block-title {
-	color: var(--abtree-yellow);
-}
-.custom-block.danger .custom-block-title {
-	color: var(--abtree-red);
-}
-
-/* ---------------------------------------------------------------------------
- * 8. Code fences — 4px corners, language label in Plex Mono pink small caps.
- *    Pink #ff79c6 on bg-alt #21222c = 6.62 (AA).
- * ------------------------------------------------------------------------- */
-
-div[class*="language-"] {
-	border-radius: var(--abtree-radius-card) !important;
-}
-
-div[class*="language-"] > span.lang {
-	color: var(--abtree-pink) !important;
-	font-family: var(--vp-font-family-mono);
-	font-size: 0.7rem;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	font-weight: 500;
-	background: transparent !important;
-}
-
-/* Inline code — pink-soft tint (10.54 contrast against fg) */
-:not(pre) > code {
-	background-color: var(--vp-c-brand-soft) !important;
-	border-radius: var(--abtree-radius-tight) !important;
-	font-size: 0.9em;
-	padding: 0.15em 0.35em;
-}
-
-/* ---------------------------------------------------------------------------
- * 9. Header — design rule: 1px purple-25% bottom hairline.
- *    Decorative; elevation comes from substrate, not from the line itself.
- * ------------------------------------------------------------------------- */
-
-.VPNavBar {
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--abtree-purple) 25%, transparent) !important;
-}
-
-/* ---------------------------------------------------------------------------
- * 10. Tables — alternating rows, no row dividers, header at bg-soft.
- *     Body on bg = 13.36 (AAA), on bg-alt = 14.81 (AAA), on bg-soft = 8.59 (AAA).
- * ------------------------------------------------------------------------- */
-
-.vp-doc table {
-	border-radius: var(--abtree-radius-card);
-	overflow: hidden;
-	border-collapse: separate;
-	border-spacing: 0;
-	border: 1px solid var(--vp-c-divider);
-}
-
-.vp-doc tr {
-	background-color: var(--abtree-bg);
-	border-top: none !important;
-}
-
-.vp-doc tr:nth-child(even) {
-	background-color: var(--abtree-bg-alt);
-}
-
-.vp-doc th {
-	background-color: var(--abtree-bg-soft) !important;
-	color: var(--abtree-fg);
-	font-weight: 600;
-	letter-spacing: 0.01em;
-}
-
-.vp-doc td,
-.vp-doc th {
-	border: none !important;
-}
-
-/* ---------------------------------------------------------------------------
- * 11. Headings — slight negative letter-spacing on h1 / h2 per design.
- * ------------------------------------------------------------------------- */
-
-.vp-doc h1,
-.vp-doc h2 {
-	letter-spacing: -0.015em;
-}
-
-.vp-doc h1 {
-	font-weight: 700;
-}
-
-/* ---------------------------------------------------------------------------
- * 12. Selection — pink with bg-coloured text. Ratio 5.97 (AA).
- * ------------------------------------------------------------------------- */
-
-::selection {
-	background-color: var(--abtree-pink);
-	color: var(--abtree-bg);
-}
-
-/* ---------------------------------------------------------------------------
- * 13. Scrollbar — 10px, cyan-60% thumb on bg-alt track.
- *     Cyan-60% blended on bg-alt = 4.99 (AA-graphics).
- * ------------------------------------------------------------------------- */
-
-* {
-	scrollbar-width: thin;
-	scrollbar-color: color-mix(in srgb, var(--abtree-cyan) 60%, transparent)
-		var(--vp-c-bg-alt);
-}
-
-*::-webkit-scrollbar {
-	width: 10px;
-	height: 10px;
-}
-
-*::-webkit-scrollbar-track {
-	background: var(--vp-c-bg-alt);
-}
-
-*::-webkit-scrollbar-thumb {
-	background-color: color-mix(in srgb, var(--abtree-cyan) 60%, transparent);
-	border-radius: var(--abtree-radius-tight);
-}
-
-*::-webkit-scrollbar-thumb:hover {
-	background-color: var(--abtree-cyan);
-}
-
-/* ---------------------------------------------------------------------------
- * 14. Focus rings — 2px pink, instant per design (no transition).
- *     Ratio 5.97 against bg.
- * ------------------------------------------------------------------------- */
-
-:focus-visible {
-	outline: 2px solid var(--abtree-pink);
-	outline-offset: 2px;
-	transition: none;
-}
-
-/* ---------------------------------------------------------------------------
- * 15. Sidebar active link — pink, per design's brand-as-active rule.
- * ------------------------------------------------------------------------- */
-
-.VPSidebarItem.is-active > .item .text,
-.VPSidebarItem.is-active > .item .link {
-	color: var(--abtree-pink) !important;
-}
-
-/* ---------------------------------------------------------------------------
- * 16. Doc links — pink default, purple hover, animated underline colour.
- *     Pink on bg = 5.97 (AA), purple on bg = 5.90 (AA).
- * ------------------------------------------------------------------------- */
-
-.vp-doc a {
-	color: var(--abtree-pink);
-	text-decoration-color: color-mix(
-		in srgb,
-		var(--abtree-pink) 40%,
-		transparent
-	);
-	text-underline-offset: 0.2em;
-	transition: color var(--abtree-dur-snap) var(--abtree-ease),
-		text-decoration-color var(--abtree-dur-snap) var(--abtree-ease);
-}
-
-.vp-doc a:hover {
-	color: var(--abtree-purple);
-	text-decoration-color: var(--abtree-purple);
-}

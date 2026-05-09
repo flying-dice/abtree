@@ -7,13 +7,6 @@ export default defineConfig({
 	description:
 		"Behaviour trees for AI agents. Define workflows in YAML, drive them with a CLI, get deterministic execution and durable state.",
 
-	// The Claude Design system is dark-first / dark-only. Every preview card
-	// in the bundle uses --bg-alt (#21222c) as the canvas; light mode tokens
-	// exist but are explicitly "visually unowned" per the design's README.
-	// Lock the site to dark to honour that and avoid light-mode contrast
-	// drift the design never specified out.
-	appearance: "force-dark",
-
 	head: [
 		["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
 		[
