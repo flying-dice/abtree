@@ -45,3 +45,7 @@ abt-linux-arm64
 abt-darwin-x64
 abt-darwin-arm64
 abt-windows-x64.exe
+
+# vitepress build artifacts
+docs/.vitepress/dist
+docs/.vitepress/cache
