@@ -4,8 +4,8 @@ Abtree is an agentic, progressively disclosed behavioural tree toolkit. Create e
 
 **One CLI to Rule the Workflow**
 
-- **Agent-First Design:** Native CLI & MCP server built for your agent.
-- **Durable Execution:** Resumable flows that persist across sessions via SQLite storage.
+- **Agent-First Design:** Native CLI built for your agent. Every command outputs JSON.
+- **Durable Execution:** Resumable flows that persist as per-flow JSON documents.
 - **Progressive Disclosure:** Agents only see the next step when they reach it, eliminating "instruction fatigue."
 - **Platform Agnostic:** Works seamlessly with any agentic framework or platform.
 
@@ -178,7 +178,7 @@ flowchart TD
     style 0_Compose_Response fill:#4ade80,stroke:#16a34a,color:#052e16
 ```
 
-Sitting as a separate coordination layer, **abtree** functions as the structural backbone for agentic sessions, distinct from standard prompts or skills. It operates via a YAML spec and a CLI/MCP server to enforce a strict "start at the root" protocol, progressively disclosing instructions only after the agent satisfies specific evaluation invariants. This keeps the LLM on rails by preventing instruction fatigue and "jumping ahead," while a local SQLite database snapshots the workflow and persists state. The result is a durable execution environment where trees can grow to unbounded size, allowing for granular control and predictable resumption across sessions.
+Sitting as a separate coordination layer, **abtree** functions as the structural backbone for agentic sessions, distinct from standard prompts or skills. It operates via a YAML spec and a CLI that enforces a strict "start at the root" protocol, progressively disclosing instructions only after the agent satisfies specific evaluation invariants. This keeps the LLM on rails by preventing instruction fatigue and "jumping ahead," while per-flow JSON documents snapshot the workflow and persist state. The result is a durable execution environment where trees can grow to unbounded size, allowing for granular control and predictable resumption across sessions.
 
 ## Installation
 

@@ -83,8 +83,9 @@ tree:
             - evaluate: $LOCAL.review_comments contains no blocking issues
             - instruct: >
                 All blocking checks passed. Post any non-blocking comments as suggestions
-                on the relevant diff lines. Submit an approval via the MCP. Set
-                $LOCAL.final_verdict to "approved".
+                on the relevant diff lines using whatever review tool is available
+                (e.g. `gh pr review --approve`, `glab mr approve`, or a connected MCP).
+                Set $LOCAL.final_verdict to "approved".
 
         - type: action
           name: Request_Changes
@@ -92,5 +93,6 @@ tree:
             - instruct: >
                 Post inline comments for every blocking issue found in $LOCAL.review_comments,
                 citing the file and line number. Post non-blocking findings as suggestions.
-                Submit a request-changes review via the MCP explaining the blocking issues.
-                Set $LOCAL.final_verdict to "changes_requested".
+                Submit a request-changes review using whatever review tool is available
+                (e.g. `gh pr review --request-changes`, `glab mr note`, or a connected MCP),
+                explaining the blocking issues. Set $LOCAL.final_verdict to "changes_requested".
