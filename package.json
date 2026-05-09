@@ -14,6 +14,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
+    "@inquirer/prompts": "^8.4.2",
     "commander": "^12"
   },
   "devDependencies": {

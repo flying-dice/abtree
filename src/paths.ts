@@ -23,12 +23,25 @@ export const HOME_TREES_DIR = join(HOME_ABTREE_DIR, "trees");
 // First match wins, so a project tree can shadow a global one of the same slug.
 export const TREE_SOURCES: readonly string[] = [TREES_DIR, HOME_TREES_DIR];
 
-// Agent-skill base directory — override with AGENTS_SKILLS_DIR.
-// Default per agentskills.io convention: <cwd>/.agents/skills.
-// `abtree install skill` writes to <AGENTS_SKILLS_DIR>/abtree/SKILL.md.
-export const AGENTS_SKILLS_DIR = process.env.AGENTS_SKILLS_DIR
-	? resolve(expandHome(process.env.AGENTS_SKILLS_DIR))
-	: join(process.cwd(), ".agents", "skills");
+// Agent-skill install targets. Different platforms ship skills under
+// different conventions; `abtree install skill` prompts the user to pick
+// variant + scope (or accept --variant / --scope flags) rather than
+// relying on a single env var that can't capture the variation.
+export const SKILL_TARGETS = {
+	claude: {
+		label: "Claude Code (.claude/skills)",
+		project: () => join(process.cwd(), ".claude", "skills", "abtree"),
+		user: () => join(homedir(), ".claude", "skills", "abtree"),
+	},
+	agents: {
+		label: "agentskills.io (.agents/skills)",
+		project: () => join(process.cwd(), ".agents", "skills", "abtree"),
+		user: () => join(homedir(), ".agents", "skills", "abtree"),
+	},
+} as const;
+
+export type SkillVariant = keyof typeof SKILL_TARGETS;
+export type SkillScope = "project" | "user";
 
 export function ensureDir(dir: string) {
 	if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
