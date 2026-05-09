@@ -118,6 +118,21 @@ Read from `$GLOBAL`. Read-only via the CLI.
 
 Prints the full execution protocol — the same content an LLM driving abtree needs to know. Designed for an agent that runs `--help` first to learn the loop.
 
+## Environment variables
+
+| Variable | Effect |
+|---|---|
+| `ABTREE_FLOWS_DIR` | Overrides the flows directory. Default: `.abtree/flows/` in the cwd. Accepts absolute paths, relative paths (resolved against cwd), or `~/`-prefixed paths. |
+
+Use `ABTREE_FLOWS_DIR` to keep flow state outside the repo (e.g. on a shared volume), or to point multiple repos at the same flow store:
+
+```sh
+export ABTREE_FLOWS_DIR=~/.local/state/abtree-flows
+abtree flow list   # all flows across every project, in one place
+```
+
+Trees are still loaded from `.abtree/trees/` (cwd) and `~/.abtree/trees/` (global) — only the flows directory is overridable.
+
 ## Exit codes
 
 | Code | Meaning |
