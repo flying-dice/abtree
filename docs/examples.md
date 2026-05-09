@@ -1,0 +1,164 @@
+# Examples registry
+
+Ready-to-use behaviour trees. Each entry includes the YAML files, a one-liner to copy them into your local `.abt/trees/`, and a Claude handover command that briefs Claude to drive the flow with abtree.
+
+Every install command is idempotent — safe to re-run. Existing files in `.abt/trees/` are overwritten with the latest version from `main`.
+
+---
+
+## Hello World
+
+A small workflow that greets a user based on time of day, then enriches the greeting with current weather and one news headline. Demonstrates all four BT primitives — `sequence`, `selector`, `parallel`, `action` — in roughly fifteen lines of structure. Use this first if you're learning abtree.
+
+**Files**
+
+- `hello-world.yaml` — main
+
+**Install**
+
+```sh
+mkdir -p .abt/trees \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/hello-world.yaml \
+       -o .abt/trees/hello-world.yaml
+```
+
+**Run with Claude**
+
+```sh
+claude "Run the abtree hello-world flow end-to-end. Start by running 'abt --help' to learn the execution protocol, then create a flow with 'abt flow create hello-world \"smoke test\"' and drive it through every step until you see status: done."
+```
+
+---
+
+## Spec refinement
+
+Refine a one-line change request into a hardened, codeowner-reviewable spec. The flow analyses intent, drafts a structured spec (frontmatter + summary + requirements + technical approach + acceptance criteria + risks), critiques it as a Staff Engineer, and saves the result to `specs/<kebab-title>.md`. The `reviewed_by` field stays empty until a codeowner approves it.
+
+**Files**
+
+- `refine.yaml` — main
+
+**Install**
+
+```sh
+mkdir -p .abt/trees \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/refine.yaml \
+       -o .abt/trees/refine.yaml
+```
+
+**Run with Claude**
+
+```sh
+claude "Use the abtree refine flow to turn this change request into a spec: <one-line description>. Run 'abt --help' first to learn the protocol, then create the flow, write the change_request to LOCAL, and drive it to completion. Show me the final spec path."
+```
+
+---
+
+## Implementation workflow
+
+A two-stage pipeline for shipping changes. **Refine** produces an approved spec under `specs/`. **Implement** reads it back, scores complexity, drafts a plan, critiques the plan, looks up best practices online, optionally escalates to an architect on high-complexity work, and writes the code. Implement refuses to start on an un-reviewed spec — `reviewed_by` must be set.
+
+**Files**
+
+- `implement.yaml` — main
+- `refine.yaml` — sub-workflow (run first to produce the spec)
+
+**Install**
+
+```sh
+mkdir -p .abt/trees \
+  && for t in implement refine; do
+       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/${t}.yaml" \
+            -o ".abt/trees/${t}.yaml"
+     done
+```
+
+**Run with Claude**
+
+```sh
+claude "I want to <feature description>. First run the abtree refine flow to produce a spec at specs/<slug>.md, then pause for me to add my name to reviewed_by. Once I confirm approval, run the abtree implement flow against the spec and write the code. Use 'abt --help' to learn the protocol."
+```
+
+---
+
+## Backend design
+
+Design and implement a backend service from an approved spec. Architectural critique gates the build: the flow plans the data model, API surface, and service layer; runs the plan past a Senior Principal critique pass; and only then writes code. Like `implement`, it consumes a reviewed spec from `specs/`.
+
+**Files**
+
+- `backend-design.yaml` — main
+- `refine.yaml` — sub-workflow (run first to produce the spec)
+
+**Install**
+
+```sh
+mkdir -p .abt/trees \
+  && for t in backend-design refine; do
+       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/${t}.yaml" \
+            -o ".abt/trees/${t}.yaml"
+     done
+```
+
+**Run with Claude**
+
+```sh
+claude "I need a backend service for <description>. First run the abtree refine flow to spec it. After I review, run the abtree backend-design flow against the spec to plan the architecture and write the service. Use 'abt --help' to learn the protocol."
+```
+
+---
+
+## Frontend design
+
+Design and implement a frontend component or page from an approved spec, with aesthetic critique and quality gates. The flow analyses context, picks an aesthetic direction, drafts the component plan, runs an aesthetic critique pass, and only then writes code. Consumes a reviewed spec from `specs/`.
+
+**Files**
+
+- `frontend-design.yaml` — main
+- `refine.yaml` — sub-workflow (run first to produce the spec)
+
+**Install**
+
+```sh
+mkdir -p .abt/trees \
+  && for t in frontend-design refine; do
+       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/${t}.yaml" \
+            -o ".abt/trees/${t}.yaml"
+     done
+```
+
+**Run with Claude**
+
+```sh
+claude "I need a frontend component for <description>. First run the abtree refine flow to spec it. After I review, run the abtree frontend-design flow against the spec to set aesthetic direction and build the component. Use 'abt --help' to learn the protocol."
+```
+
+---
+
+## Code review
+
+Reviews a merge request for correctness, test coverage, and repo-convention conformance. Fetches the diff, runs three review passes (correctness, tests, conventions), tallies blocking vs non-blocking findings, and either approves or requests changes with line-cited comments.
+
+**Files**
+
+- `code-review.yaml` — main
+
+**Install**
+
+```sh
+mkdir -p .abt/trees \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/code-review.yaml \
+       -o .abt/trees/code-review.yaml
+```
+
+**Run with Claude**
+
+```sh
+claude "Review MR <ref or commit SHA> using the abtree code-review flow. Use 'abt --help' to learn the protocol, fetch the diff, run all three review passes, and report the verdict with line-cited findings."
+```
+
+---
+
+## Submitting your own
+
+Trees are just YAML — see [Writing trees](/guide/writing-trees) for the format. Open a PR against [`flying-dice/abtree`](https://github.com/flying-dice/abtree) adding your tree to `.abt/trees/` and an entry on this page, and it'll ship in the next release.

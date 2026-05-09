@@ -12,6 +12,7 @@ export default defineConfig({
 			{ text: "Get started", link: "/getting-started" },
 			{ text: "Concepts", link: "/concepts/" },
 			{ text: "Guide", link: "/guide/writing-trees" },
+			{ text: "Examples", link: "/examples" },
 		],
 
 		sidebar: {
@@ -40,6 +41,10 @@ export default defineConfig({
 						{ text: "CLI reference", link: "/guide/cli" },
 					],
 				},
+				{
+					text: "Examples",
+					items: [{ text: "Registry", link: "/examples" }],
+				},
 			],
 
 			"/concepts/": [
@@ -61,9 +66,42 @@ export default defineConfig({
 						{ text: "CLI reference", link: "/guide/cli" },
 					],
 				},
+				{
+					text: "Examples",
+					items: [{ text: "Registry", link: "/examples" }],
+				},
 			],
 
 			"/guide/": [
+				{
+					text: "Guide",
+					items: [
+						{ text: "Writing trees", link: "/guide/writing-trees" },
+						{ text: "CLI reference", link: "/guide/cli" },
+					],
+				},
+				{
+					text: "Examples",
+					items: [{ text: "Registry", link: "/examples" }],
+				},
+				{
+					text: "Core concepts",
+					items: [
+						{ text: "Why behaviour trees?", link: "/concepts/" },
+						{ text: "State", link: "/concepts/state" },
+						{
+							text: "Branches and actions",
+							link: "/concepts/branches-and-actions",
+						},
+					],
+				},
+			],
+
+			"/examples": [
+				{
+					text: "Examples",
+					items: [{ text: "Registry", link: "/examples" }],
+				},
 				{
 					text: "Guide",
 					items: [
