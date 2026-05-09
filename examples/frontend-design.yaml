@@ -1,0 +1,99 @@
+name: frontend-design
+version: 1.0.0
+description: Design and implement a bold frontend from an approved spec with aesthetic critique and quality gates.
+
+state:
+  local:
+    change_request: null
+    spec_content: null
+    context_analysis: null
+    aesthetic_direction: null
+    hardened_design: null
+    implementation: null
+    quality_result: null
+
+tree:
+  type: sequence
+  name: Frontend_Design_Workflow
+  children:
+    - type: action
+      name: Check_Spec_Approval
+      steps:
+        - evaluate: $LOCAL.change_request is set
+        - instruct: >
+            Find the spec in specs/ matching $LOCAL.change_request. Check reviewed_by field.
+            - If reviewed_by is empty: report the spec needs codeowner approval. Return failure.
+            - If reviewed_by has a name: store the full spec at $LOCAL.spec_content.
+
+    - type: action
+      name: Analyze_Context
+      steps:
+        - evaluate: $LOCAL.spec_content is set
+        - instruct: >
+            Analyze $LOCAL.spec_content. Determine:
+            - Purpose: What problem does this interface solve? Who uses it?
+            - Technical constraints: Framework, performance, accessibility needs.
+            - Scale: Single component, page, or full application?
+            Store analysis at $LOCAL.context_analysis.
+
+    - type: action
+      name: Choose_Aesthetic
+      steps:
+        - evaluate: $LOCAL.context_analysis is set
+        - instruct: >
+            Based on $LOCAL.context_analysis, commit to a BOLD aesthetic direction.
+            Pick an extreme tone — do NOT default to safe/generic choices.
+            Define: aesthetic direction (one sentence), typography (distinctive fonts, never Inter/Roboto/Arial), color palette (CSS variables, committed light OR dark), motion strategy, spatial composition, background/texture, the ONE memorable thing.
+            CRITICAL: No two designs should look the same. Be unexpected.
+            Store at $LOCAL.aesthetic_direction.
+
+    - type: action
+      name: Critique_Direction
+      steps:
+        - evaluate: $LOCAL.aesthetic_direction is set
+        - instruct: >
+            Act as an award-winning creative director. Ruthlessly evaluate $LOCAL.aesthetic_direction.
+            REJECT if: generic fonts, purple gradient on white, looks like typical AI-generated UI, cookie-cutter layout, no memorable element, timid color palette, predictable patterns.
+            If rejected, provide a revised direction. If approved, push it further.
+            Output a hardened aesthetic plan. Store at $LOCAL.hardened_design.
+
+    - type: action
+      name: Implement_Frontend
+      steps:
+        - evaluate: $LOCAL.hardened_design is set
+        - instruct: >
+            Implement the frontend based on $LOCAL.hardened_design and $LOCAL.context_analysis.
+            Write production-grade code. Use CSS variables for palette, include all animations, implement spatial composition, add background textures, use exact fonts specified with CDN links.
+            Match implementation complexity to the vision. Store summary at $LOCAL.implementation.
+
+    - type: action
+      name: Quality_Check
+      steps:
+        - evaluate: $LOCAL.implementation is set
+        - instruct: >
+            Review $LOCAL.implementation against $LOCAL.hardened_design. Check:
+            1. Matches aesthetic direction precisely
+            2. All specified animations present
+            3. Typography distinctive (not generic)
+            4. Color palette committed fully
+            5. Spatial composition interesting
+            6. Background/texture effects creating atmosphere
+            7. Clear memorable element
+            8. Would pass as human-designed work from a top studio
+            If any check fails, fix the issues directly. Store assessment at $LOCAL.quality_result.
+
+    - type: selector
+      name: Fix_Or_Pass
+      children:
+        - type: action
+          name: Quality_Passed
+          steps:
+            - evaluate: $LOCAL.quality_result indicates all checks passed
+            - instruct: All quality checks passed. Frontend implementation is complete.
+        - type: action
+          name: Apply_Fixes
+          steps:
+            - instruct: >
+                Fix the issues in $LOCAL.quality_result.
+                Apply changes without losing what works.
+                Update $LOCAL.implementation with the fixed version.

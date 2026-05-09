@@ -1,0 +1,118 @@
+name: refine
+version: 1.0.0
+description: Analyze a change request, draft a structured spec, critique it, and save the hardened result.
+
+state:
+  local:
+    change_request: null
+    intent_analysis: null
+    draft_spec: null
+    hardened_spec: null
+    spec_path: null
+
+tree:
+  type: sequence
+  name: Refine_Spec
+  children:
+    - type: action
+      name: Understand_Intent
+      steps:
+        - evaluate: $LOCAL.change_request is set
+        - instruct: >
+            Analyze $LOCAL.change_request. Determine:
+            - What is being asked for? (feature, fix, refactor, migration, etc.)
+            - What systems/files are likely affected?
+            - What are the constraints and requirements?
+            - Who are the likely codeowners? (check CODEOWNERS file if present)
+            - What acceptance criteria would prove this is done?
+            Store your analysis at $LOCAL.intent_analysis.
+
+    - type: action
+      name: Write_Draft
+      steps:
+        - evaluate: $LOCAL.intent_analysis is set
+        - instruct: >
+            Based on $LOCAL.intent_analysis, draft a change spec with this structure:
+
+
+            ---
+
+            id: [generate using format: {timestamp}-{adjective}-{noun}-{verb}]
+
+            title: [concise title]
+
+            status: draft
+
+            author: [from git config user.name]
+
+            created: [today's date]
+
+            reviewed_by:
+
+            ---
+
+
+            ## Summary
+
+            [1-3 sentences on what this change does and why]
+
+
+            ## Requirements
+
+            [Bulleted list of functional requirements]
+
+
+            ## Technical Approach
+
+            [How this will be implemented — files, patterns, dependencies]
+
+
+            ## Affected Systems
+
+            [List of systems/modules/services touched]
+
+
+            ## Acceptance Criteria
+
+            [Testable conditions that prove the change is complete]
+
+
+            ## Risks & Considerations
+
+            [Edge cases, backwards compatibility, performance, security]
+
+
+            ## Open Questions
+
+            [Anything unresolved that needs codeowner input]
+
+
+            The reviewed_by field MUST remain empty. Only a codeowner can add their name there.
+            Store the draft at $LOCAL.draft_spec.
+
+    - type: action
+      name: Critique_Draft
+      steps:
+        - evaluate: $LOCAL.draft_spec is set
+        - instruct: >
+            Act as a Staff Engineer reviewing a design spec. Evaluate $LOCAL.draft_spec:
+
+            - Is the scope clearly bounded? (no creep, no ambiguity)
+            - Are requirements specific enough to implement without guessing?
+            - Does the technical approach account for existing patterns in the codebase?
+            - Are acceptance criteria testable and complete?
+            - Are risks realistic (not hypothetical paranoia)?
+            - Are open questions genuine blockers or just hedging?
+
+            Tighten, clarify, and remove anything vague. Output a hardened spec.
+            Store the result at $LOCAL.hardened_spec.
+
+    - type: action
+      name: Save_Spec
+      steps:
+        - evaluate: $LOCAL.hardened_spec is set
+        - instruct: >
+            Write $LOCAL.hardened_spec to the specs/ folder.
+            Filename: specs/[kebab-case-title].md
+            Derive the filename from the spec title.
+            Store the file path at $LOCAL.spec_path.
