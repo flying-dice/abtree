@@ -1,8 +1,7 @@
 import { join } from "node:path";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { TREES_DIR } from "./db.ts";
-import { LocalRepo } from "./repos.ts";
-import { FlowRepo } from "./repos.ts";
+import { TREES_DIR } from "./paths.ts";
+import { FlowStore } from "./repos.ts";
 import { validateTreeFile, normalizeNode } from "./validate.ts";
 import type { NormalizedNode, ParsedTree, TickResult, NodeStatus } from "./types.ts";
 
@@ -28,7 +27,7 @@ export function listTreeSlugs(): string[] {
 export function generateFlowId(tree: string, summary: string): string {
   const slug = summary.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
   const prefix = `${slug}__${tree}__`;
-  const count = FlowRepo.countByPrefix(prefix);
+  const count = FlowStore.countByPrefix(prefix);
   return `${prefix}${count + 1}`;
 }
 
@@ -42,24 +41,28 @@ export function getNodeAtPath(root: NormalizedNode, path: number[]): NormalizedN
 }
 
 function getNodeStatusKey(path: number[]): string {
-  return `_node_status.${path.join(".")}`;
+  return path.length === 0 ? "_node_status" : `_node_status__${path.join("_")}`;
+}
+
+function getStepKey(path: number[]): string {
+  return path.length === 0 ? "_step" : `_step__${path.join("_")}`;
 }
 
 export function getNodeResult(flowId: string, path: number[]): NodeStatus | null {
-  return LocalRepo.getValue(flowId, getNodeStatusKey(path)) as NodeStatus | null;
+  return FlowStore.getLocal(flowId, getNodeStatusKey(path)) as NodeStatus | null;
 }
 
 export function setNodeResult(flowId: string, path: number[], status: NodeStatus) {
-  LocalRepo.setValue(flowId, getNodeStatusKey(path), status);
+  FlowStore.setLocal(flowId, getNodeStatusKey(path), status);
 }
 
 function getStepIndex(flowId: string, path: number[]): number {
-  const val = LocalRepo.getValue(flowId, `_step.${path.join(".")}`);
+  const val = FlowStore.getLocal(flowId, getStepKey(path));
   return (val as number) ?? 0;
 }
 
 function setStepIndex(flowId: string, path: number[], step: number) {
-  LocalRepo.setValue(flowId, `_step.${path.join(".")}`, step);
+  FlowStore.setLocal(flowId, getStepKey(path), step);
 }
 
 export function tickNode(flowId: string, path: number[], node: NormalizedNode): TickResult {

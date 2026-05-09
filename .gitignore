@@ -27,7 +27,8 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
-# SQLite WAL temporaries
+# SQLite remnants (post JSON migration)
+*.db
 *.db-shm
 *.db-wal
 
