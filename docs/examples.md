@@ -137,7 +137,7 @@ claude "I need a backend service for <description>. First run the abtree refine 
 
 ## Frontend design
 
-Design and implement a frontend component or page from an approved spec, with aesthetic critique and quality gates. The flow analyses context, picks an aesthetic direction, drafts the component plan, runs an aesthetic critique pass, and only then writes code. Consumes a reviewed spec from `specs/`.
+Design and implement a frontend component or page from an approved spec by **deferring the aesthetic-direction work to a remote guidance document**. The pipeline is: spec-approval gate, fetch-and-apply the guidance against the brief (tone selection, typography, palette, motion, spatial composition, atmospheric backgrounds — all owned by the guidance, not duplicated here), eight-item post-implementation quality check, fix-or-pass selector. The guidance URL lives in `$GLOBAL.design_guidance_url` and defaults to the upstream Claude Code frontend-design heuristics; pin a commit SHA for version stability.
 
 **Files**
 
@@ -212,7 +212,7 @@ claude "Run the abtree improve-codebase flow on this repo. Use 'abtree --help' t
 
 ## Code review
 
-Reviews a merge request / pull request for **high-signal-only** issues. Pre-flight skip gate (closed / draft / automated / trivial), project-convention loading (`STYLEGUIDE.md` / `CLAUDE.md` / `CONTRIBUTING.md` / `AGENTS.md` from every directory the diff touches), three parallel review passes (bugs, test coverage, conventions), per-finding validation pass to drop false positives, human-approved publish gate, and a final approve / request-changes verdict. Each review pass carries an explicit "do not flag" list — style, speculative bugs, pre-existing issues, lint-fixable nits.
+Reviews a merge request / pull request by **deferring the heavy lifting to a remote guidance document**. The pipeline is: skip-or-run gate (the guidance's own pre-flight check), apply the guidance's main review pipeline against the diff (project-conventions loading, parallel review passes, validation, false-positive filtering — all owned by the guidance, not duplicated here), human-approved publish gate, formal approve / request-changes verdict. The guidance URL lives in `$GLOBAL.review_guidance_url` and defaults to the upstream Claude Code code-review checklist; pin a commit SHA for version stability.
 
 **Files**
 
