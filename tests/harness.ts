@@ -165,7 +165,13 @@ export async function runCase(specPath: string): Promise<void> {
 
 			if (step.type === "instruct") {
 				for (const [k, v] of Object.entries(step.write ?? {})) {
-					const w = abt(tmp, ["local", "write", execution, k, JSON.stringify(v)]);
+					const w = abt(tmp, [
+						"local",
+						"write",
+						execution,
+						k,
+						JSON.stringify(v),
+					]);
 					if (w.exit !== 0)
 						throw new Error(`step ${i}: local write ${k} failed: ${w.stderr}`);
 				}

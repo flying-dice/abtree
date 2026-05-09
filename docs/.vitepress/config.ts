@@ -184,8 +184,7 @@ export default defineConfig({
 			: pageTitle
 				? `${pageTitle} | ${SITE_TITLE} — ${SITE_TAGLINE}`
 				: `${SITE_TITLE} — ${SITE_TAGLINE}`;
-		const description =
-			pageData.frontmatter.description ?? SITE_DESCRIPTION;
+		const description = pageData.frontmatter.description ?? SITE_DESCRIPTION;
 
 		pageData.frontmatter.head ??= [];
 		pageData.frontmatter.head.push(
@@ -204,9 +203,9 @@ export default defineConfig({
 
 	themeConfig: {
 		logo: {
-			light: '/abtree-mark.svg',
-			dark: '/abtree-mark.svg',
-			alt: 'abtree',
+			light: "/abtree-mark.svg",
+			dark: "/abtree-mark.svg",
+			alt: "abtree",
 		},
 		nav: [
 			{ text: "Home", link: "/" },
@@ -216,12 +215,12 @@ export default defineConfig({
 			{ text: "Agents", link: "/agents/execute" },
 			{ text: "Examples", link: "/examples" },
 			{
-				text: 'LLMs',
+				text: "LLMs",
 				items: [
-					{ text: 'llms.txt', link: '/llms.txt', target: '_blank' },
-					{ text: 'llms-full.txt', link: '/llms-full.txt', target: '_blank' },
+					{ text: "llms.txt", link: "/llms.txt", target: "_blank" },
+					{ text: "llms-full.txt", link: "/llms-full.txt", target: "_blank" },
 				],
-			}
+			},
 		],
 
 		sidebar: [
@@ -245,7 +244,10 @@ export default defineConfig({
 				items: [
 					{ text: "Writing trees", link: "/guide/writing-trees" },
 					{ text: "Designing workflows", link: "/guide/designing-workflows" },
-					{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
+					{
+						text: "Inspecting executions",
+						link: "/guide/inspecting-executions",
+					},
 					{ text: "CLI reference", link: "/guide/cli" },
 				],
 			},

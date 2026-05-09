@@ -153,7 +153,10 @@ test("hello-world execution: full execution reaches done", () => {
 	expect((final as { status: string }).status).toBe("done");
 });
 
-function createExecution(treeSlug: string, summary: string): {
+function createExecution(
+	treeSlug: string,
+	summary: string,
+): {
 	id: string;
 	snapshot: string;
 } {
