@@ -26,7 +26,8 @@
           { "path": "abtree-darwin-arm64",    "label": "abtree-darwin-arm64" },
           { "path": "abtree-windows-x64.exe", "label": "abtree-windows-x64.exe" },
           { "path": "install.sh",             "label": "install.sh" },
-          { "path": "install.ps1",            "label": "install.ps1" }
+          { "path": "install.ps1",            "label": "install.ps1" },
+          { "path": "SKILL.md",               "label": "SKILL.md" }
         ]
       }
     ]

@@ -1,4 +1,7 @@
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { rebuildMermaid } from "./mermaid.ts";
+import { AGENTS_SKILLS_DIR, ensureDir } from "./paths.ts";
 import { FlowStore } from "./repos.ts";
 import {
 	generateFlowId,
@@ -252,4 +255,12 @@ export function cmdGlobalRead(flowId: string, path?: string) {
 	} else {
 		out(FlowStore.getGlobal(flowId));
 	}
+}
+
+export function cmdInstallSkill(skillContent: string) {
+	const targetDir = join(AGENTS_SKILLS_DIR, "abtree");
+	ensureDir(targetDir);
+	const path = join(targetDir, "SKILL.md");
+	writeFileSync(path, skillContent);
+	out({ scope: process.env.AGENTS_SKILLS_DIR ? "AGENTS_SKILLS_DIR" : "default", path });
 }
