@@ -1,10 +1,15 @@
 import { defineConfig } from "vitepress";
+import llmstxt from "vitepress-plugin-llms";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
 	title: "abtree",
 	description:
 		"Behaviour trees for AI agents. Define workflows in YAML, drive them with a CLI, get deterministic execution and durable state.",
+
+	vite: {
+		plugins: [llmstxt()],
+	},
 
 	themeConfig: {
 		nav: [
