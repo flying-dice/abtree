@@ -21,13 +21,15 @@ biome:
 
 # Schema freshness — regenerate tree.schema.json from src/schemas.ts and fail
 # if the committed file differs. Forces contributors to run `bun run schema`
-# whenever they touch the zod schema.
+# whenever they touch the zod schema. The bun image has no git, so we copy
+# the committed file aside and use coreutils diff instead of git diff.
 schema:
   extends: .bun
   stage: check
   script:
+    - cp tree.schema.json /tmp/tree.schema.committed.json
     - bun run schema
-    - git diff --exit-code -- tree.schema.json
+    - diff -u /tmp/tree.schema.committed.json tree.schema.json
 
 # ---- Stage: test -------------------------------------------------------------
 
