@@ -5,9 +5,13 @@ import DefaultTheme from "vitepress/theme";
 import { createMermaidRenderer } from "vitepress-mermaid-renderer";
 import { h, nextTick, watch } from "vue";
 import "./style.css";
+import AbtreeDemo from "./AbtreeDemo.vue";
 
 export default {
 	extends: DefaultTheme,
+	enhanceApp({ app }: { app: import("vue").App }) {
+		app.component("AbtreeDemo", AbtreeDemo);
+	},
 	Layout: () => {
 		const { isDark } = useData();
 

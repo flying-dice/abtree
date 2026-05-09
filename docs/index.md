@@ -31,6 +31,8 @@ features:
     details: A CLI any agent can drive. Works with Claude, ChatGPT, local models — anything that can run a shell command.
 ---
 
+<AbtreeDemo />
+
 ## What is abtree?
 
 Modern LLMs follow Markdown instructions remarkably well — until workflows grow. Then two things go wrong:
