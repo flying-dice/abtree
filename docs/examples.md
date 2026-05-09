@@ -137,7 +137,7 @@ claude "I need a frontend component for <description>. First run the abtree refi
 
 ## Technical writer
 
-Take a documentation goal, ground it in the repo's `STYLEGUIDE.md` (or draft one and gate on human approval if none exists), find or build a home in the docs tree, write to it, and gate-check the result against three rules — does it fit the structure, does the narrative flow, is it one concept? Standalone workflow; no upstream spec required.
+Take a documentation goal, ground it in the repo's `STYLEGUIDE.md` (or draft one and gate on human approval if none exists), find or build a home in the docs tree, write to it, and gate-check the result against three rules — does it fit the structure, does the narrative flow, is it one concept? Up to three write/review passes before the workflow surfaces persistent failures to the human. Standalone workflow; no upstream spec required.
 
 **Files**
 
