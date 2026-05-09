@@ -2,9 +2,19 @@ import { existsSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 
+function expandHome(p: string): string {
+	if (p === "~") return homedir();
+	if (p.startsWith("~/")) return join(homedir(), p.slice(2));
+	return p;
+}
+
 export const ABTREE_DIR = resolve(process.cwd(), ".abtree");
 export const TREES_DIR = join(ABTREE_DIR, "trees");
-export const FLOWS_DIR = join(ABTREE_DIR, "flows");
+
+// Flows directory — override with ABTREE_FLOWS_DIR (absolute, relative, or ~/-prefixed).
+export const FLOWS_DIR = process.env.ABTREE_FLOWS_DIR
+	? resolve(expandHome(process.env.ABTREE_FLOWS_DIR))
+	: join(ABTREE_DIR, "flows");
 
 export const HOME_ABTREE_DIR = join(homedir(), ".abtree");
 export const HOME_TREES_DIR = join(HOME_ABTREE_DIR, "trees");
