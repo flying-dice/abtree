@@ -1,0 +1,214 @@
+name: improve-codebase
+version: 1.0.0
+description: Continuous code-improvement cycle. Classify smells, score quality metrics in parallel, compile a triaged refactor queue, then iterate through each item with bounded per-item retries until the queue is drained.
+
+state:
+  local:
+    initial_smells: null         # list of named code smells from the first pass
+
+    # Parallel scoring outputs — one per metric. Each entry:
+    #   { score: 0..1, observations: [...], risk: low|med|high, cost_benefit: 0..1 }
+    score_dry: null
+    score_srp: null
+    score_coupling: null
+    score_cohesion: null
+
+    report: null                 # synthesised report text
+    refactor_queue: null         # ordered list: [{ id, metric, threshold, summary, risk, cost_benefit }]
+    done_log: []                 # items completed: [{ id, metric, attempts, before_score, after_score }]
+    failed_log: []               # items that exhausted per-item retries: [{ id, metric, last_score, notes }]
+
+    current_item: null           # the item currently being refactored
+    current_score: null          # the latest score from the scoped reassessment
+    stage_halt: false            # set true to break out of the outer loop deliberately
+
+  global:
+    test_command: "the command that runs the project's full regression test suite (e.g. 'bun test', 'pnpm test')"
+    metric_thresholds:           # minimum acceptable score per metric, 0..1
+      dry: 0.7
+      srp: 0.7
+      coupling: 0.7
+      cohesion: 0.7
+
+tree:
+  type: sequence
+  name: Improve_Codebase
+  children:
+
+    # 1. Initial smell classification — single pass over the codebase.
+    - type: action
+      name: Classify_Code_Smells
+      steps:
+        - instruct: >
+            Walk the codebase. Classify the major code smells you find
+            (long method, large class, duplicated code, feature envy,
+            shotgun surgery, primitive obsession, data clumps,
+            inappropriate intimacy, etc.). For each smell, record:
+            file, lines, smell type, one-line description.
+            Store the list at $LOCAL.initial_smells.
+
+    # 2. Score quality metrics — four independent passes that can run in any order.
+    #    Each scorer returns { score, observations, risk, cost_benefit }.
+    - type: parallel
+      name: Score_Quality_Metrics
+      children:
+        - type: action
+          name: Score_DRY
+          steps:
+            - evaluate: $LOCAL.initial_smells is set
+            - instruct: >
+                Score the codebase on Don't-Repeat-Yourself. Identify
+                duplicated logic, near-duplicate functions, parallel
+                inheritance hierarchies, and repeated patterns that
+                should be abstracted. Produce a score in [0, 1] (1 = no
+                duplication). For each finding record: file, severity
+                (low/med/high), risk of refactoring, cost/benefit (0..1
+                where higher means cheap-and-impactful). Store the
+                whole object at $LOCAL.score_dry.
+
+        - type: action
+          name: Score_SRP
+          steps:
+            - evaluate: $LOCAL.initial_smells is set
+            - instruct: >
+                Score the codebase on Single Responsibility Principle.
+                Identify modules, classes, and functions that own more
+                than one reason to change. Score in [0, 1] (1 = each
+                unit has exactly one responsibility). For each finding
+                record file, severity, risk, cost_benefit. Store at
+                $LOCAL.score_srp.
+
+        - type: action
+          name: Score_Coupling
+          steps:
+            - evaluate: $LOCAL.initial_smells is set
+            - instruct: >
+                Score the codebase on coupling. Identify excessive
+                cross-module dependencies, circular imports, leaky
+                abstractions, and modules that reach into another
+                module's internals. Score in [0, 1] (1 = clean
+                boundaries, low coupling). Per finding: file, severity,
+                risk, cost_benefit. Store at $LOCAL.score_coupling.
+
+        - type: action
+          name: Score_Cohesion
+          steps:
+            - evaluate: $LOCAL.initial_smells is set
+            - instruct: >
+                Score the codebase on cohesion. Identify modules whose
+                contents don't naturally belong together, utility
+                classes that have grown into miscellany dumps, and
+                functions whose responsibilities span unrelated
+                concerns. Score in [0, 1] (1 = strong cohesion). Per
+                finding: file, severity, risk, cost_benefit. Store at
+                $LOCAL.score_cohesion.
+
+    # 3. Compile the report from all four metrics' observations.
+    - type: action
+      name: Compile_Report
+      steps:
+        - evaluate: $LOCAL.score_dry is set and $LOCAL.score_srp is set and $LOCAL.score_coupling is set and $LOCAL.score_cohesion is set
+        - instruct: >
+            Synthesise $LOCAL.score_dry, $LOCAL.score_srp,
+            $LOCAL.score_coupling, $LOCAL.score_cohesion, and
+            $LOCAL.initial_smells into a single report. The report
+            covers: overall codebase health by metric, top observations
+            by severity, and a flat candidate list of refactoring
+            items. Each candidate has { id, metric, threshold (from
+            $GLOBAL.metric_thresholds), summary, file, risk,
+            cost_benefit }. Store the report text at $LOCAL.report and
+            the candidate list at $LOCAL.refactor_queue.
+
+    # 4. Triage. Order and filter the queue before the loop starts.
+    - type: action
+      name: Triage_Refactor_Queue
+      steps:
+        - evaluate: $LOCAL.refactor_queue is set
+        - instruct: >
+            Triage $LOCAL.refactor_queue. Drop items where
+            cost_benefit is below 0.3 (not worth doing). Sort the rest
+            by cost_benefit descending — high-impact, low-risk items
+            first. Surface the triaged list to the human and confirm
+            before proceeding. Overwrite $LOCAL.refactor_queue with the
+            ordered, filtered list.
+
+    # 5. Iterative refactor. Each outer-loop pass processes ONE item
+    #    end-to-end (refactor → regression test → reassess metric).
+    #    Per-item: retries: 2 — three attempts to hit the threshold.
+    #    Outer: retries: 50 — drives the loop by failing the
+    #    Continue_Or_Done evaluate when the queue still has work.
+    - type: sequence
+      name: Iterative_Refactor
+      retries: 50
+      children:
+
+        # 5a. Pick the next item, or halt if stage_halt is set.
+        - type: action
+          name: Pick_Next_Item
+          steps:
+            - evaluate: $LOCAL.refactor_queue is not empty
+            - evaluate: $LOCAL.stage_halt is not true
+            - instruct: >
+                Pop the head of $LOCAL.refactor_queue and store the
+                full item at $LOCAL.current_item. Reset
+                $LOCAL.current_score to null.
+
+        # 5b. Refactor + test + reassess. Per-item bounded retries.
+        - type: sequence
+          name: Refactor_Item
+          retries: 2
+          children:
+            - type: action
+              name: Implement_Refactor
+              steps:
+                - evaluate: $LOCAL.current_item is set
+                - instruct: >
+                    Implement the refactor described by
+                    $LOCAL.current_item. Edit code, run any local
+                    sanity checks. If you cannot make progress and
+                    this is your third attempt at this item, set
+                    $LOCAL.stage_halt to true and submit failure to
+                    end the stage cleanly.
+
+            - type: action
+              name: Regression_Test
+              steps:
+                - evaluate: full regression test suite passes after the refactor (use $GLOBAL.test_command)
+                - instruct: >
+                    Run $GLOBAL.test_command end-to-end. Do NOT submit
+                    success unless every test passes. If this is the
+                    third attempt and tests still fail, set
+                    $LOCAL.stage_halt to true.
+
+            - type: action
+              name: Reassess_Metric
+              steps:
+                - evaluate: $LOCAL.current_score is set and $LOCAL.current_score is greater than or equal to $LOCAL.current_item.threshold
+                - instruct: >
+                    Run a SMALLER, FOCUSED assessment scoped to
+                    $LOCAL.current_item.metric (just re-score that one
+                    metric, not the full suite). Store the new score
+                    at $LOCAL.current_score. If on the third attempt
+                    the score is still below threshold, set
+                    $LOCAL.stage_halt to true.
+
+        # 5c. Item passed all three steps within its retry budget.
+        - type: action
+          name: Record_Item_Done
+          steps:
+            - evaluate: $LOCAL.current_item is set
+            - instruct: >
+                Append $LOCAL.current_item to $LOCAL.done_log together
+                with the final $LOCAL.current_score. Clear
+                $LOCAL.current_item and $LOCAL.current_score.
+
+        # 5d. Loop control. Eval true (queue empty) → outer sequence
+        #     succeeds, stage done. Eval false → outer sequence fails,
+        #     parent's retries: 50 kicks in for the next item.
+        - type: action
+          name: Continue_Or_Done
+          steps:
+            - evaluate: $LOCAL.refactor_queue is empty
+            - instruct: >
+                Refactor queue is empty. Summarise $LOCAL.done_log and
+                $LOCAL.failed_log to the human as the final report.
