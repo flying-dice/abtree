@@ -212,7 +212,7 @@ claude "Run the abtree improve-codebase flow on this repo. Use 'abtree --help' t
 
 ## Code review
 
-Reviews a merge request for correctness, test coverage, and repo-convention conformance. Fetches the diff, runs three review passes (correctness, tests, conventions), tallies blocking vs non-blocking findings, and either approves or requests changes with line-cited comments.
+Reviews a merge request / pull request for **high-signal-only** issues. Pre-flight skip gate (closed / draft / automated / trivial), project-convention loading (`STYLEGUIDE.md` / `CLAUDE.md` / `CONTRIBUTING.md` / `AGENTS.md` from every directory the diff touches), three parallel review passes (bugs, test coverage, conventions), per-finding validation pass to drop false positives, human-approved publish gate, and a final approve / request-changes verdict. Each review pass carries an explicit "do not flag" list — style, speculative bugs, pre-existing issues, lint-fixable nits.
 
 **Files**
 
