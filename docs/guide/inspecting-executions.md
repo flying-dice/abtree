@@ -1,3 +1,7 @@
+---
+description: How to inspect an abtree execution — the JSON document, the Mermaid diagram, what each field means, and how to debug a stuck cursor.
+---
+
 # Inspecting executions
 
 You drove an execution. abtree wrote two files to disk. This page explains what's in them, where to find them, and what to look for when something doesn't go as expected.

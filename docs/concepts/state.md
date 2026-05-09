@@ -1,3 +1,7 @@
+---
+description: Two state scopes in abtree — $LOCAL is a per-execution blackboard agents read and write; $GLOBAL is a read-only world model.
+---
+
 # State
 
 Behaviour trees are stateful by design. abtree separates state into **two scopes**, written explicitly, never implicit.

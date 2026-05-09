@@ -1,3 +1,7 @@
+---
+description: Ready-to-use abtree behaviour trees, installable in one command — hello-world, refine, implement, code-review, technical-writer, and more.
+---
+
 # Examples registry
 
 Ready-to-use behaviour trees. Each entry includes the YAML files, a one-liner to copy them into your local `.abtree/trees/`, and a Claude handover command that briefs Claude to drive the execution with abtree.
