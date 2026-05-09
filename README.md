@@ -110,6 +110,52 @@ flowchart TD
 
 Sitting as a separate coordination layer, **abtree** functions as the structural backbone for agentic sessions, distinct from standard prompts or skills. It operates via a YAML spec and a CLI/MCP server to enforce a strict "start at the root" protocol, progressively disclosing instructions only after the agent satisfies specific evaluation invariants. This keeps the LLM on rails by preventing instruction fatigue and "jumping ahead," while a local SQLite database snapshots the workflow and persists state. The result is a durable execution environment where trees can grow to unbounded size, allowing for granular control and predictable resumption across sessions.
 
+## Installation
+
+**macOS / Linux**
+
+```sh
+curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/install.sh | sh
+```
+
+To install to a custom directory, set `INSTALL_DIR` before running:
+
+```sh
+INSTALL_DIR=~/.local/bin curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/install.sh | sh
+```
+
+**Windows (PowerShell)**
+
+```powershell
+irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 | iex
+```
+
+Installs `abt.exe` to `~\.local\bin` and adds it to your user `PATH`.
+
+## Usage
+
+```sh
+# List available trees
+abt tree list
+
+# Create a new flow
+abt flow create <tree> <summary>
+
+# Write initial state
+abt local write <flow-id> <key> "<value>"
+
+# Drive the execution loop
+abt next <flow-id>          # get next step (evaluate or instruct)
+abt eval <flow-id> true     # submit evaluation result
+abt submit <flow-id> success  # submit instruction outcome
+
+# Inspect a flow
+abt flow get <flow-id>
+abt local read <flow-id>
+```
+
+Run `abt --help` for the full execution protocol.
+
 ## Explore the Ecosystem
 * **Examples Repository:** Check out our [Examples Repo] to see production-ready **development workflows** and hardware-control trees.
 * **Workflow-Builder Skill:** Use this skill to help your agent collaboratively design and iterate on new tree specs.
