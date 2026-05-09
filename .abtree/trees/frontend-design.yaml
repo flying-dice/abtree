@@ -1,16 +1,15 @@
 name: frontend-design
-version: 2.0.0
+version: 2.1.0
 description: |
   Design and implement a frontend from an approved spec. Defers the
-  aesthetic-direction work (tone selection, typography, palette,
-  motion, spatial composition, atmospheric backgrounds, complexity
-  matching) to a remote guidance document fetched at flow time.
-  abtree provides the workflow shell — spec-approval gate, post-
-  implementation quality check, and a fix-or-pass selector.
+  aesthetic-direction work to a remote markdown playbook exposed as
+  a parameterless directive in $GLOBAL.frontend_design — the action
+  invokes it by name; the directive owns the fetch-and-return-text
+  contract. abtree provides the workflow shell — spec-approval gate,
+  post-implementation quality check, and a fix-or-pass selector.
 
-  The guidance document is referenced by HTTP URL. Pin a specific
-  commit SHA in $GLOBAL.design_guidance_url for stability; track
-  main for the latest.
+  Pin a specific commit SHA in the URL for stability; track main for
+  the latest.
 
 state:
   local:
@@ -20,7 +19,13 @@ state:
     quality_result: null         # post-impl review against the spec
 
   global:
-    design_guidance_url: "https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/frontend-design/skills/frontend-design/SKILL.md"
+    frontend_design: |
+      Fetch the markdown at
+      https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/frontend-design/skills/frontend-design/SKILL.md
+      and return its full body as text. The text is a design-and-
+      implement playbook covering tone selection, typography, colour
+      commitment, motion, spatial composition, atmospheric back-
+      grounds, and complexity matching.
 
 tree:
   type: sequence
@@ -42,25 +47,16 @@ tree:
             - If reviewed_by has a name: store the full spec content
               at $LOCAL.spec_content.
 
-    # 2. Apply the remote design guidance to the brief.
+    # 2. Apply the remote design playbook to the brief.
     - type: action
       name: Design_And_Implement
       steps:
         - evaluate: $LOCAL.spec_content is set
         - instruct: >
-            Fetch the markdown at $GLOBAL.design_guidance_url and read
-            it end-to-end.
-
-            Apply its full design-and-implement pipeline against
-            $LOCAL.spec_content as the brief: design thinking
-            (purpose, tone, constraints, the memorable element),
-            commitment to a bold aesthetic direction, and production-
-            grade implementation following the typography / colour /
-            motion / spatial / background guidance the document
-            describes.
-
-            Write the actual code to the workspace. Capture an
-            implementation summary at $LOCAL.implementation:
+            Use $GLOBAL.frontend_design to design and implement the
+            brief at $LOCAL.spec_content. Write the actual code to
+            the workspace. Capture an implementation summary at
+            $LOCAL.implementation:
               { aesthetic_direction, files_written, key_decisions,
                 memorable_element }.
 
@@ -71,9 +67,8 @@ tree:
       steps:
         - evaluate: $LOCAL.implementation is set
         - instruct: >
-            Review $LOCAL.implementation against $LOCAL.spec_content
-            and the guidance at $GLOBAL.design_guidance_url. Eight
-            checks:
+            Use $GLOBAL.frontend_design to assess $LOCAL.implementation
+            against $LOCAL.spec_content. Eight checks:
               1. Aesthetic direction matches the brief precisely.
               2. All specified animations / motion present.
               3. Typography is distinctive (no generic fallback).

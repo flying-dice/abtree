@@ -299,14 +299,17 @@ children:
 
 Each parallel branch can have its own `evaluate: $LOCAL.x is set` precondition for safety.
 
-### Idiom: defer to a remote guidance document
+### Idiom: globals as parameterless retrieval directives
 
-When a chunk of work has well-known, externally-maintained guidance — code-review checklists, design heuristics, security-review playbooks — don't reproduce it inside an `instruct`. Point at the document by HTTP URL and tell the agent to fetch and apply it.
+When a chunk of work has well-known, externally-maintained guidance — code-review checklists, design heuristics, security-review playbooks — don't reproduce it inside an `instruct`, and don't store the URL as a bare string either. Store the **fetch directive itself** in `$GLOBAL`. Actions invoke it by name.
 
 ```yaml
 state:
   global:
-    review_guidance_url: "https://raw.githubusercontent.com/.../code-review.md"
+    code_review: |
+      Fetch the markdown at
+      https://raw.githubusercontent.com/.../code-review.md
+      and return its full body as text.
 
 tree:
   ...
@@ -315,20 +318,18 @@ tree:
     steps:
       - evaluate: $LOCAL.target is set
       - instruct: >
-          Fetch the markdown at $GLOBAL.review_guidance_url and read
-          it end-to-end. Apply its review pipeline against
-          $LOCAL.target. Capture findings at $LOCAL.findings.
+          Use $GLOBAL.code_review to assess $LOCAL.target.
+          Capture findings at $LOCAL.findings.
 ```
 
-The tree owns: workflow shape, gates, retries, state, verdicts.
-The document owns: domain expertise — *how* to do the thing.
+The global is a parameterless directive: "fetch X, return text." The action just composes against the result. Multiple actions in the same tree can invoke the same global without each repeating the fetch boilerplate.
 
-**Why this beats inline instruct prose:**
+**Why this shape:**
 
-- **No drift.** If the document updates, the next flow picks it up.
-- **No duplication.** One canonical place to maintain the guidance.
-- **Pinnable.** Swap `main` for a commit SHA in the URL when you need version stability.
-- **Vendor-agnostic.** No "invoke `@skill-name`" magic — any agent runtime that can fetch a URL works.
+- **Action prose stays focused.** Each `instruct` says *what to do with the result*, not how to retrieve it.
+- **Single source of truth.** One place defines where the playbook lives. Swap the URL in one spot to repoint every action that uses it.
+- **Composable.** Multiple actions can invoke the same global (`Use $GLOBAL.code_review's pre-flight against …`, `Use $GLOBAL.code_review's posting rules to …`) without duplicating fetch instructions.
+- **No drift.** If the document updates, the next flow picks it up. Pin a commit SHA in the URL when you need version stability.
 
 **Caveat:** the `snapshot` field freezes the *tree*, not the *document*. A flow created today references the URL's content at run time, not at create time. If you need bit-stable historical reproducibility, pin the SHA in the URL.
 
