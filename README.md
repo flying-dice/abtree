@@ -213,8 +213,20 @@ abt local read <flow-id>
 
 Run `abt --help` for the full execution protocol.
 
+## Example Trees
+
+Ready-to-use trees are included in [`.abt/trees/`](.abt/trees/):
+
+| Tree | Description |
+|------|-------------|
+| [hello-world](.abt/trees/hello-world.yaml) | Greet a user based on time of day with weather and news context. Demonstrates all 4 BT primitives. |
+| [refine](.abt/trees/refine.yaml) | Refine a change request into an approved spec through iterative review. |
+| [implement](.abt/trees/implement.yaml) | Implement a feature from an approved spec with structured execution steps. |
+| [code-review](.abt/trees/code-review.yaml) | Run a structured code review against a set of quality invariants. |
+| [frontend-design](.abt/trees/frontend-design.yaml) | Design and scaffold a frontend component or page from a brief. |
+| [backend-design](.abt/trees/backend-design.yaml) | Design and scaffold a backend service or API from a brief. |
+
 ## Explore the Ecosystem
-* **Examples Repository:** Check out our [Examples Repo] to see production-ready **development workflows** and hardware-control trees.
 * **Workflow-Builder Skill:** Use this skill to help your agent collaboratively design and iterate on new tree specs.
 * **Workflow-Runner Skill:** Equip your agent with the ability to navigate trees, persist state, and enforce invariants across sessions.
 
