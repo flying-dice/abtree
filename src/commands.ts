@@ -1,7 +1,13 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { select } from "@inquirer/prompts";
 import { rebuildMermaid } from "./mermaid.ts";
-import { AGENTS_SKILLS_DIR, ensureDir } from "./paths.ts";
+import {
+	ensureDir,
+	SKILL_TARGETS,
+	type SkillScope,
+	type SkillVariant,
+} from "./paths.ts";
 import { FlowStore } from "./repos.ts";
 import {
 	generateFlowId,
@@ -257,10 +263,50 @@ export function cmdGlobalRead(flowId: string, path?: string) {
 	}
 }
 
-export function cmdInstallSkill(skillContent: string) {
-	const targetDir = join(AGENTS_SKILLS_DIR, "abtree");
-	ensureDir(targetDir);
-	const path = join(targetDir, "SKILL.md");
+export async function cmdInstallSkill(
+	skillContent: string,
+	opts: { variant?: string; scope?: string } = {},
+) {
+	const variant = await resolveVariant(opts.variant);
+	const scope = await resolveScope(opts.scope);
+	const target = SKILL_TARGETS[variant];
+	const dir = scope === "project" ? target.project() : target.user();
+	ensureDir(dir);
+	const path = join(dir, "SKILL.md");
 	writeFileSync(path, skillContent);
-	out({ scope: process.env.AGENTS_SKILLS_DIR ? "AGENTS_SKILLS_DIR" : "default", path });
+	out({ variant, scope, path });
+}
+
+async function resolveVariant(flag?: string): Promise<SkillVariant> {
+	const valid = Object.keys(SKILL_TARGETS) as SkillVariant[];
+	if (flag) {
+		if (!valid.includes(flag as SkillVariant)) {
+			die(`Unknown variant '${flag}'. Valid: ${valid.join(", ")}`);
+		}
+		return flag as SkillVariant;
+	}
+	return (await select({
+		message: "Which agent platform are you targeting?",
+		choices: valid.map((v) => ({
+			name: SKILL_TARGETS[v].label,
+			value: v,
+		})),
+	})) as SkillVariant;
+}
+
+async function resolveScope(flag?: string): Promise<SkillScope> {
+	const valid: SkillScope[] = ["project", "user"];
+	if (flag) {
+		if (!valid.includes(flag as SkillScope)) {
+			die(`Unknown scope '${flag}'. Valid: ${valid.join(", ")}`);
+		}
+		return flag as SkillScope;
+	}
+	return (await select({
+		message: "Install scope?",
+		choices: [
+			{ name: "Project — current directory", value: "project" },
+			{ name: "User — home directory", value: "user" },
+		],
+	})) as SkillScope;
 }

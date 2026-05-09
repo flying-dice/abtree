@@ -8,10 +8,14 @@ description: Drive abtree behaviour-tree workflows. Use when the user asks to ru
 
       abtree install skill
 
-  Default location: ./.agents/skills/abtree/SKILL.md (project scope).
-  Override the base directory with:
+  abtree will prompt for:
+    - Platform variant: claude (.claude/skills) | agents (.agents/skills)
+    - Scope: project (cwd-relative) | user (home-relative)
 
-      AGENTS_SKILLS_DIR=~/.agents/skills abtree install skill
+  Skip the prompts by passing both flags directly:
+
+      abtree install skill --variant claude --scope project
+      abtree install skill --variant agents --scope user
 -->
 
 

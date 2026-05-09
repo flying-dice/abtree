@@ -148,10 +148,15 @@ const install = program
 install
 	.command("skill")
 	.description(
-		"Install the abtree Agent Skill (default: ./.agents/skills/abtree/SKILL.md; override with AGENTS_SKILLS_DIR)",
+		"Install the abtree Agent Skill. Prompts for platform and scope, or pass --variant and --scope to skip the prompts.",
 	)
-	.action(() => {
-		cmdInstallSkill(SKILL_CONTENT);
+	.option(
+		"--variant <variant>",
+		"Skill platform: claude (.claude/skills) | agents (.agents/skills)",
+	)
+	.option("--scope <scope>", "Install scope: project | user")
+	.action(async (opts: { variant?: string; scope?: string }) => {
+		await cmdInstallSkill(SKILL_CONTENT, opts);
 	});
 
 ensureDir(FLOWS_DIR);
