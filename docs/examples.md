@@ -186,6 +186,30 @@ claude "Use the abtree technical-writer flow to document <topic>. Run 'abtree --
 
 ---
 
+## Improve codebase
+
+A continuous code-quality improvement cycle. First, a parallel scoring pass on four metrics (DRY, SRP, coupling, cohesion) — each scorer records observations, severity, risk, and a cost/benefit estimate. The agent then synthesises the four scores into a triaged refactor queue. The refactor stage iterates through the queue: each item gets up to **three attempts** to (implement → full regression test → re-score against the metric's threshold) before the stage halts. The outer loop keeps cycling until the queue is empty or a per-item attempt cap is hit.
+
+**Files**
+
+- `improve-codebase.yaml` — main
+
+**Install**
+
+```sh
+mkdir -p .abtree/trees \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/improve-codebase.yaml \
+       -o .abtree/trees/improve-codebase.yaml
+```
+
+**Run with Claude**
+
+```sh
+claude "Run the abtree improve-codebase flow on this repo. Use 'abtree --help' to learn the protocol. Set $GLOBAL.test_command to whatever runs the project's full regression test suite. Drive the parallel scoring pass for DRY, SRP, coupling, and cohesion; compile the report; pause for me to triage the queue; then iterate through each refactor with regression tests and a focused re-score. Surface the done log and any items that exhausted their three attempts."
+```
+
+---
+
 ## Code review
 
 Reviews a merge request for correctness, test coverage, and repo-convention conformance. Fetches the diff, runs three review passes (correctness, tests, conventions), tallies blocking vs non-blocking findings, and either approves or requests changes with line-cited comments.
