@@ -31,44 +31,101 @@ Actions are the "leaves" of the tree—the actual work being done. Every action 
 By using this hierarchy, the result of every action propagates up the tree. This ensures that an agent cannot move to a "Goodbye" step if a "Quality" step failed to meet its invariant. Lets see it in action:
 
 ```yaml
-workflow: time_aware_greeter
-name: Dynamic Greeting Protocol
+name: hello-world
+version: 1.0.0
+description: Greet a user based on time of day with weather and news context. Demonstrates all 4 BT primitives.
 
 state:
   local:
-    current_hour: null
+    time_of_day: null
+    greeting: null
+    weather: null
+    news: null
+    response: null
   global:
-    check_time: "Execute `date +%H` to get the current hour in 24-hour format."
+    user_name: retrieve by running the shell command "whoami"
+    tone: friendly
+    language: english
 
-type: sequence
-children:
-  - type: action
-    name: initialize_time
-    instruction: "Use $GLOBAL.check_time to determine the hour and save to $LOCAL.current_hour."
-    evaluate: "$LOCAL.current_hour is not null"
+tree:
+  type: sequence
+  name: Hello_World
+  children:
+    - type: action
+      name: Determine_Time
+      steps:
+        - instruct: >
+            Check the system clock to get the current hour.
+            Classify as: before 12:00 = "morning", 12:00-17:00 = "afternoon", after 17:00 = "evening".
+            Store the classification string at $LOCAL.time_of_day.
 
-  - name: select_greeting
-    type: selector
-    children:
-      - type: action
-        name: morning_greet
-        instruction: "If $LOCAL.current_hour is between 05 and 11, say 'Good morning!'"
-        evaluate: "$LOCAL.current_hour >= 5 and $LOCAL.current_hour < 12"
+    - type: selector
+      name: Choose_Greeting
+      children:
+        - type: action
+          name: Morning_Greeting
+          steps:
+            - evaluate: $LOCAL.time_of_day is "morning"
+            - instruct: >
+                Compose a cheerful morning greeting addressing $GLOBAL.user_name.
+                Store at $LOCAL.greeting.
 
-      - type: action
-        name: afternoon_greet
-        instruction: "If $LOCAL.current_hour is between 12 and 17, say 'Good afternoon!'"
-        evaluate: "$LOCAL.current_hour >= 12 and $LOCAL.current_hour < 18"
+        - type: action
+          name: Afternoon_Greeting
+          steps:
+            - evaluate: $LOCAL.time_of_day is "afternoon"
+            - instruct: >
+                Compose a warm afternoon greeting addressing $GLOBAL.user_name.
+                Store at $LOCAL.greeting.
 
-      - type: action
-        name: evening_greet
-        instruction: "Say 'Good evening!'"
-        evaluate: "$LOCAL.current_hour >= 18 or $LOCAL.current_hour < 5"
+        - type: action
+          name: Evening_Greeting
+          steps:
+            - evaluate: $LOCAL.time_of_day is "evening"
+            - instruct: >
+                Compose a relaxed evening greeting addressing $GLOBAL.user_name.
+                Store at $LOCAL.greeting.
 
-  - type: action
-    name: farewell
-    instruction: "Wave goodbye to the user."
-    evaluate: "Terminal contains 👋"
+        - type: action
+          name: Default_Greeting
+          steps:
+            - instruct: >
+                Compose a neutral greeting addressing $GLOBAL.user_name.
+                Store at $LOCAL.greeting.
+
+    - type: parallel
+      name: Gather_Context
+      children:
+        - type: action
+          name: Check_Weather
+          steps:
+            - evaluate: $LOCAL.greeting is set
+            - instruct: >
+                Use a web search tool to find the current weather conditions for today.
+                Store a one-sentence summary at $LOCAL.weather.
+                If web search is unavailable, store the literal string "weather unavailable".
+
+        - type: action
+          name: Check_News
+          steps:
+            - evaluate: $LOCAL.greeting is set
+            - instruct: >
+                Use a web search tool to find one current news headline from today.
+                Store the headline at $LOCAL.news.
+                If web search is unavailable, store the literal string "news unavailable".
+
+    - type: action
+      name: Compose_Response
+      steps:
+        - evaluate: $LOCAL.weather is set and $LOCAL.news is set
+        - instruct: >
+            Compose a final response by combining the following $LOCAL values:
+            - Use $LOCAL.greeting as the opening line
+            - Append a sentence about $LOCAL.weather
+            - Mention $LOCAL.news
+            Address the response to $GLOBAL.user_name.
+            Write in $GLOBAL.language with a $GLOBAL.tone tone.
+            Store the complete composed text at $LOCAL.response.
 ```
 
 The YAML defines the structure. At runtime, abtree generates a live execution diagram after every state change — nodes colour green on success, red on failure, grey when bypassed. Here's the `hello-world` tree (included in `.abt/trees/`) after a complete run. The selector chose Morning Greeting and stopped — the afternoon, evening, and default branches were never entered. The two context-gathering actions ran in parallel. Every node reached is green.
