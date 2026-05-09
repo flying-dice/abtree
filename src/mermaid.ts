@@ -51,7 +51,7 @@ export function rebuildMermaid(flowId: string) {
     ensureDir(FLOWS_DIR);
     writeFileSync(join(FLOWS_DIR, `${flowId}.mermaid`), lines.join("\n") + "\n");
     rebuildIndex();
-  } catch {}
+  } catch (e) { console.error("rebuildMermaid failed:", e); }
 }
 
 export function rebuildIndex() {
@@ -64,5 +64,5 @@ export function rebuildIndex() {
     }
     ensureDir(FLOWS_DIR);
     writeFileSync(join(FLOWS_DIR, "index.md"), lines.join("\n") + "\n");
-  } catch {}
+  } catch (e) { console.error("rebuildIndex failed:", e); }
 }

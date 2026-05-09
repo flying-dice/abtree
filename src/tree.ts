@@ -62,7 +62,7 @@ function setStepIndex(flowId: string, path: number[], step: number) {
   LocalRepo.setValue(flowId, `_step.${path.join(".")}`, step);
 }
 
-export function tickNode(root: NormalizedNode, flowId: string, path: number[], node: NormalizedNode): TickResult {
+export function tickNode(flowId: string, path: number[], node: NormalizedNode): TickResult {
   if (!node) return { type: "done" };
 
   if (node.type === "action") {
@@ -85,7 +85,7 @@ export function tickNode(root: NormalizedNode, flowId: string, path: number[], n
       const childStatus = getNodeResult(flowId, childPath);
       if (childStatus === "failure") return { type: "failure" };
       if (childStatus === "success") continue;
-      const result = tickNode(root, flowId, childPath, node.children[i]);
+      const result = tickNode(flowId, childPath, node.children[i]);
       if (result.type === "done") { setNodeResult(flowId, childPath, "success"); continue; }
       if (result.type === "failure") { setNodeResult(flowId, childPath, "failure"); return { type: "failure" }; }
       return result;
@@ -99,7 +99,7 @@ export function tickNode(root: NormalizedNode, flowId: string, path: number[], n
       const childStatus = getNodeResult(flowId, childPath);
       if (childStatus === "success") return { type: "done" };
       if (childStatus === "failure") continue;
-      const result = tickNode(root, flowId, childPath, node.children[i]);
+      const result = tickNode(flowId, childPath, node.children[i]);
       if (result.type === "done") { setNodeResult(flowId, childPath, "success"); return { type: "done" }; }
       if (result.type === "failure") { setNodeResult(flowId, childPath, "failure"); continue; }
       return result;
@@ -115,7 +115,7 @@ export function tickNode(root: NormalizedNode, flowId: string, path: number[], n
       const childStatus = getNodeResult(flowId, childPath);
       if (childStatus === "failure") return { type: "failure" };
       if (childStatus === "success") continue;
-      const result = tickNode(root, flowId, childPath, node.children[i]);
+      const result = tickNode(flowId, childPath, node.children[i]);
       if (result.type === "done") { setNodeResult(flowId, childPath, "success"); continue; }
       if (result.type === "failure") { setNodeResult(flowId, childPath, "failure"); return { type: "failure" }; }
       allDone = false;

@@ -65,8 +65,12 @@ function runMigrations(db: Database) {
   }
 }
 
-ensureDir(ABT_DIR);
-export const db = new Database(DB_PATH);
-db.run("PRAGMA journal_mode = WAL");
-db.run("PRAGMA foreign_keys = ON");
-runMigrations(db);
+export let db: Database;
+
+export function initDb() {
+  ensureDir(ABT_DIR);
+  db = new Database(DB_PATH);
+  db.run("PRAGMA journal_mode = WAL");
+  db.run("PRAGMA foreign_keys = ON");
+  runMigrations(db);
+}

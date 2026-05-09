@@ -71,7 +71,7 @@ export function cmdNext(flowId: string) {
     return;
   }
 
-  const result = tickNode(treeDef.root, flowId, [], treeDef.root);
+  const result = tickNode(flowId, [], treeDef.root);
 
   if (result.type === "done") {
     FlowRepo.update(flowId, { status: "complete", phase: "idle", cursor: "null" });
