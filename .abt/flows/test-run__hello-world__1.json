@@ -1,34 +1,34 @@
 {
-  "id": "test-run__hello-world__1",
-  "tree": "hello-world",
-  "summary": "test run",
-  "status": "complete",
-  "snapshot": "{\"local\":{\"time_of_day\":null,\"greeting\":null,\"weather\":null,\"news\":null,\"response\":null},\"global\":{\"user_name\":\"retrieve by running the shell command \\\"whoami\\\"\",\"tone\":\"friendly\",\"language\":\"english\"},\"root\":{\"type\":\"sequence\",\"name\":\"Hello_World\",\"children\":[{\"type\":\"action\",\"name\":\"Determine_Time\",\"steps\":[{\"kind\":\"instruct\",\"instruction\":\"Check the system clock to get the current hour. Classify as: before 12:00 = \\\"morning\\\", 12:00-17:00 = \\\"afternoon\\\", after 17:00 = \\\"evening\\\". Store the classification string at $LOCAL.time_of_day.\"}]},{\"type\":\"selector\",\"name\":\"Choose_Greeting\",\"children\":[{\"type\":\"action\",\"name\":\"Morning_Greeting\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.time_of_day is \\\"morning\\\"\"},{\"kind\":\"instruct\",\"instruction\":\"Compose a cheerful morning greeting addressing $GLOBAL.user_name. Store at $LOCAL.greeting.\"}]},{\"type\":\"action\",\"name\":\"Afternoon_Greeting\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.time_of_day is \\\"afternoon\\\"\"},{\"kind\":\"instruct\",\"instruction\":\"Compose a warm afternoon greeting addressing $GLOBAL.user_name. Store at $LOCAL.greeting.\"}]},{\"type\":\"action\",\"name\":\"Evening_Greeting\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.time_of_day is \\\"evening\\\"\"},{\"kind\":\"instruct\",\"instruction\":\"Compose a relaxed evening greeting addressing $GLOBAL.user_name. Store at $LOCAL.greeting.\"}]},{\"type\":\"action\",\"name\":\"Default_Greeting\",\"steps\":[{\"kind\":\"instruct\",\"instruction\":\"Compose a neutral greeting addressing $GLOBAL.user_name. Store at $LOCAL.greeting.\"}]}]},{\"type\":\"parallel\",\"name\":\"Gather_Context\",\"children\":[{\"type\":\"action\",\"name\":\"Check_Weather\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.greeting is set\"},{\"kind\":\"instruct\",\"instruction\":\"Use a web search tool to find the current weather conditions for today. Store a one-sentence summary at $LOCAL.weather. If web search is unavailable, store the literal string \\\"weather unavailable\\\".\"}]},{\"type\":\"action\",\"name\":\"Check_News\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.greeting is set\"},{\"kind\":\"instruct\",\"instruction\":\"Use a web search tool to find one current news headline from today. Store the headline at $LOCAL.news. If web search is unavailable, store the literal string \\\"news unavailable\\\".\"}]}]},{\"type\":\"action\",\"name\":\"Compose_Response\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.weather is set and $LOCAL.news is set\"},{\"kind\":\"instruct\",\"instruction\":\"Compose a final response by combining the following $LOCAL values: - Use $LOCAL.greeting as the opening line - Append a sentence about $LOCAL.weather - Mention $LOCAL.news Address the response to $GLOBAL.user_name. Write in $GLOBAL.language with a $GLOBAL.tone tone. Store the complete composed text at $LOCAL.response.\"}]}]}}",
-  "cursor": "null",
-  "phase": "idle",
-  "created_at": "2026-05-09T11:59:22.076Z",
-  "updated_at": "2026-05-09T12:01:26.997Z",
-  "local": {
-    "_node_status__0": "success",
-    "_node_status__1": "success",
-    "_node_status__1_0": "success",
-    "_node_status__2": "success",
-    "_node_status__2_0": "success",
-    "_node_status__2_1": "success",
-    "_node_status__3": "success",
-    "_step__1_0": 1,
-    "_step__2_0": 1,
-    "_step__2_1": 1,
-    "_step__3": 1,
-    "greeting": "Good morning, starscream! Hope the day's off to a strong start.",
-    "news": "Putin targets NATO, vows victory in Ukraine at Moscow's scaled-down Victory Day parade.",
-    "response": "Good morning, starscream! Hope the day's off to a strong start. Weather-wise, there's a slight risk of severe thunderstorms over parts of the Southern Plains today with record-breaking heat out West — stay alert if you're in those regions. On the news front: Putin targeted NATO and vowed victory in Ukraine at today's scaled-down Victory Day parade in Moscow.",
-    "time_of_day": "morning",
-    "weather": "Slight risk of severe thunderstorms over parts of the Southern Plains today, with record-breaking heat out West."
-  },
-  "global": {
-    "language": "english",
-    "tone": "friendly",
-    "user_name": "retrieve by running the shell command \"whoami\""
-  }
+	"id": "test-run__hello-world__1",
+	"tree": "hello-world",
+	"summary": "test run",
+	"status": "complete",
+	"snapshot": "{\"local\":{\"time_of_day\":null,\"greeting\":null,\"weather\":null,\"news\":null,\"response\":null},\"global\":{\"user_name\":\"retrieve by running the shell command \\\"whoami\\\"\",\"tone\":\"friendly\",\"language\":\"english\"},\"root\":{\"type\":\"sequence\",\"name\":\"Hello_World\",\"children\":[{\"type\":\"action\",\"name\":\"Determine_Time\",\"steps\":[{\"kind\":\"instruct\",\"instruction\":\"Check the system clock to get the current hour. Classify as: before 12:00 = \\\"morning\\\", 12:00-17:00 = \\\"afternoon\\\", after 17:00 = \\\"evening\\\". Store the classification string at $LOCAL.time_of_day.\"}]},{\"type\":\"selector\",\"name\":\"Choose_Greeting\",\"children\":[{\"type\":\"action\",\"name\":\"Morning_Greeting\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.time_of_day is \\\"morning\\\"\"},{\"kind\":\"instruct\",\"instruction\":\"Compose a cheerful morning greeting addressing $GLOBAL.user_name. Store at $LOCAL.greeting.\"}]},{\"type\":\"action\",\"name\":\"Afternoon_Greeting\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.time_of_day is \\\"afternoon\\\"\"},{\"kind\":\"instruct\",\"instruction\":\"Compose a warm afternoon greeting addressing $GLOBAL.user_name. Store at $LOCAL.greeting.\"}]},{\"type\":\"action\",\"name\":\"Evening_Greeting\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.time_of_day is \\\"evening\\\"\"},{\"kind\":\"instruct\",\"instruction\":\"Compose a relaxed evening greeting addressing $GLOBAL.user_name. Store at $LOCAL.greeting.\"}]},{\"type\":\"action\",\"name\":\"Default_Greeting\",\"steps\":[{\"kind\":\"instruct\",\"instruction\":\"Compose a neutral greeting addressing $GLOBAL.user_name. Store at $LOCAL.greeting.\"}]}]},{\"type\":\"parallel\",\"name\":\"Gather_Context\",\"children\":[{\"type\":\"action\",\"name\":\"Check_Weather\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.greeting is set\"},{\"kind\":\"instruct\",\"instruction\":\"Use a web search tool to find the current weather conditions for today. Store a one-sentence summary at $LOCAL.weather. If web search is unavailable, store the literal string \\\"weather unavailable\\\".\"}]},{\"type\":\"action\",\"name\":\"Check_News\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.greeting is set\"},{\"kind\":\"instruct\",\"instruction\":\"Use a web search tool to find one current news headline from today. Store the headline at $LOCAL.news. If web search is unavailable, store the literal string \\\"news unavailable\\\".\"}]}]},{\"type\":\"action\",\"name\":\"Compose_Response\",\"steps\":[{\"kind\":\"evaluate\",\"expression\":\"$LOCAL.weather is set and $LOCAL.news is set\"},{\"kind\":\"instruct\",\"instruction\":\"Compose a final response by combining the following $LOCAL values: - Use $LOCAL.greeting as the opening line - Append a sentence about $LOCAL.weather - Mention $LOCAL.news Address the response to $GLOBAL.user_name. Write in $GLOBAL.language with a $GLOBAL.tone tone. Store the complete composed text at $LOCAL.response.\"}]}]}}",
+	"cursor": "null",
+	"phase": "idle",
+	"created_at": "2026-05-09T11:59:22.076Z",
+	"updated_at": "2026-05-09T12:01:26.997Z",
+	"local": {
+		"_node_status__0": "success",
+		"_node_status__1": "success",
+		"_node_status__1_0": "success",
+		"_node_status__2": "success",
+		"_node_status__2_0": "success",
+		"_node_status__2_1": "success",
+		"_node_status__3": "success",
+		"_step__1_0": 1,
+		"_step__2_0": 1,
+		"_step__2_1": 1,
+		"_step__3": 1,
+		"greeting": "Good morning, starscream! Hope the day's off to a strong start.",
+		"news": "Putin targets NATO, vows victory in Ukraine at Moscow's scaled-down Victory Day parade.",
+		"response": "Good morning, starscream! Hope the day's off to a strong start. Weather-wise, there's a slight risk of severe thunderstorms over parts of the Southern Plains today with record-breaking heat out West — stay alert if you're in those regions. On the news front: Putin targeted NATO and vowed victory in Ukraine at today's scaled-down Victory Day parade in Moscow.",
+		"time_of_day": "morning",
+		"weather": "Slight risk of severe thunderstorms over parts of the Southern Plains today, with record-breaking heat out West."
+	},
+	"global": {
+		"language": "english",
+		"tone": "friendly",
+		"user_name": "retrieve by running the shell command \"whoami\""
+	}
 }
