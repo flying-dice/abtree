@@ -31,15 +31,17 @@ test:
 
 # ---- Stage: release ----------------------------------------------------------
 
-# semantic-release runs only on main, only after check + test pass.
-# Builds the cross-platform binaries via the prepare step in .releaserc
-# and publishes them to the GitHub mirror's releases page.
+# semantic-release runs only on main, only after check + test pass,
+# and only when manually triggered from the pipeline view. Builds the
+# cross-platform binaries via the prepare step in .releaserc and
+# publishes them to the GitHub mirror's releases page.
 release:
   extends: .bun
   stage: release
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      when: on_success
+      when: manual
+      allow_failure: true
     - when: never
   before_script:
     - apt-get update -qq && apt-get install -y -qq git ca-certificates
