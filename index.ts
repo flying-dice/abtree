@@ -49,8 +49,8 @@ flow
 	.description("Create a new flow")
 	.argument("<tree>", "Tree slug")
 	.argument("<summary...>", "Flow summary")
-	.action((treeSlug: string, summaryParts: string[]) => {
-		cmdFlowCreate(
+	.action(async (treeSlug: string, summaryParts: string[]) => {
+		await cmdFlowCreate(
 			parseTreeSlug(treeSlug),
 			parseSummary(summaryParts.join(" ")),
 		);

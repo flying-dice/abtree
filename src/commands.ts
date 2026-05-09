@@ -24,8 +24,8 @@ export function cmdTreeList() {
 	out(listTreeSlugs());
 }
 
-export function cmdFlowCreate(treeSlug: string, summary: string) {
-	const treeDef = loadTree(treeSlug);
+export async function cmdFlowCreate(treeSlug: string, summary: string) {
+	const treeDef = await loadTree(treeSlug);
 	if (!treeDef) die(`Tree '${treeSlug}' not found`);
 
 	const id = generateFlowId(treeSlug, summary);
