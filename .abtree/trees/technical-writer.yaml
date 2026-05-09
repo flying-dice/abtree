@@ -1,6 +1,6 @@
 name: technical-writer
-version: 1.1.0
-description: Take a documentation goal, ground it in the repo's styleguide, find or build a home in the docs tree, write to it, and gate-check structure / flow / atomicity. Up to three write/review passes before surfacing failure to the human.
+version: 1.2.0
+description: Take a documentation goal, ground it in the repo's styleguide, find or build a home in the docs tree, write to it, and gate-check structure / flow / atomicity. Up to three write/review passes (one initial + two retries) before surfacing failure to the human.
 
 state:
   local:
@@ -104,110 +104,45 @@ tree:
                 plan at $LOCAL.docs_survey and the chosen target file path
                 at $LOCAL.placement.
 
-    # 4. Bounded write/review with up to two retries.
-    #    Each pass = (Write/Revise → Review). If a pass's review fails, the
-    #    sequence fails and the selector advances to the next pass. After
-    #    three passes the selector exhausts and the workflow surfaces the
-    #    persistent failure to the human.
-    - type: selector
+    # 4. Write/review with bounded retries.
+    #    The Write_And_Review sequence runs once normally, and the runtime
+    #    retries the whole subtree up to twice (3 attempts total) when the
+    #    review gate fails. Between attempts, $LOCAL.review_notes carries
+    #    the failure context to the next attempt's writer.
+    - type: sequence
       name: Write_And_Review
-
+      retries: 2
       children:
+        - type: action
+          name: Write_Documentation
+          steps:
+            - evaluate: $LOCAL.intent is set and $LOCAL.docs_survey is set and $LOCAL.placement is set
+            - instruct: >
+                Write or revise the documentation at $LOCAL.placement. If
+                $LOCAL.review_notes is set and not "approved", treat it as
+                the prior reviewer's specific feedback and address every
+                point. Otherwise this is a fresh write. Adhere to
+                $LOCAL.styleguide. Match the voice and structure described
+                in $LOCAL.docs_survey. Address $LOCAL.intent precisely —
+                type, scope, audience. Save the file. Store the written
+                text at $LOCAL.draft.
 
-        # Pass 1 — fresh write.
-        - type: sequence
-          name: First_Pass
-          children:
-            - type: action
-              name: Write_Documentation
-              steps:
-                - evaluate: $LOCAL.intent is set and $LOCAL.docs_survey is set and $LOCAL.placement is set
-                - instruct: >
-                    Write the documentation at $LOCAL.placement. Adhere to
-                    $LOCAL.styleguide. Match the voice and structure described
-                    in $LOCAL.docs_survey. Address $LOCAL.intent precisely —
-                    type, scope, audience. Save the file. Store the written
-                    text at $LOCAL.draft.
-
-            - type: action
-              name: Review_Pass_1
-              steps:
-                - evaluate: $LOCAL.draft is set
-                - instruct: >
-                    Run three checks against $LOCAL.draft:
-                    (1) Structure — does it fit the placement and adjacency
-                    described in $LOCAL.docs_survey?
-                    (2) Flow — does the narrative read end-to-end without
-                    gaps or duplication?
-                    (3) Atomicity — does it address ONE concept, not multiple
-                    bundled together?
-                    If all three pass, set $LOCAL.review_notes to "approved".
-                    If any fails, write specific notes to $LOCAL.review_notes
-                    naming the failed check and the concrete issue.
-                - evaluate: $LOCAL.review_notes is "approved"
-                - instruct: >
-                    All three checks passed on the first pass. Confirm the
-                    file at $LOCAL.placement and store its path at
-                    $LOCAL.final_path.
-
-        # Pass 2 — first revision, reads notes from Pass 1.
-        - type: sequence
-          name: Second_Pass
-          children:
-            - type: action
-              name: Revise_Documentation
-              steps:
-                - evaluate: $LOCAL.review_notes is set and not "approved"
-                - instruct: >
-                    The first pass failed review. Read $LOCAL.review_notes for
-                    the specific failures. Revise $LOCAL.draft (and the file
-                    at $LOCAL.placement) to address every named issue without
-                    losing what worked. Store the updated draft at
-                    $LOCAL.draft.
-
-            - type: action
-              name: Review_Pass_2
-              steps:
-                - evaluate: $LOCAL.draft is set
-                - instruct: >
-                    Re-run the same three checks against $LOCAL.draft:
-                    structure, flow, atomicity. If all pass, set
-                    $LOCAL.review_notes to "approved". Otherwise overwrite
-                    $LOCAL.review_notes with fresh failure notes for the
-                    next pass.
-                - evaluate: $LOCAL.review_notes is "approved"
-                - instruct: >
-                    All three checks passed on the second pass. Confirm the
-                    file at $LOCAL.placement and store its path at
-                    $LOCAL.final_path.
-
-        # Pass 3 — final revision, last chance before surfacing to human.
-        - type: sequence
-          name: Third_Pass
-          children:
-            - type: action
-              name: Final_Revise_Documentation
-              steps:
-                - evaluate: $LOCAL.review_notes is set and not "approved"
-                - instruct: >
-                    The second pass failed review. This is the final
-                    automated revision before the workflow gives up. Read
-                    $LOCAL.review_notes carefully, revise $LOCAL.draft to
-                    address every issue, save the file, and update
-                    $LOCAL.draft.
-
-            - type: action
-              name: Review_Pass_3
-              steps:
-                - evaluate: $LOCAL.draft is set
-                - instruct: >
-                    Final review pass. Re-run structure / flow / atomicity.
-                    If all pass, set $LOCAL.review_notes to "approved".
-                    If any still fail, overwrite $LOCAL.review_notes with
-                    a clear summary of the persistent failures — the
-                    workflow will end and the human will see this note.
-                - evaluate: $LOCAL.review_notes is "approved"
-                - instruct: >
-                    All three checks passed on the third pass. Confirm the
-                    file at $LOCAL.placement and store its path at
-                    $LOCAL.final_path.
+        - type: action
+          name: Review_Gate
+          steps:
+            - evaluate: $LOCAL.draft is set
+            - instruct: >
+                Run three checks against $LOCAL.draft:
+                (1) Structure — does it fit the placement and adjacency
+                described in $LOCAL.docs_survey?
+                (2) Flow — does the narrative read end-to-end without
+                gaps or duplication?
+                (3) Atomicity — does it address ONE concept, not multiple
+                bundled together?
+                If all three pass, set $LOCAL.review_notes to "approved".
+                If any fails, write specific notes to $LOCAL.review_notes
+                naming the failed check and the concrete issue.
+            - evaluate: $LOCAL.review_notes is "approved"
+            - instruct: >
+                All three checks passed. Confirm the file at
+                $LOCAL.placement and store its path at $LOCAL.final_path.

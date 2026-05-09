@@ -115,9 +115,39 @@ For the full field reference see [Writing trees](/guide/writing-trees).
 
 ## Common idioms
 
-### Idiom: bounded code-then-test (selector of passes)
+### Idiom: bounded code-then-test (retries on a sequence)
 
-The canonical "iterate until satisfied" shape. Each pass is `[code → test]`; the root is a `selector` of N passes. First pass whose test succeeds wins. If all N fail, the selector fails.
+The canonical "iterate until satisfied" shape. Wrap one `[code → test]` sequence with `retries: N`. The runtime resets the sequence's internal state and re-ticks on failure, up to N times. User state in `$LOCAL` (counters, drafts, notes) persists across retries.
+
+```yaml
+tree:
+  type: sequence
+  name: Reach_Threshold
+  retries: 3
+  children:
+    - $ref: "./fragments/pass.yaml"   # one fragment, retried up to 4× total
+```
+
+```yaml
+# fragments/pass.yaml
+type: sequence
+name: Pass
+children:
+  - { type: action, name: Increment, steps: [...] }
+  - type: action
+    name: Test
+    steps:
+      - evaluate: $LOCAL.counter is greater than $LOCAL.threshold
+      - instruct: Threshold reached.
+```
+
+One fragment, one retry config — replaces N hand-written passes.
+
+**When to reach for this:** the work is meaningful at each iteration — write code, then run tests; revise a draft, then review; gather data, then check completeness. Each pass should be something you'd want to inspect in a Mermaid trace.
+
+**Older alternative — selector of passes:** before runtime retries, the same shape was authored as `selector` with N near-identical children, each a separate `[code → test]` sequence. It still works, but it duplicates structure. Prefer `retries` for new trees.
+
+**An anti-pattern:** modelling iteration as a cycle (`test` `$ref`s back to `increment`). Cycles are preserved in the snapshot but cannot be ticked — abtree fails fast on a cyclic edge by design. Use `retries` instead.
 
 ```yaml
 type: selector

@@ -56,14 +56,27 @@ Top-level shape:
 
 > The term **blackboard** comes from the BT and game-AI literature. It's just a key/value store scoped to one flow, used to pass data between steps.
 
-### Internal keys in `$LOCAL`
+### Runtime bookkeeping
 
-When you `local read <flow-id>` you'll see keys you didn't write. Two prefixes are abtree's bookkeeping:
+Beside `local` and `global`, every flow document has a `runtime` field. This is **internal state owned by the tick engine** and is never exposed by `abtree local read` / mutated by `abtree local write` — the CLI's local commands only ever touch `doc.local`.
 
-- `_node_status__<path>` — `success` or `failure` for every node the runtime has settled. The path is the node's position in the tree, joined by underscores. `_node_status__1_0` means "the first child of the second top-level node has succeeded".
-- `_step__<path>` — the current step index inside an action node. `_step__3` means "action at top-level position 3 is on its second step (zero-indexed)".
+```json
+{
+  "runtime": {
+    "node_status": { "0": "success", "1.0": "failure", ... },
+    "step_index":  { "1.0": 1, ... },
+    "retry_count": { "1": 2, ... }
+  }
+}
+```
 
-These exist so a flow can be killed and resumed without losing where the cursor was. You can read them, but don't write to them — abtree owns these keys and overwrites them on the next tick.
+| Subfield | Meaning |
+|---|---|
+| `node_status` | `success` or `failure` for every node the runtime has settled. Keys are dot-joined positions (e.g. `1.0` is the first child of the second top-level node). |
+| `step_index` | Current step within an action — used to resume a multi-step action without losing your place. |
+| `retry_count` | Times the runtime has consumed a retry on a node with `retries:` config. Compared against the node's configured limit on each failure. |
+
+Older flows (created before the runtime/local split) had these keys mixed in with `local` under prefixes like `_node_status__*` and `_step__*`. abtree migrates them lazily on the next read — the legacy keys disappear from `local` and reappear under `runtime`.
 
 ## The Mermaid diagram
 

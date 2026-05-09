@@ -84,22 +84,16 @@ export function getNodeAtPath(
 	return node;
 }
 
-function getNodeStatusKey(path: number[]): string {
-	return path.length === 0 ? "_node_status" : `_node_status__${path.join("_")}`;
-}
-
-function getStepKey(path: number[]): string {
-	return path.length === 0 ? "_step" : `_step__${path.join("_")}`;
-}
+// Internal bookkeeping is stored in the flow document's `runtime` field —
+// never in $LOCAL — so it isn't exposed by `abtree local read` and can't
+// be mutated by `abtree local write`. The tick engine owns it; the CLI
+// can't reach it.
 
 export function getNodeResult(
 	flowId: string,
 	path: number[],
 ): NodeStatus | null {
-	return FlowStore.getLocal(
-		flowId,
-		getNodeStatusKey(path),
-	) as NodeStatus | null;
+	return FlowStore.getRuntimeStatus(flowId, path);
 }
 
 export function setNodeResult(
@@ -107,16 +101,50 @@ export function setNodeResult(
 	path: number[],
 	status: NodeStatus,
 ) {
-	FlowStore.setLocal(flowId, getNodeStatusKey(path), status);
+	FlowStore.setRuntimeStatus(flowId, path, status);
 }
 
 function getStepIndex(flowId: string, path: number[]): number {
-	const val = FlowStore.getLocal(flowId, getStepKey(path));
-	return (val as number) ?? 0;
+	return FlowStore.getRuntimeStep(flowId, path);
 }
 
 function setStepIndex(flowId: string, path: number[], step: number) {
-	FlowStore.setLocal(flowId, getStepKey(path), step);
+	FlowStore.setRuntimeStep(flowId, path, step);
+}
+
+// If `node` has a retries config and we haven't exhausted it, reset the
+// node's runtime state (status, step index, descendants) and bump the
+// retry counter. Returns true if a retry was consumed and the caller
+// should treat the node as unstarted; false if the failure should stand.
+//
+// Intentionally NOT touching $LOCAL — user-written keys (counter,
+// review_notes, draft, etc.) persist across retries because that's how
+// the next attempt sees what the previous one produced.
+function maybeRetry(
+	flowId: string,
+	path: number[],
+	node: NormalizedNode,
+): boolean {
+	if (node.type === "ref") return false;
+	const retries = node.retries ?? 0;
+	if (retries <= 0) return false;
+	const attempts = FlowStore.getRuntimeRetryCount(flowId, path);
+	if (attempts >= retries) return false;
+	FlowStore.incrementRuntimeRetryCount(flowId, path);
+	FlowStore.resetRuntimeSubtree(flowId, path);
+	return true;
+}
+
+// Top-level entry point for cmdNext. Handles retries on the ROOT node,
+// where there's no parent to detect failure and apply maybeRetry on the
+// child's behalf. Composite-internal retries are still handled inside
+// tickNode via the per-child status checks.
+export function tickRoot(flowId: string, root: NormalizedNode): TickResult {
+	let result = tickNode(flowId, [], root);
+	while (result.type === "failure" && maybeRetry(flowId, [], root)) {
+		result = tickNode(flowId, [], root);
+	}
+	return result;
 }
 
 export function tickNode(
@@ -137,7 +165,10 @@ export function tickNode(
 	}
 
 	if (node.type === "action") {
-		const status = getNodeResult(flowId, path);
+		let status = getNodeResult(flowId, path);
+		if (status === "failure" && maybeRetry(flowId, path, node)) {
+			status = null; // subtree state was wiped — restart this action's steps
+		}
 		if (status === "success" || status === "failure") {
 			return { type: status === "success" ? "done" : "failure" };
 		}
@@ -165,10 +196,14 @@ export function tickNode(
 	if (node.type === "sequence") {
 		for (let i = 0; i < node.children.length; i++) {
 			const childPath = [...path, i];
-			const childStatus = getNodeResult(flowId, childPath);
+			const child = node.children[i] as NormalizedNode;
+			let childStatus = getNodeResult(flowId, childPath);
+			if (childStatus === "failure" && maybeRetry(flowId, childPath, child)) {
+				childStatus = null; // child reset — re-tick fresh
+			}
 			if (childStatus === "failure") return { type: "failure" };
 			if (childStatus === "success") continue;
-			const result = tickNode(flowId, childPath, node.children[i]);
+			const result = tickNode(flowId, childPath, child);
 			if (result.type === "done") {
 				setNodeResult(flowId, childPath, "success");
 				continue;
@@ -185,10 +220,14 @@ export function tickNode(
 	if (node.type === "selector") {
 		for (let i = 0; i < node.children.length; i++) {
 			const childPath = [...path, i];
-			const childStatus = getNodeResult(flowId, childPath);
+			const child = node.children[i] as NormalizedNode;
+			let childStatus = getNodeResult(flowId, childPath);
+			if (childStatus === "failure" && maybeRetry(flowId, childPath, child)) {
+				childStatus = null;
+			}
 			if (childStatus === "success") return { type: "done" };
 			if (childStatus === "failure") continue;
-			const result = tickNode(flowId, childPath, node.children[i]);
+			const result = tickNode(flowId, childPath, child);
 			if (result.type === "done") {
 				setNodeResult(flowId, childPath, "success");
 				return { type: "done" };
@@ -207,10 +246,14 @@ export function tickNode(
 		let firstPending: TickResult | null = null;
 		for (let i = 0; i < node.children.length; i++) {
 			const childPath = [...path, i];
-			const childStatus = getNodeResult(flowId, childPath);
+			const child = node.children[i] as NormalizedNode;
+			let childStatus = getNodeResult(flowId, childPath);
+			if (childStatus === "failure" && maybeRetry(flowId, childPath, child)) {
+				childStatus = null;
+			}
 			if (childStatus === "failure") return { type: "failure" };
 			if (childStatus === "success") continue;
-			const result = tickNode(flowId, childPath, node.children[i]);
+			const result = tickNode(flowId, childPath, child);
 			if (result.type === "done") {
 				setNodeResult(flowId, childPath, "success");
 				continue;

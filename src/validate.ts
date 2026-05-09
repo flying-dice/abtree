@@ -45,6 +45,21 @@ function isObject(v: unknown): v is Record<string, unknown> {
 	return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+function parseRetries(
+	raw: Record<string, unknown>,
+	ctx: string,
+): number | undefined {
+	if (raw.retries === undefined) return undefined;
+	if (
+		typeof raw.retries !== "number" ||
+		!Number.isInteger(raw.retries) ||
+		raw.retries < 1
+	) {
+		die(`${ctx}: retries must be a positive integer`);
+	}
+	return raw.retries as number;
+}
+
 function validateStep(raw: unknown, ctx: string): Step {
 	if (!isObject(raw)) die(`${ctx}: step must be an object`);
 	const keys = Object.keys(raw);
@@ -76,6 +91,8 @@ function validateNode(raw: unknown, ctx: string): AbtNode {
 	if (typeof raw.name !== "string" || !raw.name)
 		die(`${ctx}: node.name is required`);
 
+	const retries = parseRetries(raw, ctx);
+
 	if (raw.type === "action") {
 		if (!Array.isArray(raw.steps) || raw.steps.length === 0)
 			die(`${ctx}.${raw.name}: action node must have at least one step`);
@@ -85,6 +102,7 @@ function validateNode(raw: unknown, ctx: string): AbtNode {
 			steps: raw.steps.map((s, i) =>
 				validateStep(s, `${ctx}.${raw.name}.steps[${i}]`),
 			),
+			...(retries !== undefined ? { retries } : {}),
 		};
 	}
 
@@ -101,6 +119,7 @@ function validateNode(raw: unknown, ctx: string): AbtNode {
 			children: raw.children.map((c, i) =>
 				validateNode(c, `${ctx}.${raw.name}.children[${i}]`),
 			),
+			...(retries !== undefined ? { retries } : {}),
 		};
 	}
 
@@ -152,11 +171,13 @@ export function normalizeNode(node: AbtNode): NormalizedNode {
 			type: "action",
 			name: node.name,
 			steps: node.steps.map(normalizeStep),
+			...(node.retries !== undefined ? { retries: node.retries } : {}),
 		};
 	}
 	return {
 		type: node.type,
 		name: node.name,
 		children: node.children.map(normalizeNode),
+		...(node.retries !== undefined ? { retries: node.retries } : {}),
 	};
 }

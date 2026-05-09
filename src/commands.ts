@@ -16,7 +16,7 @@ import {
 	loadTree,
 	setNodeResult,
 	setStepIndex,
-	tickNode,
+	tickRoot,
 } from "./tree.ts";
 import { die, out } from "./utils.ts";
 
@@ -108,7 +108,7 @@ export function cmdNext(flowId: string) {
 		return;
 	}
 
-	const result = tickNode(flowId, [], treeDef.root);
+	const result = tickRoot(flowId, treeDef.root);
 
 	if (result.type === "done") {
 		FlowStore.update(flowId, {
