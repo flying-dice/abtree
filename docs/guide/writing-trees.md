@@ -12,7 +12,7 @@ Trees live in `.abtree/trees/<slug>.yaml`. The slug becomes the tree name shown 
     hello-world.yaml
     code-review.yaml
     deploy.yaml
-  flows/                              # populated as you create flows
+  executions/                              # populated as you create executions
     first-run__hello-world__1.json
     first-run__hello-world__1.mermaid
 ```
@@ -26,12 +26,12 @@ Trees live in `.abtree/trees/<slug>.yaml`. The slug becomes the tree name shown 
 
 The project-local copy wins if both define the same slug. Drop a tree in `~/.abtree/trees/` to make it your default everywhere; commit a same-named file under `.abtree/trees/` to override it for one project.
 
-Flows always go into the cwd's `.abtree/flows/` regardless of where the tree was sourced from.
+Executions always go into the cwd's `.abtree/executions/` regardless of where the tree was sourced from.
 
 ### Splitting a tree across files
 
 Large trees can be split using JSON-Schema-style `$ref` references.
-abtree resolves them at flow-creation time via
+abtree resolves them at execution-creation time via
 [`@apidevtools/json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser),
 so the rest of the runtime sees one fully-resolved snapshot.
 
@@ -67,7 +67,7 @@ children:
 
 A fragment file is just a node — it does NOT carry the top-level `name`, `version`, `description`, `state` keys. Those live on the root tree only. Each fragment is the value for the position it's referenced from (a single composite or action node).
 
-The merged tree is written into the flow's `snapshot` field at flow-creation time, so editing fragments after creation does not affect existing flows — only new flows pick up the change.
+The merged tree is written into the execution's `snapshot` field at execution-creation time, so editing fragments after creation does not affect existing executions — only new executions pick up the change.
 
 ## Top-level structure
 
@@ -100,7 +100,7 @@ tree:
 
 ## State
 
-The `state.local` block defines the *shape* of `$LOCAL` at flow creation. Use `null` for slots that get populated by actions during the run. Use literal values for defaults.
+The `state.local` block defines the *shape* of `$LOCAL` at execution creation. Use `null` for slots that get populated by actions during the run. Use literal values for defaults.
 
 ```yaml
 state:
@@ -255,11 +255,11 @@ Copy a bundled tree to a new file and tweak. Try:
 - Add a `Check_Calendar` action to `Gather_Context` (parallel will pick it up automatically).
 - Replace `Compose_Response` with two actions: one to draft, one to format.
 
-Every change is reflected the next time you run `abtree flow create <your-tree>`.
+Every change is reflected the next time you run `abtree execution create <your-tree>`.
 
 ## Validation
 
-abtree validates the YAML on load. If a tree is malformed, `abtree tree list` won't include it and `abtree flow create` will print the error.
+abtree validates the YAML on load. If a tree is malformed, `abtree tree list` won't include it and `abtree execution create` will print the error.
 
 ## Next
 

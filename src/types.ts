@@ -68,7 +68,7 @@ export type ParsedTree = {
 	root: NormalizedNode;
 };
 
-export interface FlowRow {
+export interface ExecutionRow {
 	id: string;
 	tree: string;
 	summary: string;
@@ -86,7 +86,7 @@ export interface RuntimeState {
 	retry_count: Record<string, number>;
 }
 
-export interface FlowDoc extends FlowRow {
+export interface ExecutionDoc extends ExecutionRow {
 	local: Record<string, unknown>;
 	global: Record<string, unknown>;
 	runtime: RuntimeState;

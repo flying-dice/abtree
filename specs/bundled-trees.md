@@ -82,11 +82,11 @@ mkdir -p .abtree/trees && curl -fsSL ... -o .abtree/trees/<file>.yaml
 
 **Run with Claude**
 ```sh
-claude "Use the abtree <slug> flow to ..."
+claude "Use the abtree <slug> tree to ..."
 ```
 ```
 
-The "Run with Claude" snippet is the literal prompt a user can paste into their agent to drive the flow.
+The "Run with Claude" snippet is the literal prompt a user can paste into their agent to drive the execution.
 
 ### Test coverage
 
@@ -103,7 +103,7 @@ The "Run with Claude" snippet is the literal prompt a user can paste into their 
 ## Acceptance Criteria
 
 - `abtree tree list` returns every bundled slug.
-- `abtree flow create <slug> "smoke"` succeeds for every bundled slug (no validation errors).
+- `abtree execution create <slug> "smoke"` succeeds for every bundled slug (no validation errors).
 - Each tree's `description` field is non-empty and one sentence.
 - Each tree has a corresponding section in `docs/examples.md`.
 - The four prerequisite-bearing trees (`implement`, `backend-design`, `frontend-design`) name their dependency on `refine` in their examples-page entry.
@@ -112,7 +112,7 @@ The "Run with Claude" snippet is the literal prompt a user can paste into their 
 ## Risks & Considerations
 
 - **Tree-version drift.** The bundled trees evolve; users who copied them locally have a frozen version. There's no migration mechanism. Acceptable; trees are short and re-curl-able.
-- **Tree-specific prompt drift.** The `instruct` prose is what the agent does. Phrasing affects quality. There's no automated regression test for prose quality — only the structural test (does the flow advance?). Acceptable trade-off; prose changes are reviewable via diff.
+- **Tree-specific prompt drift.** The `instruct` prose is what the agent does. Phrasing affects quality. There's no automated regression test for prose quality — only the structural test (does the execution advance?). Acceptable trade-off; prose changes are reviewable via diff.
 - **Code-review tree's "via the MCP" reference.** Soft suggestion in the instruct rather than a hard dependency. Documented; matches the broader "no MCP today, but the trees can opt in if one is loaded" stance.
 - **`refine` produces a spec but doesn't guarantee codeowner approval.** Downstream trees (`implement` etc.) refuse to start unless `reviewed_by` is set, surfacing a clean failure. Documented in the spec-approved-gate idiom.
 

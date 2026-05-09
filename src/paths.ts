@@ -11,10 +11,10 @@ function expandHome(p: string): string {
 export const ABTREE_DIR = resolve(process.cwd(), ".abtree");
 export const TREES_DIR = join(ABTREE_DIR, "trees");
 
-// Flows directory — override with ABTREE_FLOWS_DIR (absolute, relative, or ~/-prefixed).
-export const FLOWS_DIR = process.env.ABTREE_FLOWS_DIR
-	? resolve(expandHome(process.env.ABTREE_FLOWS_DIR))
-	: join(ABTREE_DIR, "flows");
+// Executions directory — override with ABTREE_EXECUTIONS_DIR (absolute, relative, or ~/-prefixed).
+export const EXECUTIONS_DIR = process.env.ABTREE_EXECUTIONS_DIR
+	? resolve(expandHome(process.env.ABTREE_EXECUTIONS_DIR))
+	: join(ABTREE_DIR, "executions");
 
 export const HOME_ABTREE_DIR = join(homedir(), ".abtree");
 export const HOME_TREES_DIR = join(HOME_ABTREE_DIR, "trees");

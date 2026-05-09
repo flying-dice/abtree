@@ -8,9 +8,9 @@ import {
 	type SkillScope,
 	type SkillVariant,
 } from "./paths.ts";
-import { FlowStore } from "./repos.ts";
+import { ExecutionStore } from "./repos.ts";
 import {
-	generateFlowId,
+	generateExecutionId,
 	getNodeAtPath,
 	listTreeSlugs,
 	loadTree,
@@ -24,14 +24,14 @@ export function cmdTreeList() {
 	out(listTreeSlugs());
 }
 
-export async function cmdFlowCreate(treeSlug: string, summary: string) {
+export async function cmdExecutionCreate(treeSlug: string, summary: string) {
 	const treeDef = await loadTree(treeSlug);
 	if (!treeDef) die(`Tree '${treeSlug}' not found`);
 
-	const id = generateFlowId(treeSlug, summary);
+	const id = generateExecutionId(treeSlug, summary);
 	const now = new Date().toISOString();
 
-	FlowStore.create({
+	ExecutionStore.create({
 		id,
 		tree: treeSlug,
 		summary,
@@ -43,8 +43,8 @@ export async function cmdFlowCreate(treeSlug: string, summary: string) {
 		updated_at: now,
 	});
 
-	FlowStore.replaceLocal(id, treeDef.local);
-	FlowStore.replaceGlobal(id, treeDef.global);
+	ExecutionStore.replaceLocal(id, treeDef.local);
+	ExecutionStore.replaceGlobal(id, treeDef.global);
 	rebuildMermaid(id);
 
 	out({
@@ -56,9 +56,9 @@ export async function cmdFlowCreate(treeSlug: string, summary: string) {
 	});
 }
 
-export function cmdFlowList() {
+export function cmdExecutionList() {
 	out(
-		FlowStore.list().map((d) => ({
+		ExecutionStore.list().map((d) => ({
 			id: d.id,
 			tree: d.tree,
 			summary: d.summary,
@@ -68,25 +68,25 @@ export function cmdFlowList() {
 	);
 }
 
-export function cmdFlowGet(flowId: string) {
-	const doc = FlowStore.findById(flowId);
-	if (!doc) die(`Flow '${flowId}' not found`);
+export function cmdExecutionGet(executionId: string) {
+	const doc = ExecutionStore.findById(executionId);
+	if (!doc) die(`Execution '${executionId}' not found`);
 	out(doc);
 }
 
-export function cmdFlowReset(flowId: string) {
-	const doc = FlowStore.findById(flowId);
-	if (!doc) die(`Flow '${flowId}' not found`);
+export function cmdExecutionReset(executionId: string) {
+	const doc = ExecutionStore.findById(executionId);
+	if (!doc) die(`Execution '${executionId}' not found`);
 	const treeDef = JSON.parse(doc.snapshot);
-	FlowStore.replaceLocal(flowId, treeDef.local ?? {});
-	FlowStore.update(flowId, { status: "running", cursor: "[]", phase: "idle" });
-	rebuildMermaid(flowId);
+	ExecutionStore.replaceLocal(executionId, treeDef.local ?? {});
+	ExecutionStore.update(executionId, { status: "running", cursor: "[]", phase: "idle" });
+	rebuildMermaid(executionId);
 	out({ status: "reset" });
 }
 
-export function cmdNext(flowId: string) {
-	const doc = FlowStore.findById(flowId);
-	if (!doc) die(`Flow '${flowId}' not found`);
+export function cmdNext(executionId: string) {
+	const doc = ExecutionStore.findById(executionId);
+	if (!doc) die(`Execution '${executionId}' not found`);
 
 	const treeDef = JSON.parse(doc.snapshot);
 	const phase = doc.phase;
@@ -108,40 +108,40 @@ export function cmdNext(flowId: string) {
 		return;
 	}
 
-	const result = tickRoot(flowId, treeDef.root);
+	const result = tickRoot(executionId, treeDef.root);
 
 	if (result.type === "done") {
-		FlowStore.update(flowId, {
+		ExecutionStore.update(executionId, {
 			status: "complete",
 			phase: "idle",
 			cursor: "null",
 		});
-		rebuildMermaid(flowId);
+		rebuildMermaid(executionId);
 		out({ status: "done" });
 		return;
 	}
 
 	if (result.type === "failure") {
-		FlowStore.update(flowId, {
+		ExecutionStore.update(executionId, {
 			status: "failed",
 			phase: "idle",
 			cursor: "null",
 		});
-		rebuildMermaid(flowId);
+		rebuildMermaid(executionId);
 		out({ status: "failure" });
 		return;
 	}
 
 	if (result.type === "evaluate") {
 		const cur = JSON.stringify({ path: result.path, step: result.step });
-		FlowStore.update(flowId, { phase: "evaluating", cursor: cur });
+		ExecutionStore.update(executionId, { phase: "evaluating", cursor: cur });
 		out({ type: "evaluate", name: result.name, expression: result.expression });
 		return;
 	}
 
 	if (result.type === "instruct") {
 		const cur = JSON.stringify({ path: result.path, step: result.step });
-		FlowStore.update(flowId, { phase: "performing", cursor: cur });
+		ExecutionStore.update(executionId, { phase: "performing", cursor: cur });
 		out({
 			type: "instruct",
 			name: result.name,
@@ -153,28 +153,28 @@ export function cmdNext(flowId: string) {
 	out({ status: "done" });
 }
 
-export function cmdEval(flowId: string, result: boolean) {
-	const doc = FlowStore.findById(flowId);
-	if (!doc) die(`Flow '${flowId}' not found`);
+export function cmdEval(executionId: string, result: boolean) {
+	const doc = ExecutionStore.findById(executionId);
+	if (!doc) die(`Execution '${executionId}' not found`);
 	if (doc.phase !== "evaluating")
-		die(`Flow is not in evaluating phase (current: ${doc.phase})`);
+		die(`Execution is not in evaluating phase (current: ${doc.phase})`);
 
 	const cursor = JSON.parse(doc.cursor);
 	const path: number[] = cursor.path;
 	const stepIdx: number = cursor.step;
 
 	if (result) {
-		setStepIndex(flowId, path, stepIdx + 1);
-		FlowStore.update(flowId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(flowId);
+		setStepIndex(executionId, path, stepIdx + 1);
+		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
+		rebuildMermaid(executionId);
 		out({
 			status: "evaluation_passed",
 			message: "Precondition met. Advancing.",
 		});
 	} else {
-		setNodeResult(flowId, path, "failure");
-		FlowStore.update(flowId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(flowId);
+		setNodeResult(executionId, path, "failure");
+		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
+		rebuildMermaid(executionId);
 		out({
 			status: "evaluation_failed",
 			message: "Precondition not met. Action failed.",
@@ -183,13 +183,13 @@ export function cmdEval(flowId: string, result: boolean) {
 }
 
 export function cmdSubmit(
-	flowId: string,
+	executionId: string,
 	status: "success" | "failure" | "running",
 ) {
-	const doc = FlowStore.findById(flowId);
-	if (!doc) die(`Flow '${flowId}' not found`);
+	const doc = ExecutionStore.findById(executionId);
+	if (!doc) die(`Execution '${executionId}' not found`);
 	if (doc.phase !== "performing")
-		die(`Flow is not in performing phase (current: ${doc.phase})`);
+		die(`Execution is not in performing phase (current: ${doc.phase})`);
 
 	const cursor = JSON.parse(doc.cursor);
 	const path: number[] = cursor.path;
@@ -204,9 +204,9 @@ export function cmdSubmit(
 	}
 
 	if (status === "failure") {
-		setNodeResult(flowId, path, "failure");
-		FlowStore.update(flowId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(flowId);
+		setNodeResult(executionId, path, "failure");
+		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
+		rebuildMermaid(executionId);
 		out({
 			status: "action_failed",
 			message: "Instruction failed. Action marked as failure.",
@@ -220,46 +220,46 @@ export function cmdSubmit(
 	const nextStep = stepIdx + 1;
 
 	if (nextStep >= node.steps.length) {
-		setNodeResult(flowId, path, "success");
-		FlowStore.update(flowId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(flowId);
+		setNodeResult(executionId, path, "success");
+		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
+		rebuildMermaid(executionId);
 		out({
 			status: "action_complete",
 			message: "All steps done. Action succeeded.",
 		});
 	} else {
-		setStepIndex(flowId, path, nextStep);
-		FlowStore.update(flowId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(flowId);
+		setStepIndex(executionId, path, nextStep);
+		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
+		rebuildMermaid(executionId);
 		out({ status: "step_complete", message: "Step done. More steps remain." });
 	}
 }
 
-export function cmdLocalRead(flowId: string, path?: string) {
+export function cmdLocalRead(executionId: string, path?: string) {
 	if (path) {
-		out({ path, value: FlowStore.getLocal(flowId, path) });
+		out({ path, value: ExecutionStore.getLocal(executionId, path) });
 	} else {
-		out(FlowStore.getLocal(flowId));
+		out(ExecutionStore.getLocal(executionId));
 	}
 }
 
-export function cmdLocalWrite(flowId: string, path: string, value: string) {
+export function cmdLocalWrite(executionId: string, path: string, value: string) {
 	let parsed: unknown;
 	try {
 		parsed = JSON.parse(value);
 	} catch {
 		parsed = value;
 	}
-	FlowStore.setLocal(flowId, path, parsed);
-	rebuildMermaid(flowId);
+	ExecutionStore.setLocal(executionId, path, parsed);
+	rebuildMermaid(executionId);
 	out({ path, value: parsed });
 }
 
-export function cmdGlobalRead(flowId: string, path?: string) {
+export function cmdGlobalRead(executionId: string, path?: string) {
 	if (path) {
-		out({ path, value: FlowStore.getGlobal(flowId, path) });
+		out({ path, value: ExecutionStore.getGlobal(executionId, path) });
 	} else {
-		out(FlowStore.getGlobal(flowId));
+		out(ExecutionStore.getGlobal(executionId));
 	}
 }
 

@@ -15,7 +15,7 @@ Trees are loaded from two locations:
 | `.abtree/trees/` (cwd) | Project-local trees, committed alongside the code they apply to. |
 | `~/.abtree/trees/` | User-global trees, available in every project. |
 
-Project-local wins on duplicate slugs — drop `~/.abtree/trees/code-review.yaml` for a default review flow, override it per-project by committing a `.abtree/trees/code-review.yaml` to the repo.
+Project-local wins on duplicate slugs — drop `~/.abtree/trees/code-review.yaml` for a default review tree, override it per-project by committing a `.abtree/trees/code-review.yaml` to the repo.
 
 ```sh
 $ abtree tree list
@@ -26,14 +26,14 @@ $ abtree tree list
 ]
 ```
 
-## Flows
+## Executions
 
-### `abtree flow create <tree-slug> <summary>`
+### `abtree execution create <tree-slug> <summary>`
 
-Create a new flow from a tree. The summary is a human label — kebab-cased, it becomes part of the flow ID.
+Create a new execution from a tree. The summary is a human label — kebab-cased, it becomes part of the execution ID.
 
 ```sh
-$ abtree flow create hello-world "first run"
+$ abtree execution create hello-world "first run"
 {
   "id": "first-run__hello-world__1",
   "tree": "hello-world",
@@ -43,12 +43,12 @@ $ abtree flow create hello-world "first run"
 }
 ```
 
-### `abtree flow list`
+### `abtree execution list`
 
-List every flow with status and phase.
+List every execution with status and phase.
 
 ```sh
-$ abtree flow list
+$ abtree execution list
 [
   {
     "id": "first-run__hello-world__1",
@@ -60,17 +60,17 @@ $ abtree flow list
 ]
 ```
 
-### `abtree flow get <flow-id>`
+### `abtree execution get <execution-id>`
 
-Full flow document: metadata, snapshot, cursor, `$LOCAL`, `$GLOBAL`.
+Full execution document: metadata, snapshot, cursor, `$LOCAL`, `$GLOBAL`.
 
-### `abtree flow reset <flow-id>`
+### `abtree execution reset <execution-id>`
 
-Reset a flow to its initial state. Status returns to `running`, all `$LOCAL` keys revert to their tree defaults. Useful for re-running a flow after fixing a tree.
+Reset an execution to its initial state. Status returns to `running`, all `$LOCAL` keys revert to their tree defaults. Useful for re-running an execution after fixing a tree.
 
 ## Execution loop
 
-### `abtree next <flow-id>`
+### `abtree next <execution-id>`
 
 Get the next step. Returns one of:
 
@@ -81,21 +81,21 @@ Get the next step. Returns one of:
 { "status": "failure" }
 ```
 
-### `abtree eval <flow-id> <true|false>`
+### `abtree eval <execution-id> <true|false>`
 
 Submit the result of an `evaluate` request. The agent reads the expression, decides whether it holds against current state, and reports back.
 
-### `abtree submit <flow-id> <success|failure|running>`
+### `abtree submit <execution-id> <success|failure|running>`
 
 Submit the result of an `instruct` request.
 
 - `success` advances the cursor.
 - `failure` marks the action failed; the runtime backs out by branch rules.
-- `running` keeps the flow in performing state — useful when the work takes time and you want to ack-and-continue later.
+- `running` keeps the execution in performing state — useful when the work takes time and you want to ack-and-continue later.
 
 ## State
 
-### `abtree local read <flow-id> [path]`
+### `abtree local read <execution-id> [path]`
 
 Read from `$LOCAL`. With no path, returns the whole scope. With a dot-notation path, returns one value.
 
@@ -104,11 +104,11 @@ $ abtree local read first-run__hello-world__1 greeting
 { "path": "greeting", "value": "Good morning, Alice!" }
 ```
 
-### `abtree local write <flow-id> <path> <value>`
+### `abtree local write <execution-id> <path> <value>`
 
 Write a value at the given path. Values are JSON-parsed when possible — `true`, `42`, `"hello"`, `[1,2,3]` all work.
 
-### `abtree global read <flow-id> [path]`
+### `abtree global read <execution-id> [path]`
 
 Read from `$GLOBAL`. Read-only via the CLI.
 
@@ -122,22 +122,22 @@ Prints the full execution protocol — the same content an LLM driving abtree ne
 
 | Variable | Effect |
 |---|---|
-| `ABTREE_FLOWS_DIR` | Overrides the flows directory. Default: `.abtree/flows/` in the cwd. Accepts absolute paths, relative paths (resolved against cwd), or `~/`-prefixed paths. |
+| `ABTREE_EXECUTIONS_DIR` | Overrides the executions directory. Default: `.abtree/executions/` in the cwd. Accepts absolute paths, relative paths (resolved against cwd), or `~/`-prefixed paths. |
 
-Use `ABTREE_FLOWS_DIR` to keep flow state outside the repo (e.g. on a shared volume), or to point multiple repos at the same flow store:
+Use `ABTREE_EXECUTIONS_DIR` to keep execution state outside the repo (e.g. on a shared volume), or to point multiple repos at the same execution store:
 
 ```sh
-export ABTREE_FLOWS_DIR=~/.local/state/abtree-flows
-abtree flow list   # all flows across every project, in one place
+export ABTREE_EXECUTIONS_DIR=~/.local/state/abtree-executions
+abtree execution list   # all executions across every project, in one place
 ```
 
-Trees are still loaded from `.abtree/trees/` (cwd) and `~/.abtree/trees/` (global) — only the flows directory is overridable.
+Trees are still loaded from `.abtree/trees/` (cwd) and `~/.abtree/trees/` (global) — only the executions directory is overridable.
 
 ## Exit codes
 
 | Code | Meaning |
 |---|---|
 | `0` | Success. |
-| `1` | User error (missing flow, invalid input, bad arguments). |
+| `1` | User error (missing execution, invalid input, bad arguments). |
 
 The JSON output is always written to stdout. Errors go to stderr.

@@ -1,5 +1,5 @@
 description: |
-  Tree split across two files via $ref. The fragment is inlined at flow
+  Tree split across two files via $ref. The fragment is inlined at execution
   creation time and the runtime sees one assembled snapshot.
 tree: split-root
 files:

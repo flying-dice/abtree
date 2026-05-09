@@ -1,4 +1,4 @@
-// Deterministic test harness for abtree behaviour-tree flows.
+// Deterministic test harness for abtree behaviour-tree executions.
 //
 // Drives the abtree CLI with a recorded sequence of expected steps
 // rather than a live LLM, so the BT primitives (sequence, selector,
@@ -129,19 +129,19 @@ export async function runCase(specPath: string): Promise<void> {
 			}
 		}
 
-		// 1. Create flow.
-		const create = abt(tmp, ["flow", "create", treeName, "harness"]);
+		// 1. Create execution.
+		const create = abt(tmp, ["execution", "create", treeName, "harness"]);
 		if (create.exit !== 0) {
 			throw new Error(
-				`flow create failed (exit ${create.exit}): ${create.stderr || fmt(create.stdout)}`,
+				`execution create failed (exit ${create.exit}): ${create.stderr || fmt(create.stdout)}`,
 			);
 		}
 		const created = create.stdout as { id: string };
-		const flow = created.id;
+		const execution = created.id;
 
 		// 2. Apply initial state.
 		for (const [k, v] of Object.entries(spec.initial?.local ?? {})) {
-			const w = abt(tmp, ["local", "write", flow, k, JSON.stringify(v)]);
+			const w = abt(tmp, ["local", "write", execution, k, JSON.stringify(v)]);
 			if (w.exit !== 0)
 				throw new Error(`initial local write ${k} failed: ${w.stderr}`);
 		}
@@ -149,7 +149,7 @@ export async function runCase(specPath: string): Promise<void> {
 		// 3. Walk the steps.
 		for (let i = 0; i < spec.steps.length; i++) {
 			const step = spec.steps[i] as TestStep;
-			const next = abt(tmp, ["next", flow]);
+			const next = abt(tmp, ["next", execution]);
 			const got = next.stdout as Record<string, string>;
 
 			if (got?.type !== step.type) {
@@ -165,22 +165,22 @@ export async function runCase(specPath: string): Promise<void> {
 
 			if (step.type === "instruct") {
 				for (const [k, v] of Object.entries(step.write ?? {})) {
-					const w = abt(tmp, ["local", "write", flow, k, JSON.stringify(v)]);
+					const w = abt(tmp, ["local", "write", execution, k, JSON.stringify(v)]);
 					if (w.exit !== 0)
 						throw new Error(`step ${i}: local write ${k} failed: ${w.stderr}`);
 				}
-				const r = abt(tmp, ["submit", flow, step.submit ?? "success"]);
+				const r = abt(tmp, ["submit", execution, step.submit ?? "success"]);
 				if (r.exit !== 0)
 					throw new Error(`step ${i}: submit failed: ${r.stderr}`);
 			} else {
-				const r = abt(tmp, ["eval", flow, String(step.result)]);
+				const r = abt(tmp, ["eval", execution, String(step.result)]);
 				if (r.exit !== 0)
 					throw new Error(`step ${i}: eval failed: ${r.stderr}`);
 			}
 		}
 
 		// 4. Final next: should match expected terminal status.
-		const final = abt(tmp, ["next", flow]);
+		const final = abt(tmp, ["next", execution]);
 		const finalOut = final.stdout as { status?: string };
 		if (finalOut?.status !== spec.final.status) {
 			throw new Error(
@@ -190,7 +190,7 @@ export async function runCase(specPath: string): Promise<void> {
 
 		// 5. Assert final $LOCAL state if specified.
 		if (spec.final.local) {
-			const localOut = abt(tmp, ["local", "read", flow]);
+			const localOut = abt(tmp, ["local", "read", execution]);
 			const local = localOut.stdout as Record<string, unknown>;
 			for (const [k, expected] of Object.entries(spec.final.local)) {
 				if (!eq(local[k], expected)) {
@@ -203,7 +203,7 @@ export async function runCase(specPath: string): Promise<void> {
 
 		// 6. Assert runtime retry counts if specified.
 		if (spec.final.runtime?.retry_count) {
-			const get = abt(tmp, ["flow", "get", flow]);
+			const get = abt(tmp, ["execution", "get", execution]);
 			const doc = get.stdout as {
 				runtime: { retry_count: Record<string, number> };
 			};

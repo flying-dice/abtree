@@ -85,13 +85,13 @@ steps:
 
 ### `evaluate`
 
-A precondition. A semantic boolean expression checked against `$LOCAL` and `$GLOBAL`. The agent reads it, decides if it's true, and submits the answer with `abtree eval <flow> true|false`.
+A precondition. A semantic boolean expression checked against `$LOCAL` and `$GLOBAL`. The agent reads it, decides if it's true, and submits the answer with `abtree eval <execution> true|false`.
 
 If `false`, the action fails immediately. The runtime advances by branch rules: a sequence aborts; a selector tries the next child.
 
 ### `instruct`
 
-The work. Free-form prose telling the agent what to do. The agent does it, writes results to `$LOCAL`, and calls `abtree submit <flow> success` to advance.
+The work. Free-form prose telling the agent what to do. The agent does it, writes results to `$LOCAL`, and calls `abtree submit <execution> success` to advance.
 
 An action can have multiple steps — alternating evaluates and instructs — to handle multi-stage logic in a single leaf.
 
@@ -132,7 +132,7 @@ That's the full hello-world tree. Four primitives. Sixteen lines of structure. R
 
 ## How the loop runs
 
-When you call `abtree next <flow>`, the runtime walks the tree from the root, looking for the next pending step:
+When you call `abtree next <execution>`, the runtime walks the tree from the root, looking for the next pending step:
 
 1. It descends into the first incomplete child of a sequence, or the first untried child of a selector, or all children of a parallel.
 2. It returns the first pending `evaluate` or `instruct` it finds.

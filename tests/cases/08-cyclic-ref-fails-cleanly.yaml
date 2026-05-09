@@ -1,6 +1,6 @@
 description: |
   A cyclic $ref is preserved as a placeholder in the snapshot rather
-  than expanded, so flow creation does not stack-overflow. Ticking the
+  than expanded, so execution creation does not stack-overflow. Ticking the
   cyclic edge surfaces a clean failure.
 tree: cycle-root
 files:

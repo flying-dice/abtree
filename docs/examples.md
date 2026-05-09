@@ -1,6 +1,6 @@
 # Examples registry
 
-Ready-to-use behaviour trees. Each entry includes the YAML files, a one-liner to copy them into your local `.abtree/trees/`, and a Claude handover command that briefs Claude to drive the flow with abtree.
+Ready-to-use behaviour trees. Each entry includes the YAML files, a one-liner to copy them into your local `.abtree/trees/`, and a Claude handover command that briefs Claude to drive the execution with abtree.
 
 Every install command is idempotent — safe to re-run. Existing files in `.abtree/trees/` are overwritten with the latest version from `main`.
 
@@ -25,7 +25,7 @@ mkdir -p .abtree/trees \
 **Run with Claude**
 
 ```sh
-claude "Run the abtree hello-world flow end-to-end. Start by running 'abtree --help' to learn the execution protocol, then create a flow with 'abtree flow create hello-world \"smoke test\"' and drive it through every step until you see status: done."
+claude "Run the abtree hello-world tree end-to-end. Start by running 'abtree --help' to learn the execution protocol, then create an execution with 'abtree execution create hello-world \"smoke test\"' and drive it through every step until you see status: done."
 ```
 
 ---
@@ -52,14 +52,14 @@ mkdir -p .abtree/trees/fragments \
 **Run with Claude**
 
 ```sh
-claude "Run the abtree counter-demo flow end-to-end. Use 'abtree --help' to learn the protocol, then drive it through every step. Each Pass is an Increment instruct followed by a Test evaluate that checks counter > threshold. The first three passes will fail the test; the fourth will succeed. Final counter is 4."
+claude "Run the abtree counter-demo tree end-to-end. Use 'abtree --help' to learn the protocol, then drive it through every step. Each Pass is an Increment instruct followed by a Test evaluate that checks counter > threshold. The first three passes will fail the test; the fourth will succeed. Final counter is 4."
 ```
 
 ---
 
 ## Spec refinement
 
-Refine a one-line change request into a hardened, codeowner-reviewable spec. The flow analyses intent, drafts a structured spec (frontmatter + summary + requirements + technical approach + acceptance criteria + risks), critiques it as a Staff Engineer, and saves the result to `specs/<kebab-title>.md`. The `reviewed_by` field stays empty until a codeowner approves it.
+Refine a one-line change request into a hardened, codeowner-reviewable spec. The execution analyses intent, drafts a structured spec (frontmatter + summary + requirements + technical approach + acceptance criteria + risks), critiques it as a Staff Engineer, and saves the result to `specs/<kebab-title>.md`. The `reviewed_by` field stays empty until a codeowner approves it.
 
 **Files**
 
@@ -76,7 +76,7 @@ mkdir -p .abtree/trees \
 **Run with Claude**
 
 ```sh
-claude "Use the abtree refine flow to turn this change request into a spec: <one-line description>. Run 'abtree --help' first to learn the protocol, then create the flow, write the change_request to LOCAL, and drive it to completion. Show me the final spec path."
+claude "Use the abtree refine tree to turn this change request into a spec: <one-line description>. Run 'abtree --help' first to learn the protocol, then create the execution, write the change_request to LOCAL, and drive it to completion. Show me the final spec path."
 ```
 
 ---
@@ -103,14 +103,14 @@ mkdir -p .abtree/trees \
 **Run with Claude**
 
 ```sh
-claude "I want to <feature description>. First run the abtree refine flow to produce a spec at specs/<slug>.md, then pause for me to add my name to reviewed_by. Once I confirm approval, run the abtree implement flow against the spec and write the code. Use 'abtree --help' to learn the protocol."
+claude "I want to <feature description>. First run the abtree refine tree to produce a spec at specs/<slug>.md, then pause for me to add my name to reviewed_by. Once I confirm approval, run the abtree implement tree against the spec and write the code. Use 'abtree --help' to learn the protocol."
 ```
 
 ---
 
 ## Backend design
 
-Design and implement a backend service from an approved spec. Architectural critique gates the build: the flow plans the data model, API surface, and service layer; runs the plan past a Senior Principal critique pass; and only then writes code. Like `implement`, it consumes a reviewed spec from `specs/`.
+Design and implement a backend service from an approved spec. Architectural critique gates the build: the execution plans the data model, API surface, and service layer; runs the plan past a Senior Principal critique pass; and only then writes code. Like `implement`, it consumes a reviewed spec from `specs/`.
 
 **Files**
 
@@ -130,7 +130,7 @@ mkdir -p .abtree/trees \
 **Run with Claude**
 
 ```sh
-claude "I need a backend service for <description>. First run the abtree refine flow to spec it. After I review, run the abtree backend-design flow against the spec to plan the architecture and write the service. Use 'abtree --help' to learn the protocol."
+claude "I need a backend service for <description>. First run the abtree refine tree to spec it. After I review, run the abtree backend-design tree against the spec to plan the architecture and write the service. Use 'abtree --help' to learn the protocol."
 ```
 
 ---
@@ -160,7 +160,7 @@ mkdir -p .abtree/trees .abtree/playbooks \
 **Run with Claude**
 
 ```sh
-claude "I need a frontend component for <description>. First run the abtree refine flow to spec it. After I review, run the abtree frontend-design flow against the spec to set aesthetic direction and build the component. Use 'abtree --help' to learn the protocol."
+claude "I need a frontend component for <description>. First run the abtree refine tree to spec it. After I review, run the abtree frontend-design tree against the spec to set aesthetic direction and build the component. Use 'abtree --help' to learn the protocol."
 ```
 
 ---
@@ -184,7 +184,7 @@ mkdir -p .abtree/trees \
 **Run with Claude**
 
 ```sh
-claude "Use the abtree technical-writer flow to document <topic>. Run 'abtree --help' first to learn the protocol, then create the flow, write the goal to LOCAL, and drive it to completion. If a styleguide doesn't exist yet, draft one and pause for me to approve before continuing."
+claude "Use the abtree technical-writer tree to document <topic>. Run 'abtree --help' first to learn the protocol, then create the execution, write the goal to LOCAL, and drive it to completion. If a styleguide doesn't exist yet, draft one and pause for me to approve before continuing."
 ```
 
 ---
@@ -208,7 +208,7 @@ mkdir -p .abtree/trees \
 **Run with Claude**
 
 ```sh
-claude "Run the abtree improve-codebase flow on this repo. Use 'abtree --help' to learn the protocol. Set $LOCAL.change_request to a one-line scope ('full repo' / 'just the auth module' / 'DRY only'); $GLOBAL.test_command to the project's regression test command. Drive Check_Intent through to Cycle_Verdict, pausing for my approval at the triage gate. Surface the baseline-vs-final delta and any items that hit the per-item attempt cap."
+claude "Run the abtree improve-codebase tree on this repo. Use 'abtree --help' to learn the protocol. Set $LOCAL.change_request to a one-line scope ('full repo' / 'just the auth module' / 'DRY only'); $GLOBAL.test_command to the project's regression test command. Drive Check_Intent through to Cycle_Verdict, pausing for my approval at the triage gate. Surface the baseline-vs-final delta and any items that hit the per-item attempt cap."
 ```
 
 ---
@@ -235,7 +235,7 @@ mkdir -p .abtree/trees .abtree/playbooks \
 **Run with Claude**
 
 ```sh
-claude "Review MR <ref or commit SHA> using the abtree code-review flow. Use 'abtree --help' to learn the protocol, fetch the diff, run all three review passes, and report the verdict with line-cited findings."
+claude "Review MR <ref or commit SHA> using the abtree code-review tree. Use 'abtree --help' to learn the protocol, fetch the diff, run all three review passes, and report the verdict with line-cited findings."
 ```
 
 ---
