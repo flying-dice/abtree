@@ -1,8 +1,8 @@
 $ErrorActionPreference = "Stop"
 
 $Repo = "flying-dice/abtree"
-$Asset = "abt-windows-x64.exe"
-$BinName = "abt.exe"
+$Asset = "abtree-windows-x64.exe"
+$BinName = "abtree.exe"
 $InstallDir = "$env:USERPROFILE\.local\bin"
 
 $Url = "https://github.com/$Repo/releases/latest/download/$Asset"

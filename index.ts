@@ -25,7 +25,7 @@ import {
 } from "./src/validate.ts";
 
 const program = new Command()
-	.name("abt")
+	.name("abtree")
 	.description(
 		"Durable execution engine for Agent Behaviour Trees. Creates flows that track work via a structured tree walk.",
 	)

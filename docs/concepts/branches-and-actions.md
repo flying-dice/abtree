@@ -85,13 +85,13 @@ steps:
 
 ### `evaluate`
 
-A precondition. A semantic boolean expression checked against `$LOCAL` and `$GLOBAL`. The agent reads it, decides if it's true, and submits the answer with `abt eval <flow> true|false`.
+A precondition. A semantic boolean expression checked against `$LOCAL` and `$GLOBAL`. The agent reads it, decides if it's true, and submits the answer with `abtree eval <flow> true|false`.
 
 If `false`, the action fails immediately. The runtime advances by branch rules: a sequence aborts; a selector tries the next child.
 
 ### `instruct`
 
-The work. Free-form prose telling the agent what to do. The agent does it, writes results to `$LOCAL`, and calls `abt submit <flow> success` to advance.
+The work. Free-form prose telling the agent what to do. The agent does it, writes results to `$LOCAL`, and calls `abtree submit <flow> success` to advance.
 
 An action can have multiple steps — alternating evaluates and instructs — to handle multi-stage logic in a single leaf.
 
@@ -132,14 +132,14 @@ That's the full hello-world tree. Four primitives. Sixteen lines of structure. R
 
 ## How the loop runs
 
-When you call `abt next <flow>`, the runtime walks the tree from the root, looking for the next pending step:
+When you call `abtree next <flow>`, the runtime walks the tree from the root, looking for the next pending step:
 
 1. It descends into the first incomplete child of a sequence, or the first untried child of a selector, or all children of a parallel.
 2. It returns the first pending `evaluate` or `instruct` it finds.
-3. You answer with `abt eval` or `abt submit`.
-4. The runtime updates state, recomputes the cursor, and waits for the next `abt next`.
+3. You answer with `abtree eval` or `abtree submit`.
+4. The runtime updates state, recomputes the cursor, and waits for the next `abtree next`.
 
-You never need to track "where am I" yourself. The cursor lives in the JSON document. Restart your terminal, restart your agent — the next `abt next` picks up exactly where you left off.
+You never need to track "where am I" yourself. The cursor lives in the JSON document. Restart your terminal, restart your agent — the next `abtree next` picks up exactly where you left off.
 
 ## Next
 

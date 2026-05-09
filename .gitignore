@@ -39,12 +39,12 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .DS_Store
 
 # release binaries
-abt
-abt-linux-x64
-abt-linux-arm64
-abt-darwin-x64
-abt-darwin-arm64
-abt-windows-x64.exe
+abtree
+abtree-linux-x64
+abtree-linux-arm64
+abtree-darwin-x64
+abtree-darwin-arm64
+abtree-windows-x64.exe
 
 # vitepress build artifacts
 docs/.vitepress/dist

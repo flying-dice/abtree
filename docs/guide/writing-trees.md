@@ -4,10 +4,10 @@ This page walks through the YAML structure of a tree using the bundled `hello-wo
 
 ## File layout
 
-Trees live in `.abt/trees/<slug>.yaml`. The slug becomes the tree name shown in `abt tree list`.
+Trees live in `.abtree/trees/<slug>.yaml`. The slug becomes the tree name shown in `abtree tree list`.
 
 ```
-.abt/
+.abtree/
   trees/
     hello-world.yaml
     code-review.yaml
@@ -41,7 +41,7 @@ tree:
 |---|---|
 | `name` | Slug. Must match the filename. |
 | `version` | Free-form. Bump when you change the tree. |
-| `description` | One-line description shown in `abt tree list`. |
+| `description` | One-line description shown in `abtree tree list`. |
 | `state.local` | Initial `$LOCAL` keys. `null` is fine — they get filled in by actions. |
 | `state.global` | `$GLOBAL` values. Strings are interpreted as instructions for how to fetch them. |
 | `tree` | The root node. Always a single node — usually a `sequence`. |
@@ -186,11 +186,11 @@ Copy a bundled tree to a new file and tweak. Try:
 - Add a `Check_Calendar` action to `Gather_Context` (parallel will pick it up automatically).
 - Replace `Compose_Response` with two actions: one to draft, one to format.
 
-Every change is reflected the next time you run `abt flow create <your-tree>`.
+Every change is reflected the next time you run `abtree flow create <your-tree>`.
 
 ## Validation
 
-abtree validates the YAML on load. If a tree is malformed, `abt tree list` won't include it and `abt flow create` will print the error.
+abtree validates the YAML on load. If a tree is malformed, `abtree tree list` won't include it and `abtree flow create` will print the error.
 
 ## Next
 

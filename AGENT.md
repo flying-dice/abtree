@@ -18,31 +18,31 @@ STRICT: Never read tree files directly. All interaction goes through this CLI.
 
 --- Create protocol ---
 
-  abt flow create <tree> <summary>
-  abt local write <flow> change_request "<request>"
-  abt next <flow>   ← begin execution loop
+  abtree flow create <tree> <summary>
+  abtree local write <flow> change_request "<request>"
+  abtree next <flow>   ← begin execution loop
 
 --- Execution loop ---
 
-Call  abt next <flow>  to get the next request. Repeat until done.
+Call  abtree next <flow>  to get the next request. Repeat until done.
 
 Response shapes:
 
   { "type": "evaluate", "name": "…", "expression": "…" }
-    → Read referenced $LOCAL/$GLOBAL values with abt local read / abt global read.
+    → Read referenced $LOCAL/$GLOBAL values with abtree local read / abtree global read.
       Judge whether the expression is semantically true or false.
-      Call: abt eval <flow> true|false
+      Call: abtree eval <flow> true|false
 
   { "type": "instruct", "name": "…", "instruction": "…" }
-    → Do the work described. Write results to $LOCAL via abt local write.
-      Call: abt submit <flow> success|failure
+    → Do the work described. Write results to $LOCAL via abtree local write.
+      Call: abtree submit <flow> success|failure
 
   { "status": "done" }    → tree complete. Report outcome.
   { "status": "failure" } → tree failed. Report what happened.
 
 --- Strict rules ---
 
-  • Evaluate from actual state only — call abt local read / abt global read.
+  • Evaluate from actual state only — call abtree local read / abtree global read.
     Never judge an expression from memory or context.
   • No inference — every value written to $LOCAL must come from an explicit
     source named in the instruction (tool, command, $LOCAL/$GLOBAL path, or
@@ -54,9 +54,9 @@ Response shapes:
 
 --- State commands ---
 
-  abt local read  <flow> [path]         Read from $LOCAL
-  abt local write <flow> <path> <val>   Write to $LOCAL
-  abt global read <flow> [path]         Read from $GLOBAL
+  abtree local read  <flow> [path]         Read from $LOCAL
+  abtree local write <flow> <path> <val>   Write to $LOCAL
+  abtree global read <flow> [path]         Read from $GLOBAL
 
 --- Reporting (per action) ---
 

@@ -46,20 +46,20 @@ Mixing them — like a single "context" object — hides where data came from. T
 
 ```sh
 # Read all of $LOCAL
-abt local read <flow-id>
+abtree local read <flow-id>
 
 # Read a specific path (dot-notation)
-abt local read <flow-id> greeting
+abtree local read <flow-id> greeting
 
 # Write a value
-abt local write <flow-id> greeting "Good morning, Alice!"
+abtree local write <flow-id> greeting "Good morning, Alice!"
 
 # Read $GLOBAL
-abt global read <flow-id>
-abt global read <flow-id> user_name
+abtree global read <flow-id>
+abtree global read <flow-id> user_name
 ```
 
-Values are JSON-parsed when possible, so `abt local write <id> ready true` stores a boolean, not the string `"true"`.
+Values are JSON-parsed when possible, so `abtree local write <id> ready true` stores a boolean, not the string `"true"`.
 
 `$GLOBAL` is read-only via the CLI — values come from the tree's `state.global` block at flow creation.
 

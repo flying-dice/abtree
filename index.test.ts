@@ -3,8 +3,8 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-// Run the CLI in an isolated temp dir so tests don't touch .abt/ on disk.
-function abt(
+// Run the CLI in an isolated temp dir so tests don't touch .abtree/ on disk.
+function abtree(
 	args: string[],
 	cwd: string,
 ): { stdout: string; stderr: string; exitCode: number } {
@@ -26,12 +26,12 @@ function json(raw: string): unknown {
 let tmp: string;
 
 beforeAll(() => {
-	tmp = mkdtempSync(join(tmpdir(), "abt-test-"));
-	mkdirSync(join(tmp, ".abt", "trees"), { recursive: true });
+	tmp = mkdtempSync(join(tmpdir(), "abtree-test-"));
+	mkdirSync(join(tmp, ".abtree", "trees"), { recursive: true });
 	// Copy only hello-world so the tree list is deterministic.
 	copyFileSync(
-		resolve(import.meta.dir, ".abt", "trees", "hello-world.yaml"),
-		join(tmp, ".abt", "trees", "hello-world.yaml"),
+		resolve(import.meta.dir, ".abtree", "trees", "hello-world.yaml"),
+		join(tmp, ".abtree", "trees", "hello-world.yaml"),
 	);
 });
 
@@ -40,7 +40,7 @@ afterAll(() => {
 });
 
 test("tree list returns hello-world", () => {
-	const { stdout, exitCode } = abt(["tree", "list"], tmp);
+	const { stdout, exitCode } = abtree(["tree", "list"], tmp);
 	expect(exitCode).toBe(0);
 	const trees = json(stdout) as string[];
 	expect(trees).toContain("hello-world");
@@ -48,7 +48,7 @@ test("tree list returns hello-world", () => {
 
 test("hello-world flow: full execution reaches done", () => {
 	// Create flow
-	const createOut = abt(
+	const createOut = abtree(
 		["flow", "create", "hello-world", "integration test"],
 		tmp,
 	);
@@ -58,21 +58,21 @@ test("hello-world flow: full execution reaches done", () => {
 	expect(id).toMatch(/^integration-test__hello-world__\d+$/);
 
 	function next() {
-		const r = abt(["next", id], tmp);
+		const r = abtree(["next", id], tmp);
 		expect(r.exitCode).toBe(0);
 		return json(r.stdout) as Record<string, string>;
 	}
 	function evalStep(result: boolean) {
-		const r = abt(["eval", id, String(result)], tmp);
+		const r = abtree(["eval", id, String(result)], tmp);
 		expect(r.exitCode).toBe(0);
 		return json(r.stdout);
 	}
 	function localWrite(path: string, value: string) {
-		const r = abt(["local", "write", id, path, value], tmp);
+		const r = abtree(["local", "write", id, path, value], tmp);
 		expect(r.exitCode).toBe(0);
 	}
 	function submit(status: "success" | "failure") {
-		const r = abt(["submit", id, status], tmp);
+		const r = abtree(["submit", id, status], tmp);
 		expect(r.exitCode).toBe(0);
 		return json(r.stdout);
 	}
@@ -147,19 +147,19 @@ test("hello-world flow: full execution reaches done", () => {
 
 test("flow reset restores initial state", () => {
 	// Create and immediately reset a flow
-	const createOut = abt(["flow", "create", "hello-world", "reset test"], tmp);
+	const createOut = abtree(["flow", "create", "hello-world", "reset test"], tmp);
 	const { id } = json(createOut.stdout) as { id: string };
 
 	// Write something
-	abt(["local", "write", id, "time_of_day", "evening"], tmp);
+	abtree(["local", "write", id, "time_of_day", "evening"], tmp);
 
 	// Reset
-	const resetOut = abt(["flow", "reset", id], tmp);
+	const resetOut = abtree(["flow", "reset", id], tmp);
 	expect(resetOut.exitCode).toBe(0);
 	expect((json(resetOut.stdout) as { status: string }).status).toBe("reset");
 
 	// First next should be Determine_Time again
-	const step = abt(["next", id], tmp);
+	const step = abtree(["next", id], tmp);
 	const parsed = json(step.stdout) as Record<string, string>;
 	expect(parsed.type).toBe("instruct");
 	expect(parsed.name).toBe("Determine_Time");
