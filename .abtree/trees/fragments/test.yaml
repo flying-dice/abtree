@@ -1,0 +1,12 @@
+# A selector. First child checks the state; on failure, the second
+# child (referenced from a sibling file) runs the increment action.
+type: selector
+name: Test
+children:
+  - type: action
+    name: Check_Counter
+    steps:
+      - evaluate: $LOCAL.counter is greater than 0
+      - instruct: Counter is already past zero; nothing else to do.
+
+  - $ref: "./increment.yaml"

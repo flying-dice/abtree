@@ -1,0 +1,16 @@
+name: counter-demo
+version: 1.0.0
+description: |
+  Demonstrates $ref by composing a test-and-fallback pattern across
+  multiple YAML files. The root sequence references a test selector
+  whose fallback child references an increment action.
+
+state:
+  local:
+    counter: 0
+
+tree:
+  type: sequence
+  name: Counter_Demo
+  children:
+    - $ref: "./fragments/test.yaml"

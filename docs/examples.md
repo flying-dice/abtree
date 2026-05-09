@@ -30,6 +30,36 @@ claude "Run the abtree hello-world flow end-to-end. Start by running 'abtree --h
 
 ---
 
+## Counter demo (multi-file `$ref`)
+
+Tiny tree that demonstrates splitting a workflow across files via JSON-Schema-style `$ref`. Three files: a root sequence, a `Test` selector fragment, and an `Increment` action fragment. State starts at `counter: 0`; the selector's first child evaluates `counter > 0`, fails, and the selector falls through to its second child which is a `$ref` to the increment action. Counter ends at 1.
+
+**Files**
+
+- `counter-demo.yaml` — main (root sequence)
+- `fragments/test.yaml` — sub-workflow (the test selector)
+- `fragments/increment.yaml` — sub-workflow (the increment action)
+
+**Install**
+
+```sh
+mkdir -p .abtree/trees/fragments \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/counter-demo.yaml \
+       -o .abtree/trees/counter-demo.yaml \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/fragments/test.yaml \
+       -o .abtree/trees/fragments/test.yaml \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/fragments/increment.yaml \
+       -o .abtree/trees/fragments/increment.yaml
+```
+
+**Run with Claude**
+
+```sh
+claude "Run the abtree counter-demo flow end-to-end. Use 'abtree --help' to learn the protocol, then drive it through every step. The Check_Counter evaluate should fail because state starts at 0; the selector will fall through to the Increment action which bumps counter to 1."
+```
+
+---
+
 ## Spec refinement
 
 Refine a one-line change request into a hardened, codeowner-reviewable spec. The flow analyses intent, drafts a structured spec (frontmatter + summary + requirements + technical approach + acceptance criteria + risks), critiques it as a Staff Engineer, and saves the result to `specs/<kebab-title>.md`. The `reviewed_by` field stays empty until a codeowner approves it.
