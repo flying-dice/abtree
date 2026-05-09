@@ -1,98 +1,318 @@
 name: code-review
-version: 1.0.0
-description: Review a merge request for correctness, test coverage, and repo convention conformance. Approve or request changes.
+version: 2.0.0
+description: |
+  Review a merge request / pull request for high-signal issues only.
+  Skip-if-unreviewable gate, project-convention loading, three review
+  passes in parallel (bugs, test coverage, conventions), per-finding
+  validation pass to drop false positives, human-approved publish
+  step, and a final approve / request-changes verdict.
+
+  High-signal-only philosophy: a finding is flagged only if the code
+  will fail to compile, will produce wrong results regardless of
+  inputs, or breaks a quoted convention rule. Style / quality /
+  speculative concerns are deliberately suppressed. False positives
+  erode trust.
 
 state:
   local:
+    # Input
     mr_ref: null
+
+    # Skip gate (branch 1 of the root selector)
+    should_skip: null
+    skip_reason: null
+
+    # Review pipeline state
     diff_content: null
+    project_conventions: null    # { paths: [...], content: "..." } or "none"
     initial_analysis: null
+
+    # Parallel review outputs — separate slots, merged downstream.
+    # abtree's parallel does not serialise concurrent writes to a
+    # single key, so each pass writes its own.
+    bug_findings: null
+    test_findings: null
+    convention_findings: null
+
+    # Synthesised + validated findings
     review_comments: null
+
+    # Human gate
+    publish_approved: null       # true → post via review tool;
+                                 # false → report locally only.
+
+    # Verdict
     final_verdict: null
 
 tree:
-  type: sequence
-  name: Code_Review_Workflow
+  type: selector
+  name: Code_Review_Or_Skip
   children:
+
+    # ─── Branch 1: skip if the MR isn't worth reviewing ───────────────
+    # Pre-flight check. Closed / draft / automated / trivial-mechanical
+    # MRs return early with a reason; the selector wins here and the
+    # full review sequence never runs.
     - type: action
-      name: Fetch_Diff
+      name: Skip_Unreviewable
       steps:
         - evaluate: $LOCAL.mr_ref is set
         - instruct: >
-            Fetch the full diff for $LOCAL.mr_ref. Include all changed files,
-            added/removed lines, and the MR description. Note the base branch
-            and target branch. Store the complete diff at $LOCAL.diff_content.
-
-    - type: action
-      name: Analyse_Changes
-      steps:
-        - evaluate: $LOCAL.diff_content is set
+            Determine whether the MR/PR at $LOCAL.mr_ref is worth
+            reviewing. Set $LOCAL.should_skip = true and write a
+            one-line reason to $LOCAL.skip_reason if ANY of:
+              - The MR is closed.
+              - The MR is in draft.
+              - The MR is from an automated source (dependabot,
+                lockfile bumps, version-only changes, generated
+                code) and the diff is trivially mechanical.
+              - The MR has already been reviewed by this tool
+                (check existing comments).
+            Otherwise set $LOCAL.should_skip = false. Submit success
+            either way — the next evaluate decides which branch wins.
+        - evaluate: $LOCAL.should_skip is true
         - instruct: >
-            Read $LOCAL.diff_content end-to-end. Determine:
-            - What is the intent of this change?
-            - Which modules, files, or subsystems are affected?
-            - Are there any dependency additions or removals?
-            - Are there schema or interface changes that affect other consumers?
-            - What invariants must hold for this change to be correct?
-            Store your analysis at $LOCAL.initial_analysis.
+            Report $LOCAL.skip_reason to the human and exit.
+            The selector takes this branch; the review sequence does
+            not run.
 
-    - type: action
-      name: Review_Correctness
-      steps:
-        - evaluate: $LOCAL.initial_analysis is set
-        - instruct: >
-            Using $LOCAL.diff_content and $LOCAL.initial_analysis, evaluate correctness:
-            - Does the logic match the stated intent?
-            - Are error paths handled explicitly (no silent swallows, no bare throws)?
-            - Are there off-by-one errors, race conditions, or undefined-behaviour risks?
-            - Are external inputs validated at boundaries?
-            - Are there any security issues (injection, path traversal, privilege escalation)?
-            For each issue found, note the file, line number, severity (blocking/non-blocking),
-            and a concrete remediation. Store findings at $LOCAL.review_comments.
-
-    - type: action
-      name: Review_Test_Coverage
-      steps:
-        - evaluate: $LOCAL.review_comments is not null
-        - instruct: >
-            Check test coverage for $LOCAL.diff_content:
-            - Does the change include tests for new behaviour?
-            - Are edge cases and failure paths covered?
-            - Do existing tests still pass given the changes (check for deleted or broken assertions)?
-            Append any test-coverage findings (file, line, severity, remediation) to $LOCAL.review_comments.
-
-    - type: action
-      name: Review_Conventions
-      steps:
-        - evaluate: $LOCAL.review_comments is not null
-        - instruct: >
-            Check repo convention conformance for $LOCAL.diff_content:
-            - Naming: functions, types, files follow established patterns?
-            - Module boundaries: no circular deps, imports respect layer rules?
-            - Comments: only present where WHY is non-obvious?
-            - Commit messages: no auto-close keywords (closes/fixes/resolves), refs #N format?
-            - No secrets, credentials, or local-only paths committed?
-            Append any convention findings to $LOCAL.review_comments.
-
-    - type: selector
-      name: Approve_Or_Request_Changes
+    # ─── Branch 2: full review pipeline ───────────────────────────────
+    - type: sequence
+      name: Code_Review_Workflow
       children:
-        - type: action
-          name: Approve
-          steps:
-            - evaluate: $LOCAL.review_comments contains no blocking issues
-            - instruct: >
-                All blocking checks passed. Post any non-blocking comments as suggestions
-                on the relevant diff lines using whatever review tool is available
-                (e.g. `gh pr review --approve`, `glab mr approve`, or a connected MCP).
-                Set $LOCAL.final_verdict to "approved".
 
+        # 1. Pull the diff and the surrounding metadata.
         - type: action
-          name: Request_Changes
+          name: Fetch_Diff
           steps:
+            - evaluate: $LOCAL.mr_ref is set
             - instruct: >
-                Post inline comments for every blocking issue found in $LOCAL.review_comments,
-                citing the file and line number. Post non-blocking findings as suggestions.
-                Submit a request-changes review using whatever review tool is available
-                (e.g. `gh pr review --request-changes`, `glab mr note`, or a connected MCP),
-                explaining the blocking issues. Set $LOCAL.final_verdict to "changes_requested".
+                Fetch the full diff for $LOCAL.mr_ref. Include all
+                changed files, added / removed lines, the MR title,
+                the description, the base branch, and the target
+                branch. Store at $LOCAL.diff_content.
+
+        # 2. Load every convention document relevant to the changed files.
+        #    This is the single biggest determinant of high-signal
+        #    convention findings — a violation has to cite a real,
+        #    quoted rule.
+        - type: action
+          name: Load_Project_Conventions
+          steps:
+            - evaluate: $LOCAL.diff_content is set
+            - instruct: >
+                Find every convention document relevant to the changed
+                files: STYLEGUIDE.md / CLAUDE.md / CONTRIBUTING.md /
+                AGENTS.md at the repo root, plus the same in any
+                directory whose files this MR touches. Read them.
+                Store at $LOCAL.project_conventions =
+                  { paths: [<list>], content: "<concatenated>" }.
+                If no convention docs exist, store the literal
+                string "none" — convention-rule findings will then be
+                conservatively suppressed in Review_Conventions.
+
+        # 3. Summarise the change so all parallel passes share intent.
+        - type: action
+          name: Analyse_Changes
+          steps:
+            - evaluate: $LOCAL.diff_content is set
+            - instruct: >
+                Read $LOCAL.diff_content end-to-end. Summarise:
+                  - Intent: what is the author trying to do?
+                  - Modules / files / subsystems affected.
+                  - Dependency additions / removals.
+                  - Schema or interface changes that affect downstream
+                    consumers.
+                  - Invariants that must hold for the change to be
+                    correct.
+                Store at $LOCAL.initial_analysis. Every parallel
+                review pass receives this same summary.
+
+        # 4. Three independent review passes — order doesn't matter,
+        #    each writes its own findings slot.
+        - type: parallel
+          name: Review_Passes
+          children:
+
+            - type: action
+              name: Review_Bugs
+              steps:
+                - evaluate: $LOCAL.diff_content is set and $LOCAL.initial_analysis is set
+                - instruct: >
+                    Scan $LOCAL.diff_content for HIGH-SIGNAL bugs
+                    introduced by this change. Use $LOCAL.initial_analysis
+                    for context.
+
+                    FLAG only:
+                      - Compile / parse / type errors, missing imports,
+                        unresolved references.
+                      - Logic errors that produce wrong results
+                        regardless of input (off-by-one in a published
+                        boundary, inverted condition, missing await,
+                        deadlocked locks, etc.).
+                      - Security issues introduced by this change
+                        (injection, path traversal, privilege
+                        escalation in modified surface).
+
+                    DO NOT FLAG (false-positive list):
+                      - Pre-existing issues outside the diff.
+                      - Style or code-quality concerns.
+                      - Issues that depend on specific inputs / state
+                        you can't validate.
+                      - Pedantic nitpicks a senior engineer would not
+                        raise.
+                      - Issues that a linter would catch (do not run
+                        the linter to verify).
+                      - General "could be better" suggestions.
+
+                    If you cannot validate a finding without external
+                    context, do not flag it. False positives erode
+                    trust.
+
+                    Append findings to $LOCAL.bug_findings. Each
+                    finding: { file, lines, severity (blocking|non-
+                    blocking), description, why-flagged ("bug" or
+                    "security"), citation (link / line range) }.
+
+            - type: action
+              name: Review_Test_Coverage
+              steps:
+                - evaluate: $LOCAL.diff_content is set and $LOCAL.initial_analysis is set
+                - instruct: >
+                    Audit test coverage for the changed code.
+
+                    FLAG only:
+                      - Public-API behaviour change with no tests.
+                      - Bug-fix changes with no regression test.
+                      - Removed test cases without rationale in the
+                        commit message / MR description.
+
+                    DO NOT FLAG (false-positive list):
+                      - Internal refactors that don't change observable
+                        behaviour.
+                      - Test gaps that pre-date this MR.
+                      - Generic "more tests would be nice" notes.
+                      - Coverage drops where the project's convention
+                        document explicitly tolerates them.
+
+                    Append findings to $LOCAL.test_findings using the
+                    same shape as Review_Bugs.
+
+            - type: action
+              name: Review_Conventions
+              steps:
+                - evaluate: $LOCAL.diff_content is set and $LOCAL.project_conventions is set
+                - instruct: >
+                    Audit changed files against the rules in
+                    $LOCAL.project_conventions.
+
+                    If $LOCAL.project_conventions is "none" — there are
+                    no project convention documents — flag NOTHING in
+                    this pass. Generic style preferences are not
+                    high-signal.
+
+                    Otherwise, for each potential violation:
+                      - Find the SPECIFIC RULE in
+                        $LOCAL.project_conventions.content that the
+                        change breaks.
+                      - Quote the rule verbatim in the finding.
+                      - Confirm the rule's scope covers the file's path
+                        (a rule in `src/api/CLAUDE.md` does not bind
+                        files outside `src/api/`).
+
+                    DO NOT FLAG:
+                      - Style preferences not in any convention doc.
+                      - Convention rules silenced in code (e.g. lint
+                        ignore comments) — that's the author's
+                        deliberate opt-out.
+                      - Pre-existing violations outside the diff.
+
+                    Append findings to $LOCAL.convention_findings using
+                    the same shape as Review_Bugs.
+
+        # 5. Merge the three parallel slots into one accumulator.
+        - type: action
+          name: Compile_Findings
+          steps:
+            - evaluate: $LOCAL.bug_findings is set and $LOCAL.test_findings is set and $LOCAL.convention_findings is set
+            - instruct: >
+                Concatenate $LOCAL.bug_findings, $LOCAL.test_findings,
+                and $LOCAL.convention_findings into one ordered list
+                at $LOCAL.review_comments. Sort by severity
+                (blocking first), then by file, then by line. Don't
+                drop or rewrite individual findings — the validation
+                pass does that.
+
+        # 6. Per-finding validation. Each finding is independently
+        #    re-checked; the unconfirmed are dropped.
+        - type: action
+          name: Validate_Findings
+          steps:
+            - evaluate: $LOCAL.review_comments is set
+            - instruct: >
+                For each finding in $LOCAL.review_comments, validate
+                it is real with high confidence:
+
+                  - Bugs: confirm the cited line(s) would actually
+                    fail / produce wrong output. If you cannot validate
+                    without speculating, drop it.
+                  - Convention violations: re-read the cited rule in
+                    $LOCAL.project_conventions; confirm it applies to
+                    the file's path and is actually broken. Quote the
+                    rule.
+                  - Test gaps: confirm the cited test path actually
+                    doesn't exercise the changed behaviour.
+
+                Drop any finding that doesn't pass this bar. Overwrite
+                $LOCAL.review_comments with the validated set. Trust
+                that the user prefers an empty list over a list with
+                false positives.
+
+        # 7. Two-stage publish gate. Surface the validated findings
+        #    and wait for the human to decide whether to post.
+        - type: action
+          name: Confirm_Publish
+          steps:
+            - evaluate: $LOCAL.review_comments is set
+            - instruct: >
+                Surface the validated findings to the human. Wait for
+                them to call:
+                  abtree local write <flow-id> publish_approved true
+                  abtree local write <flow-id> publish_approved false
+                Submit `running` while waiting. For autonomous CI runs,
+                set publish_approved upfront when the flow is created.
+            - evaluate: $LOCAL.publish_approved is set
+
+        # 8. Verdict — selector branches by whether there are blocking
+        #    findings. Each branch posts conditionally based on
+        #    $LOCAL.publish_approved.
+        - type: selector
+          name: Approve_Or_Request_Changes
+          children:
+            - type: action
+              name: Approve
+              steps:
+                - evaluate: $LOCAL.review_comments contains no blocking issues
+                - instruct: >
+                    All blocking checks passed. If
+                    $LOCAL.publish_approved is true, post any
+                    non-blocking comments as suggestions and submit
+                    an approval via the available review tool
+                    (e.g. `gh pr review --approve`,
+                    `glab mr approve`, or a connected MCP). If
+                    $LOCAL.publish_approved is false, report the
+                    verdict and the findings locally without posting.
+                    Set $LOCAL.final_verdict to "approved".
+
+            - type: action
+              name: Request_Changes
+              steps:
+                - instruct: >
+                    Blocking issues found. If $LOCAL.publish_approved
+                    is true, post inline comments for every blocking
+                    finding (citing file and line) and submit a
+                    request-changes review via the available review
+                    tool. If $LOCAL.publish_approved is false, report
+                    the findings and the verdict locally without
+                    posting. Set $LOCAL.final_verdict to
+                    "changes_requested".
