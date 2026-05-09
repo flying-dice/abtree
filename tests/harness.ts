@@ -44,7 +44,10 @@ export type TestCase = {
 	tree: string; // top-level tree YAML, relative to .abtree/trees/ in the test workspace
 	files?: Record<string, string>; // additional inline files (path → contents)
 	bundled?: string[]; // copy these files from the repo's .abtree/trees/ into the workspace
-	initial?: { local?: Record<string, unknown>; global?: Record<string, unknown> };
+	initial?: {
+		local?: Record<string, unknown>;
+		global?: Record<string, unknown>;
+	};
 	steps: TestStep[];
 	final: {
 		status: "done" | "failure";
@@ -120,7 +123,9 @@ export async function runCase(specPath: string): Promise<void> {
 			if (existsSync(fixtureSrc)) {
 				cpSync(join(import.meta.dir, "trees"), treesDir, { recursive: true });
 			} else {
-				throw new Error(`tree '${treeName}' not found in workspace or tests/trees/`);
+				throw new Error(
+					`tree '${treeName}' not found in workspace or tests/trees/`,
+				);
 			}
 		}
 

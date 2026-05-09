@@ -147,7 +147,10 @@ test("hello-world flow: full execution reaches done", () => {
 
 test("flow reset restores initial state", () => {
 	// Create and immediately reset a flow
-	const createOut = abtree(["flow", "create", "hello-world", "reset test"], tmp);
+	const createOut = abtree(
+		["flow", "create", "hello-world", "reset test"],
+		tmp,
+	);
 	const { id } = json(createOut.stdout) as { id: string };
 
 	// Write something

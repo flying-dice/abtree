@@ -26,7 +26,8 @@ function migrateRuntime(doc: FlowDoc): FlowDoc {
 	const remainingLocal: Record<string, unknown> = {};
 	for (const [key, value] of Object.entries(doc.local ?? {})) {
 		if (key === "_node_status" || key.startsWith("_node_status__")) {
-			const path = key === "_node_status" ? "" : key.slice("_node_status__".length);
+			const path =
+				key === "_node_status" ? "" : key.slice("_node_status__".length);
 			runtime.node_status[path.replace(/_/g, ".")] = value as NodeStatus;
 			continue;
 		}
@@ -72,6 +73,7 @@ function writeDoc(doc: FlowDoc): void {
 function walkPath(obj: Record<string, unknown>, path: string): unknown {
 	if (!path) throw new Error("Path required");
 	const segs = path.split(".");
+	// biome-ignore lint/suspicious/noExplicitAny: dot-notation walker; cur is intentionally untyped.
 	let cur: any = obj;
 	for (const seg of segs) {
 		if (cur === null || typeof cur !== "object") return null;
@@ -87,12 +89,15 @@ function setPath(
 ): void {
 	if (!path) throw new Error("Path required");
 	const segs = path.split(".");
+	// biome-ignore lint/suspicious/noExplicitAny: dot-notation walker; cur is intentionally untyped.
 	let cur: any = obj;
 	for (let i = 0; i < segs.length - 1; i++) {
+		// biome-ignore lint/style/noNonNullAssertion: bounded by segs.length - 1.
 		const seg = segs[i]!;
 		if (cur[seg] === null || typeof cur[seg] !== "object") cur[seg] = {};
 		cur = cur[seg];
 	}
+	// biome-ignore lint/style/noNonNullAssertion: segs is non-empty (path checked above).
 	cur[segs[segs.length - 1]!] = value;
 }
 

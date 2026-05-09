@@ -44,34 +44,34 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-  --vp-c-default-1: var(--vp-c-gray-1);
-  --vp-c-default-2: var(--vp-c-gray-2);
-  --vp-c-default-3: var(--vp-c-gray-3);
-  --vp-c-default-soft: var(--vp-c-gray-soft);
+	--vp-c-default-1: var(--vp-c-gray-1);
+	--vp-c-default-2: var(--vp-c-gray-2);
+	--vp-c-default-3: var(--vp-c-gray-3);
+	--vp-c-default-soft: var(--vp-c-gray-soft);
 
-  /* Brand chain tuned to complement the pink hero logo
+	/* Brand chain tuned to complement the pink hero logo
      (docs/public/abtree-mark.svg). Light mode uses lower-saturation
      variants for AA contrast on white; dark mode uses the high-key
      Dracula values that match the logo stroke. */
-  --vp-c-brand-1: #d62786;
-  --vp-c-brand-2: #8c5cf2;
-  --vp-c-brand-3: #d62786;
-  --vp-c-brand-soft: rgba(214, 39, 134, 0.14);
+	--vp-c-brand-1: #d62786;
+	--vp-c-brand-2: #8c5cf2;
+	--vp-c-brand-3: #d62786;
+	--vp-c-brand-soft: rgba(214, 39, 134, 0.14);
 
-  --vp-c-tip-1: var(--vp-c-brand-1);
-  --vp-c-tip-2: var(--vp-c-brand-2);
-  --vp-c-tip-3: var(--vp-c-brand-3);
-  --vp-c-tip-soft: var(--vp-c-brand-soft);
+	--vp-c-tip-1: var(--vp-c-brand-1);
+	--vp-c-tip-2: var(--vp-c-brand-2);
+	--vp-c-tip-3: var(--vp-c-brand-3);
+	--vp-c-tip-soft: var(--vp-c-brand-soft);
 
-  --vp-c-warning-1: var(--vp-c-yellow-1);
-  --vp-c-warning-2: var(--vp-c-yellow-2);
-  --vp-c-warning-3: var(--vp-c-yellow-3);
-  --vp-c-warning-soft: var(--vp-c-yellow-soft);
+	--vp-c-warning-1: var(--vp-c-yellow-1);
+	--vp-c-warning-2: var(--vp-c-yellow-2);
+	--vp-c-warning-3: var(--vp-c-yellow-3);
+	--vp-c-warning-soft: var(--vp-c-yellow-soft);
 
-  --vp-c-danger-1: var(--vp-c-red-1);
-  --vp-c-danger-2: var(--vp-c-red-2);
-  --vp-c-danger-3: var(--vp-c-red-3);
-  --vp-c-danger-soft: var(--vp-c-red-soft);
+	--vp-c-danger-1: var(--vp-c-red-1);
+	--vp-c-danger-2: var(--vp-c-red-2);
+	--vp-c-danger-3: var(--vp-c-red-3);
+	--vp-c-danger-soft: var(--vp-c-red-soft);
 }
 
 /**
@@ -79,15 +79,15 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-  --vp-button-brand-border: transparent;
-  --vp-button-brand-text: var(--vp-c-white);
-  --vp-button-brand-bg: var(--vp-c-brand-3);
-  --vp-button-brand-hover-border: transparent;
-  --vp-button-brand-hover-text: var(--vp-c-white);
-  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
-  --vp-button-brand-active-border: transparent;
-  --vp-button-brand-active-text: var(--vp-c-white);
-  --vp-button-brand-active-bg: var(--vp-c-brand-1);
+	--vp-button-brand-border: transparent;
+	--vp-button-brand-text: var(--vp-c-white);
+	--vp-button-brand-bg: var(--vp-c-brand-3);
+	--vp-button-brand-hover-border: transparent;
+	--vp-button-brand-hover-text: var(--vp-c-white);
+	--vp-button-brand-hover-bg: var(--vp-c-brand-2);
+	--vp-button-brand-active-border: transparent;
+	--vp-button-brand-active-text: var(--vp-c-white);
+	--vp-button-brand-active-bg: var(--vp-c-brand-1);
 }
 
 /**
@@ -95,31 +95,31 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-  --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(
-    120deg,
-    #bd34fe 30%,
-    #41d1ff
-  );
+	--vp-home-hero-name-color: transparent;
+	--vp-home-hero-name-background: -webkit-linear-gradient(
+		120deg,
+		#bd34fe 30%,
+		#41d1ff
+	);
 
-  --vp-home-hero-image-background-image: linear-gradient(
-    -45deg,
-    #bd34fe 50%,
-    #47caff 50%
-  );
-  --vp-home-hero-image-filter: blur(44px);
+	--vp-home-hero-image-background-image: linear-gradient(
+		-45deg,
+		#bd34fe 50%,
+		#47caff 50%
+	);
+	--vp-home-hero-image-filter: blur(44px);
 }
 
 @media (min-width: 640px) {
-  :root {
-    --vp-home-hero-image-filter: blur(56px);
-  }
+	:root {
+		--vp-home-hero-image-filter: blur(56px);
+	}
 }
 
 @media (min-width: 960px) {
-  :root {
-    --vp-home-hero-image-filter: blur(68px);
-  }
+	:root {
+		--vp-home-hero-image-filter: blur(68px);
+	}
 }
 
 /**
@@ -127,10 +127,10 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-  --vp-custom-block-tip-border: transparent;
-  --vp-custom-block-tip-text: var(--vp-c-text-1);
-  --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
-  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
+	--vp-custom-block-tip-border: transparent;
+	--vp-custom-block-tip-text: var(--vp-c-text-1);
+	--vp-custom-block-tip-bg: var(--vp-c-brand-soft);
+	--vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
 }
 
 /**
@@ -138,15 +138,14 @@
  * -------------------------------------------------------------------------- */
 
 .dark {
-  --vp-c-brand-1: #ff79c6;
-  --vp-c-brand-2: #bd93f9;
-  --vp-c-brand-3: #ff79c6;
-  --vp-c-brand-soft: rgba(255, 121, 198, 0.16);
+	--vp-c-brand-1: #ff79c6;
+	--vp-c-brand-2: #bd93f9;
+	--vp-c-brand-3: #ff79c6;
+	--vp-c-brand-soft: rgba(255, 121, 198, 0.16);
 
-  /* The bright Dracula pink fails WCAG against white text (1.94:1), so
+	/* The bright Dracula pink fails WCAG against white text (1.94:1), so
      dark-mode buttons swap to a dark substrate-coloured label. */
-  --vp-button-brand-text: #1b1b1f;
-  --vp-button-brand-hover-text: #1b1b1f;
-  --vp-button-brand-active-text: #1b1b1f;
+	--vp-button-brand-text: #1b1b1f;
+	--vp-button-brand-hover-text: #1b1b1f;
+	--vp-button-brand-active-text: #1b1b1f;
 }
-

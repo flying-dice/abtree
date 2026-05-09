@@ -43,9 +43,7 @@ export default defineConfig({
 			"/getting-started": [
 				{
 					text: "Introduction",
-					items: [
-						{ text: "Get started", link: "/getting-started" },
-					],
+					items: [{ text: "Get started", link: "/getting-started" }],
 				},
 				{
 					text: "Core concepts",
