@@ -1,8 +1,8 @@
 # Examples registry
 
-Ready-to-use behaviour trees. Each entry includes the YAML files, a one-liner to copy them into your local `.abt/trees/`, and a Claude handover command that briefs Claude to drive the flow with abtree.
+Ready-to-use behaviour trees. Each entry includes the YAML files, a one-liner to copy them into your local `.abtree/trees/`, and a Claude handover command that briefs Claude to drive the flow with abtree.
 
-Every install command is idempotent — safe to re-run. Existing files in `.abt/trees/` are overwritten with the latest version from `main`.
+Every install command is idempotent — safe to re-run. Existing files in `.abtree/trees/` are overwritten with the latest version from `main`.
 
 ---
 
@@ -17,15 +17,15 @@ A small workflow that greets a user based on time of day, then enriches the gree
 **Install**
 
 ```sh
-mkdir -p .abt/trees \
-  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/hello-world.yaml \
-       -o .abt/trees/hello-world.yaml
+mkdir -p .abtree/trees \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/hello-world.yaml \
+       -o .abtree/trees/hello-world.yaml
 ```
 
 **Run with Claude**
 
 ```sh
-claude "Run the abtree hello-world flow end-to-end. Start by running 'abt --help' to learn the execution protocol, then create a flow with 'abt flow create hello-world \"smoke test\"' and drive it through every step until you see status: done."
+claude "Run the abtree hello-world flow end-to-end. Start by running 'abtree --help' to learn the execution protocol, then create a flow with 'abtree flow create hello-world \"smoke test\"' and drive it through every step until you see status: done."
 ```
 
 ---
@@ -41,15 +41,15 @@ Refine a one-line change request into a hardened, codeowner-reviewable spec. The
 **Install**
 
 ```sh
-mkdir -p .abt/trees \
-  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/refine.yaml \
-       -o .abt/trees/refine.yaml
+mkdir -p .abtree/trees \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/refine.yaml \
+       -o .abtree/trees/refine.yaml
 ```
 
 **Run with Claude**
 
 ```sh
-claude "Use the abtree refine flow to turn this change request into a spec: <one-line description>. Run 'abt --help' first to learn the protocol, then create the flow, write the change_request to LOCAL, and drive it to completion. Show me the final spec path."
+claude "Use the abtree refine flow to turn this change request into a spec: <one-line description>. Run 'abtree --help' first to learn the protocol, then create the flow, write the change_request to LOCAL, and drive it to completion. Show me the final spec path."
 ```
 
 ---
@@ -66,17 +66,17 @@ A two-stage pipeline for shipping changes. **Refine** produces an approved spec 
 **Install**
 
 ```sh
-mkdir -p .abt/trees \
+mkdir -p .abtree/trees \
   && for t in implement refine; do
-       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/${t}.yaml" \
-            -o ".abt/trees/${t}.yaml"
+       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/${t}.yaml" \
+            -o ".abtree/trees/${t}.yaml"
      done
 ```
 
 **Run with Claude**
 
 ```sh
-claude "I want to <feature description>. First run the abtree refine flow to produce a spec at specs/<slug>.md, then pause for me to add my name to reviewed_by. Once I confirm approval, run the abtree implement flow against the spec and write the code. Use 'abt --help' to learn the protocol."
+claude "I want to <feature description>. First run the abtree refine flow to produce a spec at specs/<slug>.md, then pause for me to add my name to reviewed_by. Once I confirm approval, run the abtree implement flow against the spec and write the code. Use 'abtree --help' to learn the protocol."
 ```
 
 ---
@@ -93,17 +93,17 @@ Design and implement a backend service from an approved spec. Architectural crit
 **Install**
 
 ```sh
-mkdir -p .abt/trees \
+mkdir -p .abtree/trees \
   && for t in backend-design refine; do
-       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/${t}.yaml" \
-            -o ".abt/trees/${t}.yaml"
+       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/${t}.yaml" \
+            -o ".abtree/trees/${t}.yaml"
      done
 ```
 
 **Run with Claude**
 
 ```sh
-claude "I need a backend service for <description>. First run the abtree refine flow to spec it. After I review, run the abtree backend-design flow against the spec to plan the architecture and write the service. Use 'abt --help' to learn the protocol."
+claude "I need a backend service for <description>. First run the abtree refine flow to spec it. After I review, run the abtree backend-design flow against the spec to plan the architecture and write the service. Use 'abtree --help' to learn the protocol."
 ```
 
 ---
@@ -120,17 +120,17 @@ Design and implement a frontend component or page from an approved spec, with ae
 **Install**
 
 ```sh
-mkdir -p .abt/trees \
+mkdir -p .abtree/trees \
   && for t in frontend-design refine; do
-       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/${t}.yaml" \
-            -o ".abt/trees/${t}.yaml"
+       curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/${t}.yaml" \
+            -o ".abtree/trees/${t}.yaml"
      done
 ```
 
 **Run with Claude**
 
 ```sh
-claude "I need a frontend component for <description>. First run the abtree refine flow to spec it. After I review, run the abtree frontend-design flow against the spec to set aesthetic direction and build the component. Use 'abt --help' to learn the protocol."
+claude "I need a frontend component for <description>. First run the abtree refine flow to spec it. After I review, run the abtree frontend-design flow against the spec to set aesthetic direction and build the component. Use 'abtree --help' to learn the protocol."
 ```
 
 ---
@@ -146,19 +146,19 @@ Reviews a merge request for correctness, test coverage, and repo-convention conf
 **Install**
 
 ```sh
-mkdir -p .abt/trees \
-  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/code-review.yaml \
-       -o .abt/trees/code-review.yaml
+mkdir -p .abtree/trees \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/code-review.yaml \
+       -o .abtree/trees/code-review.yaml
 ```
 
 **Run with Claude**
 
 ```sh
-claude "Review MR <ref or commit SHA> using the abtree code-review flow. Use 'abt --help' to learn the protocol, fetch the diff, run all three review passes, and report the verdict with line-cited findings."
+claude "Review MR <ref or commit SHA> using the abtree code-review flow. Use 'abtree --help' to learn the protocol, fetch the diff, run all three review passes, and report the verdict with line-cited findings."
 ```
 
 ---
 
 ## Submitting your own
 
-Trees are just YAML — see [Writing trees](/guide/writing-trees) for the format. Open a PR against [`flying-dice/abtree`](https://github.com/flying-dice/abtree) adding your tree to `.abt/trees/` and an entry on this page, and it'll ship in the next release.
+Trees are just YAML — see [Writing trees](/guide/writing-trees) for the format. Open a PR against [`flying-dice/abtree`](https://github.com/flying-dice/abtree) adding your tree to `.abtree/trees/` and an entry on this page, and it'll ship in the next release.

@@ -19,7 +19,7 @@ irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 |
 Verify:
 
 ```sh
-abt --version
+abtree --version
 ```
 
 You'll see a version number. If you don't, restart your terminal so the new `PATH` takes effect.
@@ -28,11 +28,11 @@ You'll see a version number. If you don't, restart your terminal so the new `PAT
 
 Before you run anything, three words worth knowing:
 
-- **Tree** — a YAML file describing a workflow. Lives in `.abt/trees/`.
-- **Flow** — one execution of a tree, bound to a piece of work. Persists as JSON in `.abt/flows/`.
+- **Tree** — a YAML file describing a workflow. Lives in `.abtree/trees/`.
+- **Flow** — one execution of a tree, bound to a piece of work. Persists as JSON in `.abtree/flows/`.
 - **Step** — the smallest unit. Either an `evaluate` (a precondition the agent confirms) or an `instruct` (work the agent performs).
 
-You drive a flow with three commands: `abt next` to ask "what now?", `abt eval` to answer an evaluate, `abt submit` to acknowledge an instruct. That's the whole loop.
+You drive a flow with three commands: `abtree next` to ask "what now?", `abtree eval` to answer an evaluate, `abtree submit` to acknowledge an instruct. That's the whole loop.
 
 ## Run the hello-world tree
 
@@ -42,21 +42,21 @@ You drive a flow with three commands: `abt next` to ask "what now?", `abt eval` 
 
 ```sh
 mkdir my-abtree-demo && cd my-abtree-demo
-mkdir -p .abt/trees
-curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abt/trees/hello-world.yaml \
-  -o .abt/trees/hello-world.yaml
+mkdir -p .abtree/trees
+curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/hello-world.yaml \
+  -o .abtree/trees/hello-world.yaml
 ```
 
 Confirm the tree is visible:
 
 ```sh
-abt tree list
+abtree tree list
 ```
 
 ### 2. Create a flow
 
 ```sh
-abt flow create hello-world "first run"
+abtree flow create hello-world "first run"
 ```
 
 You'll get a flow document back, including an ID like `first-run__hello-world__1`. Save that ID — every subsequent command takes it as the first argument.
@@ -64,7 +64,7 @@ You'll get a flow document back, including an ID like `first-run__hello-world__1
 ### 3. Drive the loop
 
 ```sh
-abt next first-run__hello-world__1
+abtree next first-run__hello-world__1
 ```
 
 Output:
@@ -80,14 +80,14 @@ Output:
 Do what the instruction says — check the time, classify it as morning/afternoon/evening — then store the result and submit:
 
 ```sh
-abt local write first-run__hello-world__1 time_of_day "morning"
-abt submit first-run__hello-world__1 success
+abtree local write first-run__hello-world__1 time_of_day "morning"
+abtree submit first-run__hello-world__1 success
 ```
 
-Now `abt next` again. You'll get an `evaluate` step asking whether `$LOCAL.time_of_day is "morning"`. Answer:
+Now `abtree next` again. You'll get an `evaluate` step asking whether `$LOCAL.time_of_day is "morning"`. Answer:
 
 ```sh
-abt eval first-run__hello-world__1 true
+abtree eval first-run__hello-world__1 true
 ```
 
 Continue: `next` → do the work / answer the evaluate → `submit` or `eval`. Repeat until you see:
@@ -98,7 +98,7 @@ Continue: `next` → do the work / answer the evaluate → `submit` or `eval`. R
 
 ### 4. See what happened
 
-Open `.abt/flows/first-run__hello-world__1.mermaid` in any Mermaid renderer (GitHub renders them inline; VS Code has a preview extension). Every node you reached is **green**. Branches the runtime skipped are **uncoloured**.
+Open `.abtree/flows/first-run__hello-world__1.mermaid` in any Mermaid renderer (GitHub renders them inline; VS Code has a preview extension). Every node you reached is **green**. Branches the runtime skipped are **uncoloured**.
 
 The cursor advanced through the sequence. The selector chose the morning branch — the others were never entered. Both context-gathering actions ran in parallel. Every action passed its `evaluate` invariant before its `instruct` ran.
 

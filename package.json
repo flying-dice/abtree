@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "bin": {
-    "abt": "index.ts"
+    "abtree": "index.ts"
   },
   "scripts": {
     "release": "semantic-release",

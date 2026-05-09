@@ -2,7 +2,7 @@
 set -e
 
 REPO="flying-dice/abtree"
-BIN="abt"
+BIN="abtree"
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 case "$OS" in

@@ -141,7 +141,7 @@ tree:
             Store the complete composed text at $LOCAL.response.
 ```
 
-The YAML defines the structure. At runtime, abtree generates a live execution diagram after every state change — nodes colour green on success, red on failure, grey when bypassed. Here's the `hello-world` tree (included in `.abt/trees/`) after a complete run. The selector chose Morning Greeting and stopped — the afternoon, evening, and default branches were never entered. The two context-gathering actions ran in parallel. Every node reached is green.
+The YAML defines the structure. At runtime, abtree generates a live execution diagram after every state change — nodes colour green on success, red on failure, grey when bypassed. Here's the `hello-world` tree (included in `.abtree/trees/`) after a complete run. The selector chose Morning Greeting and stopped — the afternoon, evening, and default branches were never entered. The two context-gathering actions ran in parallel. Every node reached is green.
 
 ```mermaid
 ---
@@ -200,44 +200,44 @@ INSTALL_DIR=~/.local/bin curl -fsSL https://github.com/flying-dice/abtree/releas
 irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 | iex
 ```
 
-Installs `abt.exe` to `~\.local\bin` and adds it to your user `PATH`.
+Installs `abtree.exe` to `~\.local\bin` and adds it to your user `PATH`.
 
 ## Usage
 
 ```sh
 # List available trees
-abt tree list
+abtree tree list
 
 # Create a new flow
-abt flow create <tree> <summary>
+abtree flow create <tree> <summary>
 
 # Write initial state
-abt local write <flow-id> <key> "<value>"
+abtree local write <flow-id> <key> "<value>"
 
 # Drive the execution loop
-abt next <flow-id>          # get next step (evaluate or instruct)
-abt eval <flow-id> true     # submit evaluation result
-abt submit <flow-id> success  # submit instruction outcome
+abtree next <flow-id>          # get next step (evaluate or instruct)
+abtree eval <flow-id> true     # submit evaluation result
+abtree submit <flow-id> success  # submit instruction outcome
 
 # Inspect a flow
-abt flow get <flow-id>
-abt local read <flow-id>
+abtree flow get <flow-id>
+abtree local read <flow-id>
 ```
 
-Run `abt --help` for the full execution protocol.
+Run `abtree --help` for the full execution protocol.
 
 ## Example Trees
 
-Ready-to-use trees are included in [`.abt/trees/`](.abt/trees/):
+Ready-to-use trees are included in [`.abtree/trees/`](.abtree/trees/):
 
 | Tree | Description |
 |------|-------------|
-| [hello-world](.abt/trees/hello-world.yaml) | Greet a user based on time of day with weather and news context. Demonstrates all 4 BT primitives. |
-| [refine](.abt/trees/refine.yaml) | Refine a change request into an approved spec through iterative review. |
-| [implement](.abt/trees/implement.yaml) | Implement a feature from an approved spec with structured execution steps. |
-| [code-review](.abt/trees/code-review.yaml) | Run a structured code review against a set of quality invariants. |
-| [frontend-design](.abt/trees/frontend-design.yaml) | Design and scaffold a frontend component or page from a brief. |
-| [backend-design](.abt/trees/backend-design.yaml) | Design and scaffold a backend service or API from a brief. |
+| [hello-world](.abtree/trees/hello-world.yaml) | Greet a user based on time of day with weather and news context. Demonstrates all 4 BT primitives. |
+| [refine](.abtree/trees/refine.yaml) | Refine a change request into an approved spec through iterative review. |
+| [implement](.abtree/trees/implement.yaml) | Implement a feature from an approved spec with structured execution steps. |
+| [code-review](.abtree/trees/code-review.yaml) | Run a structured code review against a set of quality invariants. |
+| [frontend-design](.abtree/trees/frontend-design.yaml) | Design and scaffold a frontend component or page from a brief. |
+| [backend-design](.abtree/trees/backend-design.yaml) | Design and scaffold a backend service or API from a brief. |
 
 ## Explore the Ecosystem
 * **Workflow-Builder Skill:** Use this skill to help your agent collaboratively design and iterate on new tree specs.
