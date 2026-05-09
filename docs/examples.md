@@ -135,6 +135,30 @@ claude "I need a frontend component for <description>. First run the abtree refi
 
 ---
 
+## Technical writer
+
+Take a documentation goal, ground it in the repo's `STYLEGUIDE.md` (or draft one and gate on human approval if none exists), find or build a home in the docs tree, write to it, and gate-check the result against three rules — does it fit the structure, does the narrative flow, is it one concept? Standalone workflow; no upstream spec required.
+
+**Files**
+
+- `technical-writer.yaml` — main
+
+**Install**
+
+```sh
+mkdir -p .abtree/trees \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/technical-writer.yaml \
+       -o .abtree/trees/technical-writer.yaml
+```
+
+**Run with Claude**
+
+```sh
+claude "Use the abtree technical-writer flow to document <topic>. Run 'abtree --help' first to learn the protocol, then create the flow, write the goal to LOCAL, and drive it to completion. If a styleguide doesn't exist yet, draft one and pause for me to approve before continuing."
+```
+
+---
+
 ## Code review
 
 Reviews a merge request for correctness, test coverage, and repo-convention conformance. Fetches the diff, runs three review passes (correctness, tests, conventions), tallies blocking vs non-blocking findings, and either approves or requests changes with line-cited comments.
