@@ -1,15 +1,15 @@
 name: code-review
-version: 3.0.0
+version: 3.1.0
 description: |
   Review a merge request / pull request. Defers the heavy lifting
-  (project-conventions loading, parallel review passes, validation,
-  false-positive filtering) to a remote guidance document fetched at
-  flow time. abtree provides the workflow shell — skip-or-run gate,
-  human publish gate, formal verdict selector.
+  to a remote markdown playbook exposed as a parameterless directive
+  in $GLOBAL.code_review — the actions invoke it by name; the
+  directive owns the fetch-and-return-text contract. abtree provides
+  the workflow shell — skip-or-run gate, human publish gate, formal
+  verdict selector.
 
-  The guidance document is referenced by HTTP URL. Pin a specific
-  commit SHA in $GLOBAL.review_guidance_url for stability; track main
-  for the latest.
+  Pin a specific commit SHA in the URL for stability; track main for
+  the latest.
 
 state:
   local:
@@ -31,24 +31,29 @@ state:
     final_verdict: null
 
   global:
-    review_guidance_url: "https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/code-review/commands/code-review.md"
+    code_review: |
+      Fetch the markdown at
+      https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/code-review/commands/code-review.md
+      and return its full body as text. The text is a code-review
+      playbook covering pre-flight skip checks, project-conventions
+      loading, parallel review passes (bugs, introduced-code issues,
+      convention compliance), per-finding validation, false-positive
+      filtering, and posting / formatting rules.
 
 tree:
   type: selector
   name: Code_Review_Or_Skip
   children:
 
-    # ─── Branch 1: skip if the guidance's pre-flight says so ──────────
+    # ─── Branch 1: skip if the playbook's pre-flight says so ──────────
     - type: action
       name: Skip_Unreviewable
       steps:
         - evaluate: $LOCAL.mr_ref is set
         - instruct: >
-            Fetch the markdown at $GLOBAL.review_guidance_url. Read
-            it. Apply ONLY its first-stage pre-flight check against
-            $LOCAL.mr_ref — verifying whether the MR is closed, in
-            draft, doesn't need review (automated, trivially
-            mechanical), or has already been reviewed by this tool.
+            Use $GLOBAL.code_review's first-stage pre-flight check to
+            assess $LOCAL.mr_ref — closed, draft, doesn't need review,
+            or already reviewed by this tool.
 
             Set $LOCAL.should_skip = true if the pre-flight says skip,
             with $LOCAL.skip_reason populated. Otherwise
@@ -65,25 +70,16 @@ tree:
       name: Code_Review_Workflow
       children:
 
-        # 1. Apply the remote guidance against the MR.
+        # 1. Apply the remote playbook against the MR.
         - type: action
           name: Run_Code_Review
           steps:
             - evaluate: $LOCAL.mr_ref is set
             - instruct: >
-                Fetch the markdown at $GLOBAL.review_guidance_url and
-                read it end-to-end.
-
-                Apply its main review pipeline against $LOCAL.mr_ref:
-                load any project convention documents the guidance
-                names, summarise the MR, run the parallel review
-                passes the guidance describes (bugs, introduced-code
-                issues, convention compliance), perform the per-
-                finding validation pass, and filter the unvalidated.
-
-                Skip the pre-flight (already handled by
-                Skip_Unreviewable) and the publishing step (handled
-                separately below so a human can gate it).
+                Use $GLOBAL.code_review to review $LOCAL.mr_ref. Skip
+                the pre-flight (already handled by Skip_Unreviewable)
+                and the publishing step (handled separately below so a
+                human can gate it).
 
                 Capture the validated findings list at
                 $LOCAL.review_comments. Shape per finding:
@@ -118,20 +114,20 @@ tree:
                 - evaluate: $LOCAL.review_comments contains no blocking issues
                 - instruct: >
                     All blocking checks passed. If
-                    $LOCAL.publish_approved is true, follow the
-                    guidance's posting / formatting rules (suggestion
-                    blocks, full-SHA links, one comment per finding)
-                    and submit an approval via the available review
-                    tool. If publish_approved is false, report
-                    locally without posting. Set
-                    $LOCAL.final_verdict to "approved".
+                    $LOCAL.publish_approved is true, use
+                    $GLOBAL.code_review's posting / formatting rules
+                    (suggestion blocks, full-SHA links, one comment per
+                    finding) and submit an approval via the available
+                    review tool. If publish_approved is false, report
+                    locally without posting. Set $LOCAL.final_verdict
+                    to "approved".
 
             - type: action
               name: Request_Changes
               steps:
                 - instruct: >
                     Blocking issues found. If $LOCAL.publish_approved
-                    is true, follow the guidance's posting rules to
+                    is true, use $GLOBAL.code_review's posting rules to
                     post one inline comment per validated blocking
                     finding, then submit a request-changes review via
                     the available tool. If publish_approved is false,

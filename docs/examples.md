@@ -137,7 +137,7 @@ claude "I need a backend service for <description>. First run the abtree refine 
 
 ## Frontend design
 
-Design and implement a frontend component or page from an approved spec by **deferring the aesthetic-direction work to a remote guidance document**. The pipeline is: spec-approval gate, fetch-and-apply the guidance against the brief (tone selection, typography, palette, motion, spatial composition, atmospheric backgrounds — all owned by the guidance, not duplicated here), eight-item post-implementation quality check, fix-or-pass selector. The guidance URL lives in `$GLOBAL.design_guidance_url` and defaults to the upstream Claude Code frontend-design heuristics; pin a commit SHA for version stability.
+Design and implement a frontend component or page from an approved spec by **deferring the aesthetic-direction work to a remote markdown playbook**. The playbook is exposed as a parameterless directive at `$GLOBAL.frontend_design` ("fetch this URL, return text"); actions invoke it by name (`Use $GLOBAL.frontend_design to design and implement …`, `Use $GLOBAL.frontend_design to assess …`) to handle tone selection, typography, palette, motion, spatial composition, and atmospheric backgrounds. The workflow shell is abtree's: spec-approval gate, eight-item post-implementation quality check, fix-or-pass selector. Pin a commit SHA in the URL for version stability.
 
 **Files**
 
@@ -212,7 +212,7 @@ claude "Run the abtree improve-codebase flow on this repo. Use 'abtree --help' t
 
 ## Code review
 
-Reviews a merge request / pull request by **deferring the heavy lifting to a remote guidance document**. The pipeline is: skip-or-run gate (the guidance's own pre-flight check), apply the guidance's main review pipeline against the diff (project-conventions loading, parallel review passes, validation, false-positive filtering — all owned by the guidance, not duplicated here), human-approved publish gate, formal approve / request-changes verdict. The guidance URL lives in `$GLOBAL.review_guidance_url` and defaults to the upstream Claude Code code-review checklist; pin a commit SHA for version stability.
+Reviews a merge request / pull request by **deferring the heavy lifting to a remote markdown playbook**. The playbook is exposed as a parameterless directive at `$GLOBAL.code_review` ("fetch this URL, return text"); actions invoke it by name to apply the pre-flight check, the main review pipeline (project-conventions loading, parallel review passes, validation, false-positive filtering — all owned by the playbook), and the posting / formatting rules. The workflow shell is abtree's: skip-or-run gate, human-approved publish gate, formal approve / request-changes verdict. Pin a commit SHA in the URL for version stability.
 
 **Files**
 
