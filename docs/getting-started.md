@@ -1,6 +1,6 @@
 # Getting started
 
-A five-minute walkthrough: install abtree, run the bundled `hello-world` tree, and see the live execution diagram.
+A five-minute walkthrough: install abtree, hand a tree to your agent, and watch it drive.
 
 ## Install
 
@@ -26,19 +26,15 @@ You'll see a version number. If you don't, restart your terminal so the new `PAT
 
 ## Concepts in 60 seconds
 
-Before you run anything, three words worth knowing:
+Three words worth knowing:
 
 - **Tree** — a YAML file describing a workflow. Lives in `.abtree/trees/`.
 - **Flow** — one execution of a tree, bound to a piece of work. Persists as JSON in `.abtree/flows/`.
 - **Step** — the smallest unit. Either an `evaluate` (a precondition the agent confirms) or an `instruct` (work the agent performs).
 
-You drive a flow with three commands: `abtree next` to ask "what now?", `abtree eval` to answer an evaluate, `abtree submit` to acknowledge an instruct. That's the whole loop.
+abtree is a CLI **for agents**. You don't drive flows yourself — you hand a brief to your agent and it runs the loop. Three commands carry the whole protocol: `abtree next` to ask "what now?", `abtree eval` to answer a precondition, `abtree submit` to report an outcome. JSON in, JSON out.
 
-## Run the hello-world tree
-
-`hello-world` is a small workflow that greets a user based on the time of day, then enriches the greeting with weather and news. It demonstrates all four behaviour-tree primitives in fifteen lines.
-
-### 1. Set up a workspace
+## 1. Set up a workspace
 
 ```sh
 mkdir my-abtree-demo && cd my-abtree-demo
@@ -47,27 +43,26 @@ curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/tre
   -o .abtree/trees/hello-world.yaml
 ```
 
-Confirm the tree is visible:
+`hello-world` is a small tree: greet a user based on the time of day, then enrich the greeting with weather and news. It exercises all four behaviour-tree primitives in fifteen lines.
 
-```sh
-abtree tree list
+## 2. Hand it off to your agent
+
+In Claude Code, ChatGPT, or any agent that can run shell commands, send:
+
+```text
+Run the abtree hello-world flow end-to-end. Start by running
+'abtree --help' to learn the execution protocol, then create a
+flow with 'abtree flow create hello-world "first run"' and drive
+it through every step until you see status: done.
 ```
 
-### 2. Create a flow
+That is the entire human-side interaction. The agent reads the protocol from `--help`, creates a flow, and runs the loop autonomously.
 
-```sh
-abtree flow create hello-world "first run"
-```
+## 3. What the agent does under the hood
 
-You'll get a flow document back, including an ID like `first-run__hello-world__1`. Save that ID — every subsequent command takes it as the first argument.
+Each turn, the agent calls one command and reads its JSON response.
 
-### 3. Drive the loop
-
-```sh
-abtree next first-run__hello-world__1
-```
-
-Output:
+`abtree next first-run__hello-world__1` returns the next step:
 
 ```json
 {
@@ -77,28 +72,40 @@ Output:
 }
 ```
 
-Do what the instruction says — check the time, classify it as morning/afternoon/evening — then store the result and submit:
+The agent does the work — checks the clock, classifies the hour as `morning` — then writes the result and submits:
 
 ```sh
 abtree local write first-run__hello-world__1 time_of_day "morning"
 abtree submit first-run__hello-world__1 success
 ```
 
-Now `abtree next` again. You'll get an `evaluate` step asking whether `$LOCAL.time_of_day is "morning"`. Answer:
+The next call returns an `evaluate`:
+
+```json
+{
+  "type": "evaluate",
+  "name": "Morning_Greeting",
+  "expression": "$LOCAL.time_of_day is \"morning\""
+}
+```
+
+The agent reads the expression, decides it holds, and answers:
 
 ```sh
 abtree eval first-run__hello-world__1 true
 ```
 
-Continue: `next` → do the work / answer the evaluate → `submit` or `eval`. Repeat until you see:
+The loop repeats — `next` → do the work or judge the precondition → `submit` or `eval` — until:
 
 ```json
 { "status": "done" }
 ```
 
-### 4. See what happened
+The agent never sees the rest of the tree. Just the next request.
 
-abtree regenerates a Mermaid diagram of the flow at `.abtree/flows/first-run__hello-world__1.mermaid` after every state change. Here's what a completed `hello-world` run looks like — green nodes succeeded, uncoloured ones were skipped.
+## 4. The execution diagram
+
+abtree regenerates a Mermaid diagram at `.abtree/flows/first-run__hello-world__1.mermaid` after every state change. Here's what a completed `hello-world` run looks like — green nodes succeeded, uncoloured ones were skipped.
 
 ```mermaid
 ---
@@ -139,7 +146,7 @@ The cursor advanced through the sequence. The selector chose Morning Greeting an
 
 ## What just happened
 
-You drove a structured workflow without writing a system prompt, without a JSON schema in your context, without chain-of-thought. The tree handed you exactly one task at a time and only let you advance when you proved you completed it.
+Your agent drove a structured workflow without you writing a system prompt, without a JSON schema in its context, without chain-of-thought. The tree handed it exactly one task at a time, and only let it advance when it proved the task was complete.
 
 That's the core idea: **deterministic structure for non-deterministic agents.**
 
