@@ -2,28 +2,100 @@ import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-	title: "Agent Behaviour Tree",
+	title: "abtree",
 	description:
-		"Abtree is an agentic, progressively disclosed behavioural tree toolkit.",
+		"Behaviour trees for AI agents. Define workflows in YAML, drive them with a CLI, get deterministic execution and durable state.",
+
 	themeConfig: {
-		// https://vitepress.dev/reference/default-theme-config
 		nav: [
 			{ text: "Home", link: "/" },
-			{ text: "Examples", link: "/markdown-examples" },
+			{ text: "Get started", link: "/getting-started" },
+			{ text: "Concepts", link: "/concepts/" },
+			{ text: "Guide", link: "/guide/writing-trees" },
 		],
 
-		sidebar: [
-			{
-				text: "Examples",
-				items: [
-					{ text: "Markdown Examples", link: "/markdown-examples" },
-					{ text: "Runtime API Examples", link: "/api-examples" },
-				],
-			},
-		],
+		sidebar: {
+			"/getting-started": [
+				{
+					text: "Introduction",
+					items: [
+						{ text: "Get started", link: "/getting-started" },
+					],
+				},
+				{
+					text: "Core concepts",
+					items: [
+						{ text: "Why behaviour trees?", link: "/concepts/" },
+						{ text: "State", link: "/concepts/state" },
+						{
+							text: "Branches and actions",
+							link: "/concepts/branches-and-actions",
+						},
+					],
+				},
+				{
+					text: "Guide",
+					items: [
+						{ text: "Writing trees", link: "/guide/writing-trees" },
+						{ text: "CLI reference", link: "/guide/cli" },
+					],
+				},
+			],
+
+			"/concepts/": [
+				{
+					text: "Core concepts",
+					items: [
+						{ text: "Why behaviour trees?", link: "/concepts/" },
+						{ text: "State", link: "/concepts/state" },
+						{
+							text: "Branches and actions",
+							link: "/concepts/branches-and-actions",
+						},
+					],
+				},
+				{
+					text: "Guide",
+					items: [
+						{ text: "Writing trees", link: "/guide/writing-trees" },
+						{ text: "CLI reference", link: "/guide/cli" },
+					],
+				},
+			],
+
+			"/guide/": [
+				{
+					text: "Guide",
+					items: [
+						{ text: "Writing trees", link: "/guide/writing-trees" },
+						{ text: "CLI reference", link: "/guide/cli" },
+					],
+				},
+				{
+					text: "Core concepts",
+					items: [
+						{ text: "Why behaviour trees?", link: "/concepts/" },
+						{ text: "State", link: "/concepts/state" },
+						{
+							text: "Branches and actions",
+							link: "/concepts/branches-and-actions",
+						},
+					],
+				},
+			],
+		},
 
 		socialLinks: [
 			{ icon: "github", link: "https://github.com/flying-dice/abtree" },
 		],
+
+		footer: {
+			message: "MIT licensed",
+			copyright: "Built by Flying Dice",
+		},
+
+		search: {
+			provider: "local",
+		},
 	},
 });
