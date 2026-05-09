@@ -1,16 +1,22 @@
 name: counter-demo
-version: 1.0.0
+version: 1.1.0
 description: |
-  Demonstrates $ref by composing a test-and-fallback pattern across
-  multiple YAML files. The root sequence references a test selector
-  whose fallback child references an increment action.
+  Bounded code-then-test pattern. Each pass increments $LOCAL.counter
+  and tests whether the threshold has been reached. The root selector
+  tries up to four passes — if none cross the threshold, the workflow
+  fails. Demonstrates $ref by reusing the same Pass fragment four
+  times.
 
 state:
   local:
     counter: 0
+    threshold: 3
 
 tree:
-  type: sequence
-  name: Counter_Demo
+  type: selector
+  name: Reach_Threshold
   children:
-    - $ref: "./fragments/test.yaml"
+    - $ref: "./fragments/pass.yaml"
+    - $ref: "./fragments/pass.yaml"
+    - $ref: "./fragments/pass.yaml"
+    - $ref: "./fragments/pass.yaml"

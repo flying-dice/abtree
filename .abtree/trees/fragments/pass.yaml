@@ -1,0 +1,20 @@
+# One pass = code (increment) followed by test (threshold check).
+# Returns success when the test passes; otherwise the sequence fails
+# and the parent selector tries the next pass.
+type: sequence
+name: Pass
+children:
+  - type: action
+    name: Increment
+    steps:
+      - instruct: |
+          Read $LOCAL.counter and $LOCAL.threshold. If counter is
+          already greater than threshold, leave it alone. Otherwise
+          add 1 to counter and write it back via
+          `abtree local write <flow> counter <new value>`.
+
+  - type: action
+    name: Test
+    steps:
+      - evaluate: $LOCAL.counter is greater than $LOCAL.threshold
+      - instruct: Threshold reached.

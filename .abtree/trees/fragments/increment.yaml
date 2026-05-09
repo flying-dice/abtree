@@ -1,7 +1,0 @@
-# An action that bumps $LOCAL.counter by 1.
-type: action
-name: Increment
-steps:
-  - instruct: |
-      Read $LOCAL.counter, add 1, write the new value back to
-      $LOCAL.counter via `abtree local write <flow> counter <n+1>`.
