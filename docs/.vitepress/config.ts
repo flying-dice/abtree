@@ -39,119 +39,36 @@ export default defineConfig({
 			{ text: "Examples", link: "/examples" },
 		],
 
-		sidebar: {
-			"/getting-started": [
-				{
-					text: "Introduction",
-					items: [{ text: "Get started", link: "/getting-started" }],
-				},
-				{
-					text: "Core concepts",
-					items: [
-						{ text: "Why behaviour trees?", link: "/concepts/" },
-						{ text: "State", link: "/concepts/state" },
-						{
-							text: "Branches and actions",
-							link: "/concepts/branches-and-actions",
-						},
-					],
-				},
-				{
-					text: "Guide",
-					items: [
-						{ text: "Writing trees", link: "/guide/writing-trees" },
-						{ text: "Designing workflows", link: "/guide/designing-workflows" },
-						{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
-						{ text: "CLI reference", link: "/guide/cli" },
-					],
-				},
-				{
-					text: "Examples",
-					items: [{ text: "Registry", link: "/examples" }],
-				},
-			],
-
-			"/concepts/": [
-				{
-					text: "Core concepts",
-					items: [
-						{ text: "Why behaviour trees?", link: "/concepts/" },
-						{ text: "State", link: "/concepts/state" },
-						{
-							text: "Branches and actions",
-							link: "/concepts/branches-and-actions",
-						},
-					],
-				},
-				{
-					text: "Guide",
-					items: [
-						{ text: "Writing trees", link: "/guide/writing-trees" },
-						{ text: "Designing workflows", link: "/guide/designing-workflows" },
-						{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
-						{ text: "CLI reference", link: "/guide/cli" },
-					],
-				},
-				{
-					text: "Examples",
-					items: [{ text: "Registry", link: "/examples" }],
-				},
-			],
-
-			"/guide/": [
-				{
-					text: "Guide",
-					items: [
-						{ text: "Writing trees", link: "/guide/writing-trees" },
-						{ text: "Designing workflows", link: "/guide/designing-workflows" },
-						{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
-						{ text: "CLI reference", link: "/guide/cli" },
-					],
-				},
-				{
-					text: "Examples",
-					items: [{ text: "Registry", link: "/examples" }],
-				},
-				{
-					text: "Core concepts",
-					items: [
-						{ text: "Why behaviour trees?", link: "/concepts/" },
-						{ text: "State", link: "/concepts/state" },
-						{
-							text: "Branches and actions",
-							link: "/concepts/branches-and-actions",
-						},
-					],
-				},
-			],
-
-			"/examples": [
-				{
-					text: "Examples",
-					items: [{ text: "Registry", link: "/examples" }],
-				},
-				{
-					text: "Guide",
-					items: [
-						{ text: "Writing trees", link: "/guide/writing-trees" },
-						{ text: "Designing workflows", link: "/guide/designing-workflows" },
-						{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
-						{ text: "CLI reference", link: "/guide/cli" },
-					],
-				},
-				{
-					text: "Core concepts",
-					items: [
-						{ text: "Why behaviour trees?", link: "/concepts/" },
-						{ text: "State", link: "/concepts/state" },
-						{
-							text: "Branches and actions",
-							link: "/concepts/branches-and-actions",
-						},
-					],
-				},
-			],
-		},
+		sidebar: [
+			{
+				text: "Introduction",
+				items: [{ text: "Get started", link: "/getting-started" }],
+			},
+			{
+				text: "Core concepts",
+				items: [
+					{ text: "Why behaviour trees?", link: "/concepts/" },
+					{ text: "State", link: "/concepts/state" },
+					{
+						text: "Branches and actions",
+						link: "/concepts/branches-and-actions",
+					},
+				],
+			},
+			{
+				text: "Guide",
+				items: [
+					{ text: "Writing trees", link: "/guide/writing-trees" },
+					{ text: "Designing workflows", link: "/guide/designing-workflows" },
+					{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
+					{ text: "CLI reference", link: "/guide/cli" },
+				],
+			},
+			{
+				text: "Examples",
+				items: [{ text: "Registry", link: "/examples" }],
+			},
+		],
 
 		socialLinks: [
 			{ icon: "github", link: "https://github.com/flying-dice/abtree" },
