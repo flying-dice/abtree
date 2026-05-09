@@ -1,10 +1,10 @@
 ---
 id: 1778332214-quiet-sqlite-evict
 title: JSON Flow Store
-status: draft
+status: accepted
 author: Starscream
 created: 2026-05-09
-reviewed_by:
+reviewed_by: Starscream
 ---
 
 ## Summary
