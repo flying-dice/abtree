@@ -38,8 +38,12 @@ Modern LLMs follow Markdown instructions remarkably well — until workflows gro
 1. **Instruction fatigue.** A long system prompt loses focus. Agents skim, skip steps, hallucinate fields.
 2. **Non-determinism.** Decisions left to the model produce different paths on every run.
 
-abtree borrows the structural reliability of game AI and robotics — **behaviour trees** — and adapts them for agents. You define the workflow as a tree of small, focused steps. The runtime hands the agent **one step at a time**, evaluates the result against an **explicit invariant**, and persists the cursor.
+abtree is a CLI that solves both. You describe the workflow once as a YAML behaviour tree — the same formal structure game AI and robotics have used for decades. Your agent then drives the flow through three commands:
 
-The agent stays focused. The path stays predictable. The state survives.
+- `abtree next` — ask the runtime what to do.
+- `abtree eval` — answer a precondition (`true` or `false`).
+- `abtree submit` — report the outcome of an instruction.
+
+Every call returns JSON, advances the cursor, and persists the flow to disk. The agent only ever sees the next step. The path stays predictable. The state survives.
 
 [Get started in five minutes →](/getting-started)
