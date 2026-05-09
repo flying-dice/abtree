@@ -7,6 +7,25 @@ export default defineConfig({
 	description:
 		"Behaviour trees for AI agents. Define workflows in YAML, drive them with a CLI, get deterministic execution and durable state.",
 
+	head: [
+		["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
+		[
+			"link",
+			{
+				rel: "preconnect",
+				href: "https://fonts.gstatic.com",
+				crossorigin: "",
+			},
+		],
+		[
+			"link",
+			{
+				rel: "stylesheet",
+				href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap",
+			},
+		],
+	],
+
 	vite: {
 		plugins: [llmstxt()],
 	},

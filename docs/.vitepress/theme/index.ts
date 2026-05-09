@@ -13,7 +13,7 @@ export default {
 
 		const initMermaid = () => {
 			createMermaidRenderer({
-				theme: isDark.value ? "dark" : "forest",
+				theme: isDark.value ? "dark" : "neutral",
 			});
 		};
 
