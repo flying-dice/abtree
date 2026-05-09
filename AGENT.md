@@ -2,8 +2,8 @@
 EXECUTION PROTOCOL
 ==================
 
-ABT is a durable behaviour tree engine. Flows bind a tree to a piece of work
-and track progress in SQLite with two state scopes:
+abtree is a durable behaviour tree engine. Flows bind a tree to a piece of work
+and persist as JSON documents in .abtree/flows/, with two state scopes:
   $LOCAL  — per-flow blackboard (read/write)
   $GLOBAL — world model (read-only)
 
