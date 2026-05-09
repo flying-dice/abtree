@@ -16,7 +16,14 @@ export type CompositeNode = {
 	children: AbtNode[];
 };
 
-export type AbtNode = ActionNode | CompositeNode;
+// A reference node — preserved literally in the snapshot when it's part of
+// a cycle the ref-parser declined to expand. Cannot be ticked; surfacing it
+// at runtime is a hard failure with a clear message.
+export type RefNode = {
+	$ref: string;
+};
+
+export type AbtNode = ActionNode | CompositeNode | RefNode;
 
 export type NormalizedActionNode = {
 	type: "action";
@@ -30,7 +37,15 @@ export type NormalizedCompositeNode = {
 	children: NormalizedNode[];
 };
 
-export type NormalizedNode = NormalizedActionNode | NormalizedCompositeNode;
+export type NormalizedRefNode = {
+	type: "ref";
+	ref: string;
+};
+
+export type NormalizedNode =
+	| NormalizedActionNode
+	| NormalizedCompositeNode
+	| NormalizedRefNode;
 
 export type TreeFile = {
 	name: string;

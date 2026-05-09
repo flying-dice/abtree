@@ -64,6 +64,13 @@ function validateStep(raw: unknown, ctx: string): Step {
 
 function validateNode(raw: unknown, ctx: string): AbtNode {
 	if (!isObject(raw)) die(`${ctx}: node must be an object`);
+
+	// $ref placeholder — preserved literally when the ref-parser declined to
+	// expand a cycle. Stored as-is in the snapshot; ticking surfaces failure.
+	if ("$ref" in raw && typeof raw.$ref === "string") {
+		return { $ref: raw.$ref };
+	}
+
 	if (typeof raw.type !== "string" || !raw.type)
 		die(`${ctx}: node.type is required`);
 	if (typeof raw.name !== "string" || !raw.name)
@@ -137,6 +144,9 @@ export function normalizeStep(step: Step): NormalizedStep {
 }
 
 export function normalizeNode(node: AbtNode): NormalizedNode {
+	if ("$ref" in node) {
+		return { type: "ref", ref: node.$ref };
+	}
 	if (node.type === "action") {
 		return {
 			type: "action",
