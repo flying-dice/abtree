@@ -1,0 +1,130 @@
+name: technical-writer
+version: 1.0.0
+description: Take a documentation goal, ground it in the repo's styleguide, find or build a home in the docs tree, write to it, and gate-check structure / flow / atomicity before shipping.
+
+state:
+  local:
+    goal: null
+    styleguide: null
+    styleguide_approved: null
+    intent: null
+    docs_survey: null
+    placement: null
+    draft: null
+    final_path: null
+  global:
+    repo_root: the cwd of the project being documented
+
+tree:
+  type: sequence
+  name: Technical_Writer_Workflow
+  children:
+
+    # 1. Styleguide must exist before writing. If it doesn't, draft one and
+    #    gate on human approval before continuing.
+    - type: selector
+      name: Resolve_Styleguide
+      children:
+        - type: action
+          name: Load_Styleguide
+          steps:
+            - evaluate: $LOCAL.goal is set and STYLEGUIDE.md exists at the repo root
+            - instruct: >
+                Read STYLEGUIDE.md from the repo root and store its contents
+                at $LOCAL.styleguide.
+
+        - type: sequence
+          name: Bootstrap_Styleguide
+          children:
+            - type: action
+              name: Draft_Styleguide
+              steps:
+                - evaluate: $LOCAL.goal is set
+                - instruct: >
+                    No STYLEGUIDE.md exists at the repo root. Draft a minimal
+                    one covering: voice (first vs second person), tone,
+                    sentence case, code-fence conventions, link style, file
+                    and heading naming, and any project-specific rules you
+                    can infer from existing docs. Store the draft at
+                    $LOCAL.styleguide. Do NOT write to disk yet.
+
+            - type: action
+              name: Human_Approval_Gate
+              steps:
+                - evaluate: $LOCAL.styleguide is set
+                - instruct: >
+                    Present the draft styleguide at $LOCAL.styleguide to the
+                    human. Wait for them to confirm by calling
+                    `abtree local write <flow-id> styleguide_approved true`.
+                    While waiting, you may submit `running`. Do NOT submit
+                    success until they confirm. If they reject, submit
+                    failure so the bootstrap re-runs.
+                - evaluate: $LOCAL.styleguide_approved is true
+                - instruct: >
+                    Write $LOCAL.styleguide to STYLEGUIDE.md at the repo root.
+
+    # 2. Decide what we're actually writing.
+    - type: action
+      name: Assess_Intent
+      steps:
+        - evaluate: $LOCAL.styleguide is set
+        - instruct: >
+            Analyse $LOCAL.goal. Determine:
+            - Type: tutorial, reference, conceptual explainer, how-to.
+            - Scope: one section, one page, multiple pages.
+            - Audience: new user, integrator, contributor, internal.
+            Store the analysis at $LOCAL.intent.
+
+    # 3. Find or build the home for this content.
+    - type: selector
+      name: Survey_Existing_Docs
+      children:
+        - type: action
+          name: Map_Placement
+          steps:
+            - evaluate: $LOCAL.intent is set and a home for this content already exists in the docs tree
+            - instruct: >
+                Walk the docs tree. Find the right path or parent section for
+                $LOCAL.intent. List the adjacent pages and identify where in
+                the sidebar / nav this should slot. Store the placement plan
+                at $LOCAL.docs_survey and the chosen target file path at
+                $LOCAL.placement.
+
+        - type: action
+          name: Resolve_Structure
+          steps:
+            - evaluate: $LOCAL.intent is set
+            - instruct: >
+                No home exists for $LOCAL.intent. Decide on a structural
+                change — a new section, a new page, a new sidebar entry, or
+                a refactor of an existing section. Implement the structural
+                change first (create the directory, update the sidebar
+                config, etc.) and only then proceed. Store the placement
+                plan at $LOCAL.docs_survey and the chosen target file path
+                at $LOCAL.placement.
+
+    # 4. Write.
+    - type: action
+      name: Write_Documentation
+      steps:
+        - evaluate: $LOCAL.intent is set and $LOCAL.docs_survey is set and $LOCAL.placement is set
+        - instruct: >
+            Write the documentation at $LOCAL.placement. Adhere to
+            $LOCAL.styleguide. Match the voice and structure described in
+            $LOCAL.docs_survey. Address $LOCAL.intent precisely — type,
+            scope, audience. Save the file. Store the written text at
+            $LOCAL.draft.
+
+    # 5. Three checks in sequence. Any failure aborts and surfaces which
+    #    check broke; the human re-issues the goal with notes for a fresh run.
+    - type: action
+      name: Review_Gate
+      steps:
+        - evaluate: $LOCAL.draft is set
+        - evaluate: $LOCAL.draft fits the placement and adjacency described in $LOCAL.docs_survey
+        - evaluate: the narrative in $LOCAL.draft flows end-to-end without gaps or duplication
+        - evaluate: $LOCAL.draft addresses one concept — not multiple concepts bundled into one page
+        - instruct: >
+            All three review checks passed. Confirm the file at
+            $LOCAL.placement is written and store the final path at
+            $LOCAL.final_path.
