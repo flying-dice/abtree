@@ -1,15 +1,17 @@
 name: code-review
-version: 3.1.0
+version: 3.2.0
 description: |
   Review a merge request / pull request. Defers the heavy lifting
-  to a remote markdown playbook exposed as a parameterless directive
-  in $GLOBAL.code_review — the actions invoke it by name; the
-  directive owns the fetch-and-return-text contract. abtree provides
-  the workflow shell — skip-or-run gate, human publish gate, formal
-  verdict selector.
+  to a curated playbook stored alongside the tree at
+  .abtree/playbooks/code-review.md. The playbook is exposed as a
+  parameterless directive in $GLOBAL.code_review — the actions invoke
+  it by name; the directive owns the read-and-return-text contract.
+  abtree provides the workflow shell — skip-or-run gate, human
+  publish gate, formal verdict selector.
 
-  Pin a specific commit SHA in the URL for stability; track main for
-  the latest.
+  Install the playbook alongside the tree (see docs/examples.md).
+  The path is project-relative; abtree always runs in the project
+  root.
 
 state:
   local:
@@ -32,13 +34,12 @@ state:
 
   global:
     code_review: |
-      Fetch the markdown at
-      https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/code-review/commands/code-review.md
-      and return its full body as text. The text is a code-review
-      playbook covering pre-flight skip checks, project-conventions
-      loading, parallel review passes (bugs, introduced-code issues,
-      convention compliance), per-finding validation, false-positive
-      filtering, and posting / formatting rules.
+      Read the file at .abtree/playbooks/code-review.md (relative to
+      the project root) and return its full body as text. The text is
+      a code-review playbook covering pre-flight skip checks, project-
+      conventions loading, parallel review passes (conventions, bugs,
+      introduced-code issues), the high-signal bar, per-finding
+      validation, and posting / formatting rules.
 
 tree:
   type: selector

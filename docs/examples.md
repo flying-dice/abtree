@@ -137,21 +137,24 @@ claude "I need a backend service for <description>. First run the abtree refine 
 
 ## Frontend design
 
-Design and implement a frontend component or page from an approved spec by **deferring the aesthetic-direction work to a remote markdown playbook**. The playbook is exposed as a parameterless directive at `$GLOBAL.frontend_design` ("fetch this URL, return text"); actions invoke it by name (`Use $GLOBAL.frontend_design to design and implement …`, `Use $GLOBAL.frontend_design to assess …`) to handle tone selection, typography, palette, motion, spatial composition, and atmospheric backgrounds. The workflow shell is abtree's: spec-approval gate, eight-item post-implementation quality check, fix-or-pass selector. Pin a commit SHA in the URL for version stability.
+Design and implement a frontend component or page from an approved spec by **deferring the aesthetic-direction work to a curated local playbook**. The playbook ships at `.abtree/playbooks/frontend-design.md` and is exposed as a parameterless directive at `$GLOBAL.frontend_design` ("read this file, return text"); actions invoke it by name (`Use $GLOBAL.frontend_design to design and implement …`, `Use $GLOBAL.frontend_design to assess …`) to handle tone selection, typography, palette, motion, spatial composition, and atmospheric backgrounds. The workflow shell is abtree's: spec-approval gate, eight-item post-implementation quality check, fix-or-pass selector.
 
 **Files**
 
 - `frontend-design.yaml` — main
 - `refine.yaml` — sub-workflow (run first to produce the spec)
+- `playbooks/frontend-design.md` — the design playbook the global directive points at
 
 **Install**
 
 ```sh
-mkdir -p .abtree/trees \
+mkdir -p .abtree/trees .abtree/playbooks \
   && for t in frontend-design refine; do
        curl -fsSL "https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/${t}.yaml" \
             -o ".abtree/trees/${t}.yaml"
-     done
+     done \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/playbooks/frontend-design.md \
+       -o .abtree/playbooks/frontend-design.md
 ```
 
 **Run with Claude**
@@ -212,18 +215,21 @@ claude "Run the abtree improve-codebase flow on this repo. Use 'abtree --help' t
 
 ## Code review
 
-Reviews a merge request / pull request by **deferring the heavy lifting to a remote markdown playbook**. The playbook is exposed as a parameterless directive at `$GLOBAL.code_review` ("fetch this URL, return text"); actions invoke it by name to apply the pre-flight check, the main review pipeline (project-conventions loading, parallel review passes, validation, false-positive filtering — all owned by the playbook), and the posting / formatting rules. The workflow shell is abtree's: skip-or-run gate, human-approved publish gate, formal approve / request-changes verdict. Pin a commit SHA in the URL for version stability.
+Reviews a merge request / pull request by **deferring the heavy lifting to a curated local playbook**. The playbook ships at `.abtree/playbooks/code-review.md` and is exposed as a parameterless directive at `$GLOBAL.code_review` ("read this file, return text"); actions invoke it by name to apply the pre-flight check, the main review pipeline (project-conventions loading, parallel review passes, validation, false-positive filtering — all owned by the playbook), and the posting / formatting rules. The workflow shell is abtree's: skip-or-run gate, human-approved publish gate, formal approve / request-changes verdict.
 
 **Files**
 
 - `code-review.yaml` — main
+- `playbooks/code-review.md` — the review playbook the global directive points at
 
 **Install**
 
 ```sh
-mkdir -p .abtree/trees \
+mkdir -p .abtree/trees .abtree/playbooks \
   && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/code-review.yaml \
-       -o .abtree/trees/code-review.yaml
+       -o .abtree/trees/code-review.yaml \
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/playbooks/code-review.md \
+       -o .abtree/playbooks/code-review.md
 ```
 
 **Run with Claude**
