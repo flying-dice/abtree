@@ -7,6 +7,10 @@ and persist as JSON documents in .abtree/flows/, with two state scopes:
   $LOCAL  — per-flow blackboard (read/write)
   $GLOBAL — world model (read-only)
 
+Internal bookkeeping (cursor, retry counts, per-node status) lives in a
+`runtime` field on the flow document — invisible to `local read` and not
+mutable via `local write`. You don't manage it; the engine does.
+
 STRICT: Never read tree files directly. All interaction goes through this CLI.
 
 --- Routing ---

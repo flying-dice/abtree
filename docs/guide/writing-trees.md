@@ -148,6 +148,23 @@ steps:
 
 You can have any number of steps in any order. They run sequentially within the action — the agent finishes step 1 before step 2 appears.
 
+### Retries (any node)
+
+Any node — action or composite — can carry a `retries: N` config. When the runtime sees that node fail, it wipes the node's internal bookkeeping (status, step index, descendants), bumps an internal retry counter, and re-ticks the node from a clean slate. After N retries are exhausted, the failure propagates normally.
+
+```yaml
+type: sequence
+name: Write_And_Review
+retries: 2          # one initial attempt + 2 retries = 3 total attempts
+children:
+  - { type: action, name: Write,  steps: [...] }
+  - { type: action, name: Review, steps: [...] }
+```
+
+User state in `$LOCAL` (drafts, counters, review notes) **persists across retries** — that's the whole feedback channel. Internal state (which actions have run, where the cursor is) is wiped between attempts.
+
+This is the canonical replacement for the older "selector of N hand-written passes" shape — one retry config, one fragment, instead of N near-identical siblings.
+
 ## Naming
 
 Use **PascalCase with underscores** for node names: `Choose_Greeting`, `Check_Weather`. Mermaid diagrams render `_` as spaces, so `Choose_Greeting` becomes "Choose Greeting" in the rendered output.

@@ -8,12 +8,14 @@ export type ActionNode = {
 	type: "action";
 	name: string;
 	steps: Step[];
+	retries?: number;
 };
 
 export type CompositeNode = {
 	type: "sequence" | "selector" | "parallel";
 	name: string;
 	children: AbtNode[];
+	retries?: number;
 };
 
 // A reference node — preserved literally in the snapshot when it's part of
@@ -29,12 +31,14 @@ export type NormalizedActionNode = {
 	type: "action";
 	name: string;
 	steps: NormalizedStep[];
+	retries?: number;
 };
 
 export type NormalizedCompositeNode = {
 	type: "sequence" | "selector" | "parallel";
 	name: string;
 	children: NormalizedNode[];
+	retries?: number;
 };
 
 export type NormalizedRefNode = {
@@ -76,9 +80,16 @@ export interface FlowRow {
 	updated_at: string;
 }
 
+export interface RuntimeState {
+	node_status: Record<string, NodeStatus>;
+	step_index: Record<string, number>;
+	retry_count: Record<string, number>;
+}
+
 export interface FlowDoc extends FlowRow {
 	local: Record<string, unknown>;
 	global: Record<string, unknown>;
+	runtime: RuntimeState;
 }
 
 export type NodeStatus = "success" | "failure" | "running";
