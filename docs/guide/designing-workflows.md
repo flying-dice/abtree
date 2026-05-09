@@ -115,9 +115,42 @@ For the full field reference see [Writing trees](/guide/writing-trees).
 
 ## Common idioms
 
-### Idiom: bounded retries
+### Idiom: bounded code-then-test (selector of passes)
 
-abtree has **no native loops**. To retry, wrap each attempt as a child of a `selector`. The selector tries them in order; first success wins; if all attempts fail, the selector fails and propagates up.
+The canonical "iterate until satisfied" shape. Each pass is `[code → test]`; the root is a `selector` of N passes. First pass whose test succeeds wins. If all N fail, the selector fails.
+
+```yaml
+type: selector
+name: Reach_Threshold
+children:
+  - $ref: "./fragments/pass.yaml"   # pass 1
+  - $ref: "./fragments/pass.yaml"   # pass 2
+  - $ref: "./fragments/pass.yaml"   # pass 3
+  - $ref: "./fragments/pass.yaml"   # pass 4
+```
+
+```yaml
+# fragments/pass.yaml
+type: sequence
+name: Pass
+children:
+  - { type: action, name: Increment, steps: [...] }
+  - type: action
+    name: Test
+    steps:
+      - evaluate: $LOCAL.counter is greater than $LOCAL.threshold
+      - instruct: Threshold reached.
+```
+
+Each pass is a real, observable, resumable step. The bound is explicit in the tree (count the children).
+
+**When to reach for this:** the work is meaningful at each iteration — write code, then run tests; revise a draft, then review; gather data, then check completeness. Each pass should be something you'd want to inspect in a Mermaid trace.
+
+**An anti-pattern that looks similar but isn't:** modelling iteration as a cycle (`test` `$ref`s back to `increment`). Cycles are preserved in the snapshot but cannot be ticked — abtree fails fast on a cyclic edge by design. Use the selector-of-passes shape instead.
+
+### Idiom: bounded retries (selector of attempts)
+
+The same shape as above, applied to retries against transient failure. Each attempt may also do code+test internally; the selector caps the number of full attempts.
 
 ```yaml
 type: selector
@@ -143,6 +176,25 @@ children:
 ```
 
 Each pass writes failure notes to a shared `$LOCAL.<x>_notes` key before failing, so the next pass has something to act on. Three passes is conventional; pick a number that bounds the cost.
+
+### Idiom: tight inner loop inside one action
+
+When the iteration is **not** meaningful at each step — e.g. polling a value, retrying a flaky API call, or any "cap at N tries internally" pattern — fold the loop into a single `instruct` and let the agent enforce the bound.
+
+```yaml
+- type: action
+  name: Wait_For_Service
+  steps:
+    - evaluate: $LOCAL.endpoint is set
+    - instruct: |
+        Poll $LOCAL.endpoint up to 10 times with a 1s delay between
+        attempts. If the service responds 200, set $LOCAL.ready to
+        true and submit success. After 10 attempts, submit failure.
+```
+
+**When to reach for this:** the inner step is uninteresting on its own — you'd never trace it in Mermaid. The runtime sees one action; the loop is the agent's contract.
+
+**Trade-off:** the bound lives in prose, not the tree. Less observable, less resumable, but tighter. Use selector-of-passes when each iteration is a step worth seeing; use this when it isn't.
 
 ### Idiom: instruct-then-evaluate gate
 

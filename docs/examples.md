@@ -30,15 +30,14 @@ claude "Run the abtree hello-world flow end-to-end. Start by running 'abtree --h
 
 ---
 
-## Counter demo (multi-file `$ref`)
+## Counter demo (multi-file `$ref` + bounded code/test loop)
 
-Tiny tree that demonstrates splitting a workflow across files via JSON-Schema-style `$ref`. Three files: a root sequence, a `Test` selector fragment, and an `Increment` action fragment. State starts at `counter: 0`; the selector's first child evaluates `counter > 0`, fails, and the selector falls through to its second child which is a `$ref` to the increment action. Counter ends at 1.
+Demonstrates two things together: splitting a workflow across files via JSON-Schema-style `$ref`, and the BT-native code-then-test pattern with bounded retries. State starts at `counter: 0` and `threshold: 3`. The root `Reach_Threshold` selector tries up to four passes; each pass is a `Pass` sequence (`Increment` action then `Test` evaluate) loaded from a single shared fragment file. Pass 4 wins because `counter` reaches 4 (`> 3`).
 
 **Files**
 
-- `counter-demo.yaml` — main (root sequence)
-- `fragments/test.yaml` — sub-workflow (the test selector)
-- `fragments/increment.yaml` — sub-workflow (the increment action)
+- `counter-demo.yaml` — main (root selector with four `$ref`s to the same pass)
+- `fragments/pass.yaml` — sub-workflow (one Increment + Test sequence)
 
 **Install**
 
@@ -46,16 +45,14 @@ Tiny tree that demonstrates splitting a workflow across files via JSON-Schema-st
 mkdir -p .abtree/trees/fragments \
   && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/counter-demo.yaml \
        -o .abtree/trees/counter-demo.yaml \
-  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/fragments/test.yaml \
-       -o .abtree/trees/fragments/test.yaml \
-  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/fragments/increment.yaml \
-       -o .abtree/trees/fragments/increment.yaml
+  && curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/fragments/pass.yaml \
+       -o .abtree/trees/fragments/pass.yaml
 ```
 
 **Run with Claude**
 
 ```sh
-claude "Run the abtree counter-demo flow end-to-end. Use 'abtree --help' to learn the protocol, then drive it through every step. The Check_Counter evaluate should fail because state starts at 0; the selector will fall through to the Increment action which bumps counter to 1."
+claude "Run the abtree counter-demo flow end-to-end. Use 'abtree --help' to learn the protocol, then drive it through every step. Each Pass is an Increment instruct followed by a Test evaluate that checks counter > threshold. The first three passes will fail the test; the fourth will succeed. Final counter is 4."
 ```
 
 ---
