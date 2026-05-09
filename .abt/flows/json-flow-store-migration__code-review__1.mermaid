@@ -1,0 +1,28 @@
+---
+title: "json flow store migration (complete)"
+---
+flowchart TD
+    Code_Review_Workflow{{"Code Review Workflow\n[sequence]"}}
+    0_Fetch_Diff["Fetch Diff\n[action]"]
+    Code_Review_Workflow --> 0_Fetch_Diff
+    style 0_Fetch_Diff fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Analyse_Changes["Analyse Changes\n[action]"]
+    Code_Review_Workflow --> 0_Analyse_Changes
+    style 0_Analyse_Changes fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Review_Correctness["Review Correctness\n[action]"]
+    Code_Review_Workflow --> 0_Review_Correctness
+    style 0_Review_Correctness fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Review_Test_Coverage["Review Test Coverage\n[action]"]
+    Code_Review_Workflow --> 0_Review_Test_Coverage
+    style 0_Review_Test_Coverage fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Review_Conventions["Review Conventions\n[action]"]
+    Code_Review_Workflow --> 0_Review_Conventions
+    style 0_Review_Conventions fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Approve_Or_Request_Changes{{"Approve Or Request Changes\n[selector]"}}
+    Code_Review_Workflow --> 0_Approve_Or_Request_Changes
+    style 0_Approve_Or_Request_Changes fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_5_Approve["Approve\n[action]"]
+    0_Approve_Or_Request_Changes --> 0_5_Approve
+    style 0_5_Approve fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_5_Request_Changes["Request Changes\n[action]"]
+    0_Approve_Or_Request_Changes --> 0_5_Request_Changes
