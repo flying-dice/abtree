@@ -50,19 +50,5 @@ export function rebuildMermaid(flowId: string) {
     renderNode(tree.root, null, 0, "");
     ensureDir(FLOWS_DIR);
     writeFileSync(join(FLOWS_DIR, `${flowId}.mermaid`), lines.join("\n") + "\n");
-    rebuildIndex();
   } catch (e) { console.error("rebuildMermaid failed:", e); }
-}
-
-export function rebuildIndex() {
-  try {
-    const flows = FlowRepo.listAllFull();
-    const lines: string[] = ["# ABT Flows\n"];
-    for (const flow of flows) {
-      lines.push(`- **${flow.summary}** \`${flow.tree}\` — ${flow.status}`);
-      lines.push(`  [diagram](${flow.id}.mermaid)`);
-    }
-    ensureDir(FLOWS_DIR);
-    writeFileSync(join(FLOWS_DIR, "index.md"), lines.join("\n") + "\n");
-  } catch (e) { console.error("rebuildIndex failed:", e); }
 }
