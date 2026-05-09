@@ -217,6 +217,31 @@ children:
 
 Each parallel branch can have its own `evaluate: $LOCAL.x is set` precondition for safety.
 
+### Idiom: split a large tree across files
+
+For trees that exceed a screenful of YAML, factor out reusable subtrees with JSON-Schema-style `$ref`. abtree resolves references at flow-creation time, so the runtime always sees one assembled snapshot.
+
+```yaml
+tree:
+  type: sequence
+  children:
+    - $ref: "./fragments/auth.yaml"          # relative to this file
+    - $ref: "/srv/abtree/shared/cleanup.yaml" # absolute path
+    - $ref: "https://example.com/audit.yaml"  # remote URL
+```
+
+The fragment file is a single node — same shape as any inline child:
+
+```yaml
+# fragments/auth.yaml
+type: sequence
+name: Auth_Sequence
+children:
+  - { type: action, name: Login, steps: [...] }
+```
+
+Fragments do NOT carry top-level `name` / `version` / `description` / `state`. Those live only on the root tree.
+
 ### Idiom: optional pre-step that doesn't block
 
 If a step is "do this if you can, otherwise skip", wrap it in a `selector` whose second child is a no-op:

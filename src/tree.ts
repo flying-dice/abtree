@@ -1,5 +1,6 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import $RefParser from "@apidevtools/json-schema-ref-parser";
 import { TREE_SOURCES } from "./paths.ts";
 import { FlowStore } from "./repos.ts";
 import type {
@@ -10,11 +11,23 @@ import type {
 } from "./types.ts";
 import { normalizeNode, validateTreeFile } from "./validate.ts";
 
-export function loadTree(slug: string): ParsedTree | null {
+// Tree files can split themselves across multiple YAML documents using
+// JSON-Schema-style $ref. The ref-parser dereferences relative paths,
+// absolute paths, and URLs at load time so the rest of the pipeline
+// sees one fully-resolved object.
+//
+//   tree:
+//     type: sequence
+//     children:
+//       - $ref: "./fragments/auth.yaml"
+//       - $ref: "./fragments/work.yaml"
+//
+// The dereferenced object is identical in shape to a single-file tree.
+export async function loadTree(slug: string): Promise<ParsedTree | null> {
 	for (const dir of TREE_SOURCES) {
 		const yamlPath = join(dir, `${slug}.yaml`);
 		if (!existsSync(yamlPath)) continue;
-		const raw = Bun.YAML.parse(readFileSync(yamlPath, "utf-8"));
+		const raw = await $RefParser.dereference(yamlPath);
 		const parsed = validateTreeFile(raw);
 		return {
 			local: parsed.state?.local ?? {},
