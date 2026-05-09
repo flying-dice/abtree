@@ -24,7 +24,9 @@
           { "path": "abt-linux-arm64",     "label": "abt-linux-arm64" },
           { "path": "abt-darwin-x64",      "label": "abt-darwin-x64" },
           { "path": "abt-darwin-arm64",    "label": "abt-darwin-arm64" },
-          { "path": "abt-windows-x64.exe", "label": "abt-windows-x64.exe" }
+          { "path": "abt-windows-x64.exe", "label": "abt-windows-x64.exe" },
+          { "path": "install.sh",          "label": "install.sh" },
+          { "path": "install.ps1",         "label": "install.ps1" }
         ]
       }
     ]
