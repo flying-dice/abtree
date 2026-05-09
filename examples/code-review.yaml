@@ -1,0 +1,96 @@
+name: code-review
+version: 1.0.0
+description: Review a merge request for correctness, test coverage, and repo convention conformance. Approve or request changes.
+
+state:
+  local:
+    mr_ref: null
+    diff_content: null
+    initial_analysis: null
+    review_comments: null
+    final_verdict: null
+
+tree:
+  type: sequence
+  name: Code_Review_Workflow
+  children:
+    - type: action
+      name: Fetch_Diff
+      steps:
+        - evaluate: $LOCAL.mr_ref is set
+        - instruct: >
+            Fetch the full diff for $LOCAL.mr_ref. Include all changed files,
+            added/removed lines, and the MR description. Note the base branch
+            and target branch. Store the complete diff at $LOCAL.diff_content.
+
+    - type: action
+      name: Analyse_Changes
+      steps:
+        - evaluate: $LOCAL.diff_content is set
+        - instruct: >
+            Read $LOCAL.diff_content end-to-end. Determine:
+            - What is the intent of this change?
+            - Which modules, files, or subsystems are affected?
+            - Are there any dependency additions or removals?
+            - Are there schema or interface changes that affect other consumers?
+            - What invariants must hold for this change to be correct?
+            Store your analysis at $LOCAL.initial_analysis.
+
+    - type: action
+      name: Review_Correctness
+      steps:
+        - evaluate: $LOCAL.initial_analysis is set
+        - instruct: >
+            Using $LOCAL.diff_content and $LOCAL.initial_analysis, evaluate correctness:
+            - Does the logic match the stated intent?
+            - Are error paths handled explicitly (no silent swallows, no bare throws)?
+            - Are there off-by-one errors, race conditions, or undefined-behaviour risks?
+            - Are external inputs validated at boundaries?
+            - Are there any security issues (injection, path traversal, privilege escalation)?
+            For each issue found, note the file, line number, severity (blocking/non-blocking),
+            and a concrete remediation. Store findings at $LOCAL.review_comments.
+
+    - type: action
+      name: Review_Test_Coverage
+      steps:
+        - evaluate: $LOCAL.review_comments is not null
+        - instruct: >
+            Check test coverage for $LOCAL.diff_content:
+            - Does the change include tests for new behaviour?
+            - Are edge cases and failure paths covered?
+            - Do existing tests still pass given the changes (check for deleted or broken assertions)?
+            Append any test-coverage findings (file, line, severity, remediation) to $LOCAL.review_comments.
+
+    - type: action
+      name: Review_Conventions
+      steps:
+        - evaluate: $LOCAL.review_comments is not null
+        - instruct: >
+            Check repo convention conformance for $LOCAL.diff_content:
+            - Naming: functions, types, files follow established patterns?
+            - Module boundaries: no circular deps, imports respect layer rules?
+            - Comments: only present where WHY is non-obvious?
+            - Commit messages: no auto-close keywords (closes/fixes/resolves), refs #N format?
+            - No secrets, credentials, or local-only paths committed?
+            Append any convention findings to $LOCAL.review_comments.
+
+    - type: selector
+      name: Approve_Or_Request_Changes
+      children:
+        - type: action
+          name: Approve
+          steps:
+            - evaluate: $LOCAL.review_comments contains no blocking issues
+            - instruct: >
+                All blocking checks passed. Post any non-blocking comments as suggestions
+                on the relevant diff lines. Submit an approval via the MCP. Set
+                $LOCAL.final_verdict to "approved".
+
+        - type: action
+          name: Request_Changes
+          steps:
+            - instruct: >
+                Post inline comments for every blocking issue found in $LOCAL.review_comments,
+                citing the file and line number. Post non-blocking findings as suggestions.
+                Submit a request-changes review via the MCP explaining the blocking issues.
+                Set $LOCAL.final_verdict to "changes_requested".
