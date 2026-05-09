@@ -9,7 +9,6 @@ import {
 	type SkillVariant,
 } from "./paths.ts";
 import { ExecutionStore } from "./repos.ts";
-import { buildJsonSchema } from "./schemas.ts";
 import { TreeSnapshotStore } from "./snapshots.ts";
 import {
 	generateExecutionId,
@@ -28,10 +27,6 @@ export function cmdTreeList() {
 
 export function cmdDocs(content: string) {
 	process.stdout.write(content.endsWith("\n") ? content : `${content}\n`);
-}
-
-export function cmdDocsSchema() {
-	out(buildJsonSchema());
 }
 
 export async function cmdExecutionCreate(treeSlug: string, summary: string) {
