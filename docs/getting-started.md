@@ -29,10 +29,10 @@ You'll see a version number. If you don't, restart your terminal so the new `PAT
 Three words worth knowing:
 
 - **Tree** — a YAML file describing a workflow. Lives in `.abtree/trees/`.
-- **Flow** — one execution of a tree, bound to a piece of work. Persists as JSON in `.abtree/flows/`.
+- **Execution** — one run of a tree, bound to a piece of work. Persists as JSON in `.abtree/executions/`.
 - **Step** — the smallest unit. Either an `evaluate` (a precondition the agent confirms) or an `instruct` (work the agent performs).
 
-abtree is a CLI **for agents**. You don't drive flows yourself — you hand a brief to your agent and it runs the loop. Three commands carry the whole protocol: `abtree next` to ask "what now?", `abtree eval` to answer a precondition, `abtree submit` to report an outcome. JSON in, JSON out.
+abtree is a CLI **for agents**. You don't drive executions yourself — you hand a brief to your agent and it runs the loop. Three commands carry the whole protocol: `abtree next` to ask "what now?", `abtree eval` to answer a precondition, `abtree submit` to report an outcome. JSON in, JSON out.
 
 ## 1. Set up a workspace
 
@@ -50,13 +50,13 @@ curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/tre
 In Claude Code, ChatGPT, or any agent that can run shell commands, send:
 
 ```text
-Run the abtree hello-world flow end-to-end. Start by running
-'abtree --help' to learn the execution protocol, then create a
-flow with 'abtree flow create hello-world "first run"' and drive
+Run the abtree hello-world tree end-to-end. Start by running
+'abtree --help' to learn the execution protocol, then create an
+execution with 'abtree execution create hello-world "first run"' and drive
 it through every step until you see status: done.
 ```
 
-That is the entire human-side interaction. The agent reads the protocol from `--help`, creates a flow, and runs the loop autonomously.
+That is the entire human-side interaction. The agent reads the protocol from `--help`, creates an execution, and runs the loop autonomously.
 
 ## 3. What the agent does under the hood
 
@@ -105,7 +105,7 @@ The agent never sees the rest of the tree. Just the next request.
 
 ## 4. The execution diagram
 
-abtree regenerates a Mermaid diagram at `.abtree/flows/first-run__hello-world__1.mermaid` after every state change. Here's what a completed `hello-world` run looks like — green nodes succeeded, uncoloured ones were skipped.
+abtree regenerates a Mermaid diagram at `.abtree/executions/first-run__hello-world__1.mermaid` after every state change. Here's what a completed `hello-world` run looks like — green nodes succeeded, uncoloured ones were skipped.
 
 ```mermaid
 ---

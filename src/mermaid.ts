@@ -1,19 +1,19 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ensureDir, FLOWS_DIR } from "./paths.ts";
-import { FlowStore } from "./repos.ts";
+import { ensureDir, EXECUTIONS_DIR } from "./paths.ts";
+import { ExecutionStore } from "./repos.ts";
 import { getNodeResult, getPathForNode } from "./tree.ts";
 import type { NormalizedNode } from "./types.ts";
 
-export function rebuildMermaid(flowId: string) {
+export function rebuildMermaid(executionId: string) {
 	try {
-		const flow = FlowStore.findById(flowId);
-		if (!flow) return;
-		const tree = JSON.parse(flow.snapshot);
+		const execution = ExecutionStore.findById(executionId);
+		if (!execution) return;
+		const tree = JSON.parse(execution.snapshot);
 
 		const lines: string[] = [];
 		lines.push(`---`);
-		lines.push(`title: "${flow.summary} (${flow.status})"`);
+		lines.push(`title: "${execution.summary} (${execution.status})"`);
 		lines.push(`---`);
 		lines.push(`flowchart TD`);
 
@@ -50,7 +50,7 @@ export function rebuildMermaid(flowId: string) {
 
 			const nodePath = getPathForNode(tree.root, node);
 			if (nodePath) {
-				const status = getNodeResult(flowId, nodePath);
+				const status = getNodeResult(executionId, nodePath);
 				if (status === "success") {
 					lines.push(
 						`    style ${id} fill:#4ade80,stroke:#16a34a,color:#052e16`,
@@ -70,9 +70,9 @@ export function rebuildMermaid(flowId: string) {
 		};
 
 		renderNode(tree.root, null, 0, "");
-		ensureDir(FLOWS_DIR);
+		ensureDir(EXECUTIONS_DIR);
 		writeFileSync(
-			join(FLOWS_DIR, `${flowId}.mermaid`),
+			join(EXECUTIONS_DIR, `${executionId}.mermaid`),
 			`${lines.join("\n")}\n`,
 		);
 	} catch (e) {

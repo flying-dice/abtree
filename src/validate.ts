@@ -7,8 +7,8 @@ import type {
 } from "./types.ts";
 import { die } from "./utils.ts";
 
-export function parseFlowId(val: string): string {
-	if (!val || typeof val !== "string") die("Flow ID is required");
+export function parseExecutionId(val: string): string {
+	if (!val || typeof val !== "string") die("Execution ID is required");
 	return val;
 }
 

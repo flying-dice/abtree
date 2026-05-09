@@ -4,10 +4,10 @@ import EXECUTION_GUIDE from "./AGENT.md" with { type: "text" };
 import SKILL_CONTENT from "./SKILL.md" with { type: "text" };
 import {
 	cmdEval,
-	cmdFlowCreate,
-	cmdFlowGet,
-	cmdFlowList,
-	cmdFlowReset,
+	cmdExecutionCreate,
+	cmdExecutionGet,
+	cmdExecutionList,
+	cmdExecutionReset,
 	cmdGlobalRead,
 	cmdInstallSkill,
 	cmdLocalRead,
@@ -16,10 +16,10 @@ import {
 	cmdSubmit,
 	cmdTreeList,
 } from "./src/commands.ts";
-import { ensureDir, FLOWS_DIR, TREES_DIR } from "./src/paths.ts";
+import { ensureDir, EXECUTIONS_DIR, TREES_DIR } from "./src/paths.ts";
 import {
 	parseEvalResult,
-	parseFlowId,
+	parseExecutionId,
 	parseScopePath,
 	parseSubmitStatus,
 	parseSummary,
@@ -29,7 +29,7 @@ import {
 const program = new Command()
 	.name("abtree")
 	.description(
-		"Durable execution engine for Agent Behaviour Trees. Creates flows that track work via a structured tree walk.",
+		"Durable execution engine for Agent Behaviour Trees. Creates executions that track work via a structured tree walk.",
 	)
 	.version("1.0.0")
 	.addHelpText("after", EXECUTION_GUIDE);
@@ -42,67 +42,67 @@ tree
 		cmdTreeList();
 	});
 
-const flow = program.command("flow").description("Manage flows");
+const execution = program.command("execution").description("Manage executions");
 
-flow
+execution
 	.command("create")
-	.description("Create a new flow")
+	.description("Create a new execution")
 	.argument("<tree>", "Tree slug")
-	.argument("<summary...>", "Flow summary")
+	.argument("<summary...>", "Execution summary")
 	.action(async (treeSlug: string, summaryParts: string[]) => {
-		await cmdFlowCreate(
+		await cmdExecutionCreate(
 			parseTreeSlug(treeSlug),
 			parseSummary(summaryParts.join(" ")),
 		);
 	});
 
-flow
+execution
 	.command("list")
-	.description("List all flows")
+	.description("List all executions")
 	.action(() => {
-		cmdFlowList();
+		cmdExecutionList();
 	});
 
-flow
+execution
 	.command("get")
-	.description("Get flow details")
-	.argument("<id>", "Flow ID")
+	.description("Get execution details")
+	.argument("<id>", "Execution ID")
 	.action((id: string) => {
-		cmdFlowGet(parseFlowId(id));
+		cmdExecutionGet(parseExecutionId(id));
 	});
 
-flow
+execution
 	.command("reset")
-	.description("Reset flow to initial state")
-	.argument("<id>", "Flow ID")
+	.description("Reset execution to initial state")
+	.argument("<id>", "Execution ID")
 	.action((id: string) => {
-		cmdFlowReset(parseFlowId(id));
+		cmdExecutionReset(parseExecutionId(id));
 	});
 
 program
 	.command("next")
 	.description("Get next evaluate/instruct request")
-	.argument("<flow>", "Flow ID")
-	.action((flowId: string) => {
-		cmdNext(parseFlowId(flowId));
+	.argument("<execution>", "Execution ID")
+	.action((executionId: string) => {
+		cmdNext(parseExecutionId(executionId));
 	});
 
 program
 	.command("eval")
 	.description("Submit evaluation result")
-	.argument("<flow>", "Flow ID")
+	.argument("<execution>", "Execution ID")
 	.argument("<result>", "true or false")
-	.action((flowId: string, result: string) => {
-		cmdEval(parseFlowId(flowId), parseEvalResult(result));
+	.action((executionId: string, result: string) => {
+		cmdEval(parseExecutionId(executionId), parseEvalResult(result));
 	});
 
 program
 	.command("submit")
 	.description("Submit instruction outcome")
-	.argument("<flow>", "Flow ID")
+	.argument("<execution>", "Execution ID")
 	.argument("<status>", "success, failure, or running")
-	.action((flowId: string, status: string) => {
-		cmdSubmit(parseFlowId(flowId), parseSubmitStatus(status));
+	.action((executionId: string, status: string) => {
+		cmdSubmit(parseExecutionId(executionId), parseSubmitStatus(status));
 	});
 
 const local = program.command("local").description("Manage $LOCAL scope");
@@ -110,21 +110,21 @@ const local = program.command("local").description("Manage $LOCAL scope");
 local
 	.command("read")
 	.description("Read from $LOCAL")
-	.argument("<flow>", "Flow ID")
+	.argument("<execution>", "Execution ID")
 	.argument("[path]", "Dot-notated path")
-	.action((flowId: string, path?: string) => {
-		cmdLocalRead(parseFlowId(flowId), path);
+	.action((executionId: string, path?: string) => {
+		cmdLocalRead(parseExecutionId(executionId), path);
 	});
 
 local
 	.command("write")
 	.description("Write to $LOCAL")
-	.argument("<flow>", "Flow ID")
+	.argument("<execution>", "Execution ID")
 	.argument("<path>", "Dot-notated path")
 	.argument("<value...>", "Value (JSON or string)")
-	.action((flowId: string, path: string, valueParts: string[]) => {
+	.action((executionId: string, path: string, valueParts: string[]) => {
 		cmdLocalWrite(
-			parseFlowId(flowId),
+			parseExecutionId(executionId),
 			parseScopePath(path),
 			valueParts.join(" "),
 		);
@@ -135,10 +135,10 @@ const global = program.command("global").description("Manage $GLOBAL scope");
 global
 	.command("read")
 	.description("Read from $GLOBAL")
-	.argument("<flow>", "Flow ID")
+	.argument("<execution>", "Execution ID")
 	.argument("[path]", "Dot-notated path")
-	.action((flowId: string, path?: string) => {
-		cmdGlobalRead(parseFlowId(flowId), path);
+	.action((executionId: string, path?: string) => {
+		cmdGlobalRead(parseExecutionId(executionId), path);
 	});
 
 const install = program
@@ -159,6 +159,6 @@ install
 		await cmdInstallSkill(SKILL_CONTENT, opts);
 	});
 
-ensureDir(FLOWS_DIR);
+ensureDir(EXECUTIONS_DIR);
 ensureDir(TREES_DIR);
 program.parse();

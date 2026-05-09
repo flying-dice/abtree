@@ -1,5 +1,5 @@
 // One bun:test per YAML case file in tests/cases/. Each case is a
-// recorded, deterministic walk through a flow — no LLM in the loop.
+// recorded, deterministic walk through an execution — no LLM in the loop.
 import { test } from "bun:test";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";

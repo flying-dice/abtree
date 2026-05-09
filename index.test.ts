@@ -46,10 +46,10 @@ test("tree list returns hello-world", () => {
 	expect(trees).toContain("hello-world");
 });
 
-test("hello-world flow: full execution reaches done", () => {
-	// Create flow
+test("hello-world execution: full execution reaches done", () => {
+	// Create execution
 	const createOut = abtree(
-		["flow", "create", "hello-world", "integration test"],
+		["execution", "create", "hello-world", "integration test"],
 		tmp,
 	);
 	expect(createOut.exitCode).toBe(0);
@@ -145,10 +145,10 @@ test("hello-world flow: full execution reaches done", () => {
 	expect((final as { status: string }).status).toBe("done");
 });
 
-test("flow reset restores initial state", () => {
-	// Create and immediately reset a flow
+test("execution reset restores initial state", () => {
+	// Create and immediately reset an execution
 	const createOut = abtree(
-		["flow", "create", "hello-world", "reset test"],
+		["execution", "create", "hello-world", "reset test"],
 		tmp,
 	);
 	const { id } = json(createOut.stdout) as { id: string };
@@ -157,7 +157,7 @@ test("flow reset restores initial state", () => {
 	abtree(["local", "write", id, "time_of_day", "evening"], tmp);
 
 	// Reset
-	const resetOut = abtree(["flow", "reset", id], tmp);
+	const resetOut = abtree(["execution", "reset", id], tmp);
 	expect(resetOut.exitCode).toBe(0);
 	expect((json(resetOut.stdout) as { status: string }).status).toBe("reset");
 

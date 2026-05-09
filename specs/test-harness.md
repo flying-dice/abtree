@@ -48,22 +48,22 @@ type TestStep =
 
 1. **Workspace.** `mkdtempSync` under tmpdir; create `.abtree/trees/`.
 2. **Trees.** Copy `bundled[]` from repo, write `files{}` inline, fall back to `tests/trees/<name>.yaml` if neither names the requested tree.
-3. **Flow.** `abtree flow create <tree> "harness"`; capture the returned ID.
+3. **Execution.** `abtree execution create <tree> "harness"`; capture the returned ID.
 4. **Initial state.** For each `initial.local` key, `abtree local write`.
 5. **Walk.** For each step:
-   - `abtree next <flow>`. Assert the response's `type` and `name` match the spec.
-   - On `instruct`: write any `step.write` keys, then `abtree submit <flow> <step.submit ?? "success">`.
-   - On `evaluate`: `abtree eval <flow> <step.result>`.
-6. **Final.** `abtree next <flow>`. Assert response `status` matches `final.status`.
-7. **Final $LOCAL.** Each `final.local` key is read via `abtree local read <flow>` and compared.
-8. **Retry counts.** `abtree flow get <flow>` produces the full doc; `runtime.retry_count[path]` is compared against `final.runtime.retry_count`.
+   - `abtree next <execution>`. Assert the response's `type` and `name` match the spec.
+   - On `instruct`: write any `step.write` keys, then `abtree submit <execution> <step.submit ?? "success">`.
+   - On `evaluate`: `abtree eval <execution> <step.result>`.
+6. **Final.** `abtree next <execution>`. Assert response `status` matches `final.status`.
+7. **Final $LOCAL.** Each `final.local` key is read via `abtree local read <execution>` and compared.
+8. **Retry counts.** `abtree execution get <execution>` produces the full doc; `runtime.retry_count[path]` is compared against `final.runtime.retry_count`.
 9. **Cleanup.** `rmSync(tmp, { recursive: true })` in a `finally` block.
 
 ### CLI invocation
 
 `spawnSync("bun", [path/to/index.ts, ...args])` per call. JSON parsing of stdout; stderr surfaced on failure.
 
-The harness deliberately spawns the CLI rather than importing the cmd functions in-process, because it tests the same surface a real agent would drive: argv parsing, flow-id validation, JSON output, exit codes.
+The harness deliberately spawns the CLI rather than importing the cmd functions in-process, because it tests the same surface a real agent would drive: argv parsing, execution-id validation, JSON output, exit codes.
 
 ### Test registration
 
@@ -85,13 +85,13 @@ One `bun:test` per file. Sorting by filename gives deterministic ordering.
 | Case | What it asserts |
 |---|---|
 | `01-sequence-success` | Sequence advances both children, ends `done`. |
-| `02-sequence-aborts-on-failure` | False evaluate aborts the parent sequence; flow ends `failure`. |
+| `02-sequence-aborts-on-failure` | False evaluate aborts the parent sequence; execution ends `failure`. |
 | `03-selector-first-wins` | First passing branch wins; later branches never evaluated. |
 | `04-selector-falls-through` | A→fail, B→fail, C (no evaluate) wins by default. |
 | `05-retries-success-on-fourth-attempt` | `retries: 3` retries until counter exceeds threshold; verifies `runtime.retry_count[""] === 3`. |
 | `06-retries-exhausted` | All 4 attempts fail; status `failure`; retry counter at 3. |
 | `07-ref-resolves-fragment` | Inline-defined split tree; `$ref` to fragment is inlined; both nodes tick correctly. |
-| `08-cyclic-ref-fails-cleanly` | Cyclic `$ref`: flow creates without stack overflow; tick on the cyclic edge returns `failure`. |
+| `08-cyclic-ref-fails-cleanly` | Cyclic `$ref`: execution creates without stack overflow; tick on the cyclic edge returns `failure`. |
 
 ## Affected Systems
 
@@ -116,8 +116,8 @@ One `bun:test` per file. Sorting by filename gives deterministic ordering.
 - **Spawn overhead.** Each case spawns `bun index.ts` for every CLI call (~10–15 calls per case). Adds latency but isolates test failures cleanly. Acceptable for the current case count; if it becomes too slow, the harness could be refactored to import the cmd functions in-process at the cost of test fidelity.
 - **YAML drift.** Cases hand-write the expected step `name` field. Renaming a node in a tree requires updating the matching cases. Acceptable; the failures are loud and obvious.
 - **No timing assertions.** The harness can't catch "this step took too long" issues — only correctness. abtree itself doesn't have time-sensitive semantics, so this is fine.
-- **No multi-flow assertions.** Each case is one flow. Multi-flow scenarios (concurrent flows, list operations) aren't covered. Defer until a real need.
+- **No multi-execution assertions.** Each case is one execution. Multi-execution scenarios (concurrent executions, list operations) aren't covered. Defer until a real need.
 
 ## Open Questions
 
-- Should the harness also assert the mermaid file's contents? Currently we don't — the mermaid is regenerated on every state change but its contents are tested implicitly by render-correctness in the hello-world integration test. A future case could read `<flow-id>.mermaid` and assert specific node colours.
+- Should the harness also assert the mermaid file's contents? Currently we don't — the mermaid is regenerated on every state change but its contents are tested implicitly by render-correctness in the hello-world integration test. A future case could read `<execution-id>.mermaid` and assert specific node colours.

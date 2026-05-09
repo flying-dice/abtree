@@ -22,7 +22,7 @@ features:
     details: Agents see only the next instruction, not the full plan. No 2,000-line prompts. No "jumping ahead". No skipped invariants.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="6" width="18" height="12"/><path d="M3 11h18M7 15h2M12 15h2"/></svg>'
     title: Durable by default
-    details: Every flow persists as a JSON document. Resume work hours or weeks later — the cursor remembers where you left off.
+    details: Every execution persists as a JSON document. Resume work hours or weeks later — the cursor remembers where you left off.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>'
     title: Visual execution traces
     details: Every state change regenerates a Mermaid diagram. Green for success, red for failure. See exactly what your agent did and where it stopped.
@@ -38,12 +38,12 @@ Modern LLMs follow Markdown instructions remarkably well — until workflows gro
 1. **Instruction fatigue.** A long system prompt loses focus. Agents skim, skip steps, hallucinate fields.
 2. **Non-determinism.** Decisions left to the model produce different paths on every run.
 
-abtree is a CLI that solves both. You describe the workflow once as a YAML behaviour tree — the same formal structure game AI and robotics have used for decades. Your agent then drives the flow through three commands:
+abtree is a CLI that solves both. You describe the workflow once as a YAML behaviour tree — the same formal structure game AI and robotics have used for decades. Your agent then drives the execution through three commands:
 
 - `abtree next` — ask the runtime what to do.
 - `abtree eval` — answer a precondition (`true` or `false`).
 - `abtree submit` — report the outcome of an instruction.
 
-Every call returns JSON, advances the cursor, and persists the flow to disk. The agent only ever sees the next step. The path stays predictable. The state survives.
+Every call returns JSON, advances the cursor, and persists the execution to disk. The agent only ever sees the next step. The path stays predictable. The state survives.
 
 [Get started in five minutes →](/getting-started)

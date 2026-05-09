@@ -20,8 +20,8 @@ A tree is a YAML file at `.abtree/trees/<slug>.yaml` (project) or `~/.abtree/tre
 - Each composite has `children: []` (non-empty). Each action has `steps: []` (non-empty).
 - Steps are `{ evaluate: <expr> }` or `{ instruct: <prose> }` — exactly one key per step.
 - Any composite or action can carry `retries: N` (positive integer). The runtime resets the node's internal state and re-ticks on failure, up to N times.
-- Any node may be a `$ref` reference to another node — relative file path, absolute path, or URL. The loader resolves non-cyclic refs at flow-create time and inlines them into the snapshot. Cyclic refs are preserved literally as `{ $ref: "..." }` and surface a clean failure if ticked.
-- `state.local` defines initial `$LOCAL` keys for new flows; `null` is acceptable for slots actions will populate.
+- Any node may be a `$ref` reference to another node — relative file path, absolute path, or URL. The loader resolves non-cyclic refs at execution-create time and inlines them into the snapshot. Cyclic refs are preserved literally as `{ $ref: "..." }` and surface a clean failure if ticked.
+- `state.local` defines initial `$LOCAL` keys for new executions; `null` is acceptable for slots actions will populate.
 - `state.global` defines `$GLOBAL` values; the runtime treats string values as instructions for the agent to fetch the value at runtime.
 
 ## Technical Approach
@@ -96,7 +96,7 @@ Resolution uses [`@apidevtools/json-schema-ref-parser`](https://github.com/APIDe
 
 A fragment file is a single node — it does NOT carry top-level `name` / `version` / `state` keys. It IS the value at the position where the `$ref` lives.
 
-The merged tree is written into the flow's `snapshot` at flow-create time. Editing a fragment after that does not affect existing flows; only new flows pick up the change.
+The merged tree is written into the execution's `snapshot` at execution-create time. Editing a fragment after that does not affect existing executions; only new executions pick up the change.
 
 ### Validation
 
@@ -106,7 +106,7 @@ The `validateTreeFile` function in `src/validate.ts` enforces:
 - Recursive `validateNode`: type/name required, type ∈ allowed values, composites have children, actions have steps. `$ref` placeholders pass through unvalidated (the resolver is responsible).
 - `parseRetries`: optional, positive integer.
 
-A malformed tree is rejected at `abtree tree list` (silently dropped) or at `abtree flow create` (loud error).
+A malformed tree is rejected at `abtree tree list` (silently dropped) or at `abtree execution create` (loud error).
 
 ## Affected Systems
 
@@ -117,11 +117,11 @@ A malformed tree is rejected at `abtree tree list` (silently dropped) or at `abt
 
 ## Acceptance Criteria
 
-- A minimal tree (single action with one instruct) passes validation and creates a flow.
+- A minimal tree (single action with one instruct) passes validation and creates an execution.
 - All four node types listed by `abtree tree list`.
 - Composite nodes with `retries: N` retry on failure exactly N times.
 - `$ref` to a sibling file resolves and produces a flat snapshot.
-- A cyclic `$ref` does not stack-overflow at flow-create; ticking the cyclic edge returns `{ status: "failure" }`.
+- A cyclic `$ref` does not stack-overflow at execution-create; ticking the cyclic edge returns `{ status: "failure" }`.
 - Validation rejects: missing fields, unknown node types, empty children/steps, non-positive `retries`.
 
 ## Risks & Considerations

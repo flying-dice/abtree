@@ -1,4 +1,4 @@
-description: Sequence with two actions; both succeed; flow ends in done.
+description: Sequence with two actions; both succeed; execution ends in done.
 tree: sequence-basic
 steps:
   - { type: instruct, name: Step_A, write: { a: done } }

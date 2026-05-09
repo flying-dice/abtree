@@ -32,7 +32,7 @@ children:
   - { type: action, name: Push_Registry, ... }
 ```
 
-If `Run_Tests` fails, the build never happens. The push never happens. The flow ends with `status: failed`.
+If `Run_Tests` fails, the build never happens. The push never happens. The execution ends with `status: failed`.
 
 ### Selector
 
@@ -254,7 +254,7 @@ abtree doesn't have a native "wait for human" primitive. Express the wait as an 
     - evaluate: $LOCAL.draft is set
     - instruct: |
         Present the draft to the human. Wait for them to confirm by
-        calling `abtree local write <flow-id> approved true`. While
+        calling `abtree local write <execution-id> approved true`. While
         waiting, you may submit `running`. Do NOT submit success
         until they confirm.
     - evaluate: $LOCAL.approved is true
@@ -265,7 +265,7 @@ The agent uses `submit running` to ack-and-pause without advancing the cursor. T
 
 ### Idiom: spec-approved gate
 
-A common variant of the human gate: a downstream tree (`implement`, `backend-design`, `frontend-design`) refuses to run unless an upstream `refine` flow produced a spec with `reviewed_by` populated. Encode it as an early action whose `instruct` checks the file:
+A common variant of the human gate: a downstream tree (`implement`, `backend-design`, `frontend-design`) refuses to run unless an upstream `refine` execution produced a spec with `reviewed_by` populated. Encode it as an early action whose `instruct` checks the file:
 
 ```yaml
 - type: action
@@ -338,7 +338,7 @@ The global is a parameterless directive: "read X, return text." The action compo
 
 ### Idiom: split a large tree across files
 
-For trees that exceed a screenful of YAML, factor out reusable subtrees with JSON-Schema-style `$ref`. abtree resolves references at flow-creation time, so the runtime always sees one assembled snapshot.
+For trees that exceed a screenful of YAML, factor out reusable subtrees with JSON-Schema-style `$ref`. abtree resolves references at execution-creation time, so the runtime always sees one assembled snapshot.
 
 ```yaml
 tree:
@@ -400,13 +400,13 @@ A `selector` with N children gives you N attempts. There's no shape that gives u
 
 Even when "obviously the precondition holds", write the evaluate. It documents the contract, gives the runtime a chance to short-circuit on bad state, and surfaces failures earlier with clearer messages. Pure-instruct actions (no evaluate) are reserved for the last child of a selector that's serving as a fallback.
 
-### `$LOCAL` keys are scoped to one flow
+### `$LOCAL` keys are scoped to one execution
 
-`$LOCAL` is per-flow, not per-tree. Two flows of the same tree have isolated `$LOCAL`. Don't design as if state persists across runs — if you need cross-run state, the agent has to explicitly read/write external files via the instruct text.
+`$LOCAL` is per-execution, not per-tree. Two executions of the same tree have isolated `$LOCAL`. Don't design as if state persists across runs — if you need cross-run state, the agent has to explicitly read/write external files via the instruct text.
 
 ### Internal bookkeeping keys are reserved
 
-abtree writes `_node_status__<path>` and `_step__<path>` keys to `$LOCAL` to track cursor state across resumption. Don't write to these keys; don't expect to read them in actions. They're documented in [Inspecting flows](/guide/inspecting-flows) for diagnostics, not for use.
+abtree writes `_node_status__<path>` and `_step__<path>` keys to `$LOCAL` to track cursor state across resumption. Don't write to these keys; don't expect to read them in actions. They're documented in [Inspecting executions](/guide/inspecting-executions) for diagnostics, not for use.
 
 ### A selector with all evaluate-gated children needs a default
 
@@ -418,7 +418,7 @@ Don't depend on parallel children running in YAML order. The agent receives requ
 
 ### `submit running` keeps the cursor put
 
-Use `submit running` only when waiting on something external (a human approval, a long-running tool). The flow stays in `performing` phase; `abtree next` returns the same instruct. Don't use it to "skip" an instruct.
+Use `submit running` only when waiting on something external (a human approval, a long-running tool). The execution stays in `performing` phase; `abtree next` returns the same instruct. Don't use it to "skip" an instruct.
 
 ## Worked design — the "review with retries" pattern
 
@@ -470,7 +470,7 @@ Putting the idioms together: a Write → Review → Retry workflow.
         # ... final attempt before the selector exhausts ...
 ```
 
-This combines: bounded retries via selector-of-attempts, instruct-then-evaluate gates that populate notes-on-failure, and a clear failure mode (selector exhausts → flow fails with the latest review_notes preserved for the human to read).
+This combines: bounded retries via selector-of-attempts, instruct-then-evaluate gates that populate notes-on-failure, and a clear failure mode (selector exhausts → execution fails with the latest review_notes preserved for the human to read).
 
 ## Process for designing a new tree
 
@@ -490,6 +490,6 @@ When a human asks "help me design a tree for `<X>`", work in this order:
 ## Next
 
 - [Writing trees](/guide/writing-trees) — full YAML field reference.
-- [Inspecting flows](/guide/inspecting-flows) — what the runtime writes back as a flow runs.
+- [Inspecting executions](/guide/inspecting-executions) — what the runtime writes back as an execution runs.
 - [Branches and actions](/concepts/branches-and-actions) — primitive semantics in detail.
 - [Examples](/examples) — six ready-to-use trees that exercise every idiom on this page.

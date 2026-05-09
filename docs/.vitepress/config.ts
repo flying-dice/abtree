@@ -61,7 +61,7 @@ export default defineConfig({
 					items: [
 						{ text: "Writing trees", link: "/guide/writing-trees" },
 						{ text: "Designing workflows", link: "/guide/designing-workflows" },
-						{ text: "Inspecting flows", link: "/guide/inspecting-flows" },
+						{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
 						{ text: "CLI reference", link: "/guide/cli" },
 					],
 				},
@@ -88,7 +88,7 @@ export default defineConfig({
 					items: [
 						{ text: "Writing trees", link: "/guide/writing-trees" },
 						{ text: "Designing workflows", link: "/guide/designing-workflows" },
-						{ text: "Inspecting flows", link: "/guide/inspecting-flows" },
+						{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
 						{ text: "CLI reference", link: "/guide/cli" },
 					],
 				},
@@ -104,7 +104,7 @@ export default defineConfig({
 					items: [
 						{ text: "Writing trees", link: "/guide/writing-trees" },
 						{ text: "Designing workflows", link: "/guide/designing-workflows" },
-						{ text: "Inspecting flows", link: "/guide/inspecting-flows" },
+						{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
 						{ text: "CLI reference", link: "/guide/cli" },
 					],
 				},
@@ -135,7 +135,7 @@ export default defineConfig({
 					items: [
 						{ text: "Writing trees", link: "/guide/writing-trees" },
 						{ text: "Designing workflows", link: "/guide/designing-workflows" },
-						{ text: "Inspecting flows", link: "/guide/inspecting-flows" },
+						{ text: "Inspecting executions", link: "/guide/inspecting-executions" },
 						{ text: "CLI reference", link: "/guide/cli" },
 					],
 				},

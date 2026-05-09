@@ -7,18 +7,18 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { ensureDir, FLOWS_DIR } from "./paths.ts";
-import type { FlowDoc, FlowRow, NodeStatus, RuntimeState } from "./types.ts";
+import { ensureDir, EXECUTIONS_DIR } from "./paths.ts";
+import type { ExecutionDoc, ExecutionRow, NodeStatus, RuntimeState } from "./types.ts";
 
 function emptyRuntime(): RuntimeState {
 	return { node_status: {}, step_index: {}, retry_count: {} };
 }
 
 // Lift the legacy `_node_status__*` and `_step__*` keys out of $LOCAL into
-// the new internal-only `runtime` field. Older flow documents predate the
+// the new internal-only `runtime` field. Older execution documents predate the
 // runtime/local split; this migration is idempotent and runs lazily on
 // every read.
-function migrateRuntime(doc: FlowDoc): FlowDoc {
+function migrateRuntime(doc: ExecutionDoc): ExecutionDoc {
 	if (doc.runtime) {
 		return doc;
 	}
@@ -45,26 +45,26 @@ function migrateRuntime(doc: FlowDoc): FlowDoc {
 
 const ID_PATTERN = /^[a-z0-9_-]+__[a-z0-9_-]+__\d+$/;
 
-function flowPath(id: string): string {
-	if (!ID_PATTERN.test(id)) throw new Error(`Invalid flow id: ${id}`);
-	return join(FLOWS_DIR, `${id}.json`);
+function executionPath(id: string): string {
+	if (!ID_PATTERN.test(id)) throw new Error(`Invalid execution id: ${id}`);
+	return join(EXECUTIONS_DIR, `${id}.json`);
 }
 
-function readDoc(id: string): FlowDoc | null {
-	const path = flowPath(id);
+function readDoc(id: string): ExecutionDoc | null {
+	const path = executionPath(id);
 	if (!existsSync(path)) return null;
-	let doc: FlowDoc;
+	let doc: ExecutionDoc;
 	try {
 		doc = JSON.parse(readFileSync(path, "utf-8"));
 	} catch (_e) {
-		throw new Error(`Corrupt flow file: ${id}`);
+		throw new Error(`Corrupt execution file: ${id}`);
 	}
 	return migrateRuntime(doc);
 }
 
-function writeDoc(doc: FlowDoc): void {
-	ensureDir(FLOWS_DIR);
-	const path = flowPath(doc.id);
+function writeDoc(doc: ExecutionDoc): void {
+	ensureDir(EXECUTIONS_DIR);
+	const path = executionPath(doc.id);
 	const tmp = `${path}.tmp`;
 	writeFileSync(tmp, JSON.stringify(doc, null, 2));
 	renameSync(tmp, path);
@@ -107,24 +107,24 @@ function mutateScope(
 	fn: (s: Record<string, unknown>) => void,
 ): void {
 	const doc = readDoc(id);
-	if (!doc) throw new Error(`Flow not found: ${id}`);
+	if (!doc) throw new Error(`Execution not found: ${id}`);
 	fn(doc[scope]);
 	doc.updated_at = new Date().toISOString();
 	writeDoc(doc);
 }
 
-export const FlowStore = {
-	findById(id: string): FlowDoc | null {
+export const ExecutionStore = {
+	findById(id: string): ExecutionDoc | null {
 		return readDoc(id);
 	},
 
-	list(): FlowDoc[] {
-		if (!existsSync(FLOWS_DIR)) return [];
-		const docs: FlowDoc[] = [];
-		for (const name of readdirSync(FLOWS_DIR)) {
+	list(): ExecutionDoc[] {
+		if (!existsSync(EXECUTIONS_DIR)) return [];
+		const docs: ExecutionDoc[] = [];
+		for (const name of readdirSync(EXECUTIONS_DIR)) {
 			if (!name.endsWith(".json")) continue;
 			try {
-				docs.push(JSON.parse(readFileSync(join(FLOWS_DIR, name), "utf-8")));
+				docs.push(JSON.parse(readFileSync(join(EXECUTIONS_DIR, name), "utf-8")));
 			} catch {
 				// skip corrupt files in list view
 			}
@@ -134,12 +134,12 @@ export const FlowStore = {
 	},
 
 	countByPrefix(prefix: string): number {
-		return FlowStore.list().filter((d) => d.id.startsWith(prefix)).length;
+		return ExecutionStore.list().filter((d) => d.id.startsWith(prefix)).length;
 	},
 
-	create(flow: FlowRow): FlowDoc {
-		const doc: FlowDoc = {
-			...flow,
+	create(execution: ExecutionRow): ExecutionDoc {
+		const doc: ExecutionDoc = {
+			...execution,
 			local: {},
 			global: {},
 			runtime: emptyRuntime(),
@@ -150,10 +150,10 @@ export const FlowStore = {
 
 	update(
 		id: string,
-		fields: Partial<Pick<FlowRow, "status" | "cursor" | "phase">>,
+		fields: Partial<Pick<ExecutionRow, "status" | "cursor" | "phase">>,
 	): void {
 		const doc = readDoc(id);
-		if (!doc) throw new Error(`Flow not found: ${id}`);
+		if (!doc) throw new Error(`Execution not found: ${id}`);
 		if (fields.status !== undefined) doc.status = fields.status;
 		if (fields.cursor !== undefined) doc.cursor = fields.cursor;
 		if (fields.phase !== undefined) doc.phase = fields.phase;
@@ -162,7 +162,7 @@ export const FlowStore = {
 	},
 
 	delete(id: string): void {
-		const path = flowPath(id);
+		const path = executionPath(id);
 		if (existsSync(path)) unlinkSync(path);
 	},
 
@@ -227,7 +227,7 @@ export const FlowStore = {
 
 	setRuntimeStatus(id: string, path: number[], status: NodeStatus): void {
 		const doc = readDoc(id);
-		if (!doc) throw new Error(`Flow not found: ${id}`);
+		if (!doc) throw new Error(`Execution not found: ${id}`);
 		doc.runtime.node_status[path.join(".")] = status;
 		doc.updated_at = new Date().toISOString();
 		writeDoc(doc);
@@ -241,7 +241,7 @@ export const FlowStore = {
 
 	setRuntimeStep(id: string, path: number[], step: number): void {
 		const doc = readDoc(id);
-		if (!doc) throw new Error(`Flow not found: ${id}`);
+		if (!doc) throw new Error(`Execution not found: ${id}`);
 		doc.runtime.step_index[path.join(".")] = step;
 		doc.updated_at = new Date().toISOString();
 		writeDoc(doc);
@@ -255,7 +255,7 @@ export const FlowStore = {
 
 	incrementRuntimeRetryCount(id: string, path: number[]): number {
 		const doc = readDoc(id);
-		if (!doc) throw new Error(`Flow not found: ${id}`);
+		if (!doc) throw new Error(`Execution not found: ${id}`);
 		const key = path.join(".");
 		const next = (doc.runtime.retry_count[key] ?? 0) + 1;
 		doc.runtime.retry_count[key] = next;
@@ -271,7 +271,7 @@ export const FlowStore = {
 	// previous attempt's outputs, which is the whole point of feedback.
 	resetRuntimeSubtree(id: string, prefix: number[]): void {
 		const doc = readDoc(id);
-		if (!doc) throw new Error(`Flow not found: ${id}`);
+		if (!doc) throw new Error(`Execution not found: ${id}`);
 		const prefixKey = prefix.join(".");
 		const matches = (k: string) =>
 			prefixKey === ""
@@ -291,7 +291,7 @@ export const FlowStore = {
 
 	resetRuntime(id: string): void {
 		const doc = readDoc(id);
-		if (!doc) throw new Error(`Flow not found: ${id}`);
+		if (!doc) throw new Error(`Execution not found: ${id}`);
 		doc.runtime = emptyRuntime();
 		doc.updated_at = new Date().toISOString();
 		writeDoc(doc);

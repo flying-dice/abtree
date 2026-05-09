@@ -35,8 +35,8 @@ The two files duplicate the protocol body. Acceptable: the protocol is short; th
 Both files share the same backbone:
 
 1. **One-paragraph framing.** "abtree is a durable behaviour tree engine..."
-2. **Routing.** Map the user's argument(s) to the right command — no args / flow ID / tree slug / `list`.
-3. **Create protocol.** The three-command setup for a fresh flow (`flow create` → `local write change_request` → `next`).
+2. **Routing.** Map the user's argument(s) to the right command — no args / execution ID / tree slug / `list`.
+3. **Create protocol.** The three-command setup for a fresh execution (`execution create` → `local write change_request` → `next`).
 4. **Execution loop.** The `next → eval | submit → next` cycle.
 5. **Response procedures.** One numbered procedure per response shape:
    - `{ "type": "evaluate" }` → 4-step procedure (parse expression → read store → judge → call eval).
@@ -50,8 +50,8 @@ Both files share the same backbone:
 Phrasing in AGENT.md (verbatim from `EXECUTION PROTOCOL → evaluate procedure`):
 
 > 2. For EACH referenced path, call:
->      abtree local  read <flow> <path>
->      abtree global read <flow> <path>
+>      abtree local  read <execution> <path>
+>      abtree global read <execution> <path>
 >    Record the actual returned value. Do not skip this step even if you wrote the value yourself one command ago.
 
 The "do not skip even if you wrote it yourself" clause is calibrated to the actual failure mode: agents tend to short-circuit when the value seems obviously known. The clause names the temptation directly.
@@ -62,9 +62,9 @@ A `STRICT:` callout immediately after the procedure makes the consequence explic
 
 SKILL.md adds platform-routing material AGENT.md doesn't need (because `--help` is already inside the CLI). Sample:
 
-> 1. **No arguments / "what's running?"** → call `abtree flow list`. If running flows exist, surface them and ask which to resume.
-> 2. **Argument matches a flow ID** (format `<slug>__<tree>__<n>`) → resume that flow.
-> 3. **Argument is a tree slug** → create a new flow with `abtree flow create <slug> "<summary>"`.
+> 1. **No arguments / "what's running?"** → call `abtree execution list`. If running executions exist, surface them and ask which to resume.
+> 2. **Argument matches an execution ID** (format `<slug>__<tree>__<n>`) → resume that execution.
+> 3. **Argument is a tree slug** → create a new execution with `abtree execution create <slug> "<summary>"`.
 > 4. **"design a new tree" / "help me build a workflow"** → read `docs/guide/designing-workflows.md` (or fetch the docs site URL); collaborate with the user.
 
 ### Bundled-trees catalogue
