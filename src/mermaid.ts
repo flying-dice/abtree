@@ -2,6 +2,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ensureDir, EXECUTIONS_DIR } from "./paths.ts";
 import { ExecutionStore } from "./repos.ts";
+import { TreeSnapshotStore } from "./snapshots.ts";
 import { getNodeResult, getPathForNode } from "./tree.ts";
 import type { NormalizedNode } from "./types.ts";
 
@@ -9,7 +10,7 @@ export function rebuildMermaid(executionId: string) {
 	try {
 		const execution = ExecutionStore.findById(executionId);
 		if (!execution) return;
-		const tree = JSON.parse(execution.snapshot);
+		const tree = TreeSnapshotStore.get(execution.snapshot);
 
 		const lines: string[] = [];
 		lines.push(`---`);
@@ -64,7 +65,8 @@ export function rebuildMermaid(executionId: string) {
 
 			if (node.type !== "action") {
 				for (let i = 0; i < node.children.length; i++) {
-					renderNode(node.children[i], id, i, `${prefix}${index}_`);
+					const child = node.children[i];
+					if (child) renderNode(child, id, i, `${prefix}${index}_`);
 				}
 			}
 		};

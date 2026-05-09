@@ -1,5 +1,13 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import {
+	copyFileSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	rmSync,
+	unlinkSync,
+	writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -143,6 +151,89 @@ test("hello-world execution: full execution reaches done", () => {
 	// Final: done
 	const final = next();
 	expect((final as { status: string }).status).toBe("done");
+});
+
+function createExecution(treeSlug: string, summary: string): {
+	id: string;
+	snapshot: string;
+} {
+	const created = json(
+		abtree(["execution", "create", treeSlug, summary], tmp).stdout,
+	) as { id: string };
+	const got = json(abtree(["execution", "get", created.id], tmp).stdout) as {
+		snapshot: string;
+	};
+	return { id: created.id, snapshot: got.snapshot };
+}
+
+test("snapshot store: two executions of the same tree share one snapshot file", () => {
+	const a = createExecution("hello-world", "snap a");
+	const b = createExecution("hello-world", "snap b");
+
+	expect(a.snapshot).toMatch(/^[0-9a-f]{64}$/);
+	expect(a.snapshot).toBe(b.snapshot);
+
+	const snaps = readdirSync(join(tmp, ".abtree", "snapshots"));
+	expect(snaps).toContain(`${a.snapshot}.json`);
+	expect(snaps.filter((f) => f === `${a.snapshot}.json`)).toHaveLength(1);
+});
+
+test("snapshot store: a different tree produces a different etag", () => {
+	const altPath = join(tmp, ".abtree", "trees", "snap-alt.yaml");
+	writeFileSync(
+		altPath,
+		`name: snap-alt
+version: 1.0.0
+description: alternate tree for snapshot etag test
+tree:
+  type: action
+  name: Solo_Action
+  steps:
+    - instruct: do nothing
+`,
+	);
+	try {
+		const base = createExecution("hello-world", "etag base");
+		const alt = createExecution("snap-alt", "etag alt");
+		expect(alt.snapshot).toMatch(/^[0-9a-f]{64}$/);
+		expect(alt.snapshot).not.toBe(base.snapshot);
+		const snaps = readdirSync(join(tmp, ".abtree", "snapshots"));
+		expect(snaps).toContain(`${alt.snapshot}.json`);
+		expect(snaps).toContain(`${base.snapshot}.json`);
+	} finally {
+		unlinkSync(altPath);
+	}
+});
+
+test("validation: malformed tree YAML is rejected with a path-prefixed error", () => {
+	const badPath = join(tmp, ".abtree", "trees", "bad.yaml");
+	writeFileSync(
+		badPath,
+		`name: bad
+version: 1.0.0
+tree:
+  type: action
+  name: BadAction
+  steps: []
+`,
+	);
+	try {
+		const r = abtree(["execution", "create", "bad", "should fail"], tmp);
+		expect(r.exitCode).not.toBe(0);
+		expect(r.stderr).toContain("tree file failed validation");
+		expect(r.stderr).toContain("tree.steps");
+	} finally {
+		unlinkSync(badPath);
+	}
+});
+
+test("snapshot store: deleting the snapshot file makes reads fail", () => {
+	const created = createExecution("hello-world", "missing snap");
+	unlinkSync(join(tmp, ".abtree", "snapshots", `${created.snapshot}.json`));
+
+	const r = abtree(["next", created.id], tmp);
+	expect(r.exitCode).not.toBe(0);
+	expect(r.stderr).toContain(`Missing snapshot: ${created.snapshot}`);
 });
 
 test("execution reset restores initial state", () => {

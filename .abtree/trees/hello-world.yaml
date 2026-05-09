@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
 name: hello-world
 version: 1.0.0
 description: Greet a user based on time of day with weather and news context. Demonstrates all 4 BT primitives.
