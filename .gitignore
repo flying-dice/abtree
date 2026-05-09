@@ -27,8 +27,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
-# abt runtime data
-.abt/
+# SQLite WAL temporaries
+*.db-shm
+*.db-wal
 
 # IntelliJ based IDEs
 .idea
