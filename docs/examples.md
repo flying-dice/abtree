@@ -188,7 +188,7 @@ claude "Use the abtree technical-writer flow to document <topic>. Run 'abtree --
 
 ## Improve codebase
 
-A continuous code-quality improvement cycle. First, a parallel scoring pass on four metrics (DRY, SRP, coupling, cohesion) — each scorer records observations, severity, risk, and a cost/benefit estimate. The agent then synthesises the four scores into a triaged refactor queue. The refactor stage iterates through the queue: each item gets up to **three attempts** to (implement → full regression test → re-score against the metric's threshold) before the stage halts. The outer loop keeps cycling until the queue is empty or a per-item attempt cap is hit.
+A continuous code-quality improvement cycle. The agent confirms intent and a green test baseline, then runs a parallel scoring pass on four metrics (DRY, SRP, coupling, cohesion) — each scorer records observations, severity, risk, and a cost/benefit estimate. A Senior-Principal critique hardens the findings, an online lookup gathers best-practice patterns, and the human approves the triaged queue. The refactor stage then iterates through each item: high-risk items get a blast-radius critique first; every item gets up to **three attempts** to (implement → full regression test → focused re-score) before halting. After the queue drains, a final parallel reassessment compares against the snapshotted baseline and emits a pass / partial verdict.
 
 **Files**
 
@@ -205,7 +205,7 @@ mkdir -p .abtree/trees \
 **Run with Claude**
 
 ```sh
-claude "Run the abtree improve-codebase flow on this repo. Use 'abtree --help' to learn the protocol. Set $GLOBAL.test_command to whatever runs the project's full regression test suite. Drive the parallel scoring pass for DRY, SRP, coupling, and cohesion; compile the report; pause for me to triage the queue; then iterate through each refactor with regression tests and a focused re-score. Surface the done log and any items that exhausted their three attempts."
+claude "Run the abtree improve-codebase flow on this repo. Use 'abtree --help' to learn the protocol. Set $LOCAL.change_request to a one-line scope ('full repo' / 'just the auth module' / 'DRY only'); $GLOBAL.test_command to the project's regression test command. Drive Check_Intent through to Cycle_Verdict, pausing for my approval at the triage gate. Surface the baseline-vs-final delta and any items that hit the per-item attempt cap."
 ```
 
 ---
