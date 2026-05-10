@@ -17,7 +17,9 @@ import {
 	cmdNext,
 	cmdSubmit,
 	cmdTreeList,
+	cmdUpgrade,
 } from "./src/commands.ts";
+import { VERSION } from "./src/version.ts";
 import { rebuildMermaid } from "./src/mermaid.ts";
 import {
 	EXECUTIONS_DIR,
@@ -43,7 +45,7 @@ const program = new Command()
 	.description(
 		"Durable execution engine for Agent Behaviour Trees. Creates executions that track work via a structured tree walk.",
 	)
-	.version("1.0.0")
+	.version(VERSION)
 	.addHelpText(
 		"after",
 		`
@@ -200,6 +202,18 @@ install
 	.action(async (opts: { variant?: string; scope?: string }) => {
 		await cmdInstallSkill(SKILL_CONTENT, opts);
 	});
+
+program
+	.command("upgrade")
+	.description("Upgrade abtree to the latest release from GitHub")
+	.option("--check", "Print current and latest versions then exit")
+	.option("--version <tag>", "Pin to a specific release tag")
+	.option("--yes", "Skip confirmation prompt")
+	.action(
+		async (opts: { check?: boolean; version?: string; yes?: boolean }) => {
+			await cmdUpgrade(opts);
+		},
+	);
 
 ensureDir(EXECUTIONS_DIR);
 ensureDir(SNAPSHOTS_DIR);
