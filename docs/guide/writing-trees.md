@@ -223,6 +223,11 @@ tree:
             - evaluate: $LOCAL.time_of_day is "afternoon"
             - instruct: Compose a warm afternoon greeting...
         - type: action
+          name: Evening_Greeting
+          steps:
+            - evaluate: $LOCAL.time_of_day is "evening"
+            - instruct: Compose a relaxed evening greeting...
+        - type: action
           name: Default_Greeting
           steps:
             - instruct: Compose a neutral greeting...    # no evaluate = always passes
