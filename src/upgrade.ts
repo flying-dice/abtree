@@ -100,6 +100,15 @@ export async function downloadAsset(
 	if (!res.ok) {
 		throw new Error(`Asset download failed: HTTP ${res.status} for ${url}`);
 	}
+	const contentLength = res.headers.get("content-length");
+	if (contentLength !== null) {
+		const len = Number(contentLength);
+		if (!Number.isNaN(len) && len < 1024) {
+			throw new Error(
+				`Asset too small (${len} bytes via Content-Length) — likely a CDN error page`,
+			);
+		}
+	}
 	const buf = await res.arrayBuffer();
 	if (buf.byteLength < 1024) {
 		throw new Error(
@@ -130,8 +139,7 @@ export function realpathExec(): string {
 }
 
 export function tmpPath(installDir: string): string {
-	const rand = Math.random().toString(36).slice(2, 10);
-	return join(installDir, `abtree.${rand}.tmp`);
+	return join(installDir, `abtree.${process.pid}.tmp`);
 }
 
 export function isWritable(dir: string): boolean {
