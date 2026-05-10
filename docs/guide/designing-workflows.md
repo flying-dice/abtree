@@ -406,7 +406,7 @@ Even when "obviously the precondition holds", write the evaluate. It documents t
 
 ### Internal bookkeeping keys are reserved
 
-abtree writes `_node_status__<path>` and `_step__<path>` keys to `$LOCAL` to track cursor state across resumption. Don't write to these keys; don't expect to read them in actions. They're documented in [Inspecting executions](/guide/inspecting-executions) for diagnostics, not for use.
+abtree tracks cursor state in a `runtime` field on the execution document — `runtime.node_status`, `runtime.step_index`, and `runtime.retry_count`. These are internal to the tick engine: never visible via `abtree local read` and never writable via `abtree local write`. They're documented in [Inspecting executions](/guide/inspecting-executions) for diagnostics, not for use.
 
 ### A selector with all evaluate-gated children needs a default
 
