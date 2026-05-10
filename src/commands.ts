@@ -2,14 +2,15 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
 import EXECUTE_DOC from "../docs/agents/execute.md" with { type: "text" };
-import { rebuildMermaid } from "./mermaid.ts";
 import {
-	ensureDir,
-	SKILL_TARGETS,
-	type SkillScope,
-	type SkillVariant,
-} from "./paths.ts";
+	decodeCursor,
+	encodeCursor,
+	INITIAL_CURSOR,
+	NULL_CURSOR,
+} from "./cursor.ts";
+import { ensureDir } from "./paths.ts";
 import { ExecutionStore } from "./repos.ts";
+import { SKILL_TARGETS, type SkillScope, type SkillVariant } from "./skills.ts";
 import { TreeSnapshotStore } from "./snapshots.ts";
 import {
 	generateExecutionId,
@@ -20,6 +21,7 @@ import {
 	setStepIndex,
 	tickRoot,
 } from "./tree.ts";
+import type { ExecutionDoc, NormalizedNode, TickResult } from "./types.ts";
 import { die, out } from "./utils.ts";
 
 export function cmdTreeList() {
@@ -43,16 +45,15 @@ export async function cmdExecutionCreate(treeSlug: string, summary: string) {
 		summary,
 		status: "running",
 		snapshot: TreeSnapshotStore.put(treeDef),
-		cursor: "[]",
+		cursor: INITIAL_CURSOR,
 		phase: "idle",
 		protocol_accepted: false,
 		created_at: now,
 		updated_at: now,
 	});
 
-	ExecutionStore.replaceLocal(id, treeDef.local);
-	ExecutionStore.replaceGlobal(id, treeDef.global);
-	rebuildMermaid(id);
+	ExecutionStore.replaceScope(id, "local", treeDef.local);
+	ExecutionStore.replaceScope(id, "global", treeDef.global);
 
 	out({
 		id,
@@ -85,14 +86,13 @@ export function cmdExecutionReset(executionId: string) {
 	const doc = ExecutionStore.findById(executionId);
 	if (!doc) die(`Execution '${executionId}' not found`);
 	const treeDef = TreeSnapshotStore.get(doc.snapshot);
-	ExecutionStore.replaceLocal(executionId, treeDef.local ?? {});
+	ExecutionStore.replaceScope(executionId, "local", treeDef.local ?? {});
 	ExecutionStore.update(executionId, {
 		status: "running",
-		cursor: "[]",
+		cursor: INITIAL_CURSOR,
 		phase: "idle",
 		protocol_accepted: false,
 	});
-	rebuildMermaid(executionId);
 	out({ status: "reset" });
 }
 
@@ -112,97 +112,102 @@ function emitProtocolGate(): void {
 	});
 }
 
-export function cmdNext(executionId: string) {
-	const doc = ExecutionStore.findById(executionId);
-	if (!doc) die(`Execution '${executionId}' not found`);
+// cmdNext is a small dispatcher. Each phase / outcome has its own helper
+// so the routing reads top-down: gate? phase replay? fresh tick?
 
+function handleProtocolPhase(executionId: string, doc: ExecutionDoc): void {
+	// Gate already rejected: don't re-prompt; surface the terminal status.
 	if (doc.status === "failed") {
 		out({ status: "failure" });
 		return;
 	}
-	if (doc.status === "complete") {
-		out({ status: "done" });
-		return;
+	if (doc.phase !== "protocol") {
+		ExecutionStore.update(executionId, {
+			phase: "protocol",
+			cursor: NULL_CURSOR,
+		});
 	}
+	emitProtocolGate();
+}
 
-	if (!doc.protocol_accepted) {
-		if (doc.phase !== "protocol") {
-			ExecutionStore.update(executionId, {
-				phase: "protocol",
-				cursor: "null",
-			});
-		}
-		emitProtocolGate();
-		return;
-	}
-
-	const treeDef = TreeSnapshotStore.get(doc.snapshot);
-	const phase = doc.phase;
-	const cursor = JSON.parse(doc.cursor);
-
-	if (phase === "evaluating") {
-		const node = getNodeAtPath(treeDef.root, cursor.path);
-		if (node.type !== "action") die("cursor points to non-action node");
-		const step = node.steps[cursor.step];
-		if (!step || step.kind !== "evaluate")
-			die(`cursor.step out of range or wrong kind for phase ${phase}`);
+function replayCurrentStep(treeRoot: NormalizedNode, doc: ExecutionDoc): void {
+	const cursor = decodeCursor(doc.cursor);
+	if (!cursor) die("cursor missing");
+	const node = getNodeAtPath(treeRoot, cursor.path);
+	if (node.type !== "action") die("cursor points to non-action node");
+	const step = node.steps[cursor.step];
+	if (!step) die(`cursor.step out of range for phase ${doc.phase}`);
+	if (doc.phase === "evaluating" && step.kind === "evaluate") {
 		out({ type: "evaluate", name: node.name, expression: step.expression });
 		return;
 	}
-
-	if (phase === "performing") {
-		const node = getNodeAtPath(treeDef.root, cursor.path);
-		if (node.type !== "action") die("cursor points to non-action node");
-		const step = node.steps[cursor.step];
-		if (!step || step.kind !== "instruct")
-			die(`cursor.step out of range or wrong kind for phase ${phase}`);
+	if (doc.phase === "performing" && step.kind === "instruct") {
 		out({ type: "instruct", name: node.name, instruction: step.instruction });
 		return;
 	}
+	die(`cursor.step wrong kind for phase ${doc.phase}`);
+}
 
-	const result = tickRoot(executionId, treeDef.root);
-
+function emitTickResult(executionId: string, result: TickResult): void {
 	if (result.type === "done") {
 		ExecutionStore.update(executionId, {
 			status: "complete",
 			phase: "idle",
-			cursor: "null",
+			cursor: NULL_CURSOR,
 		});
-		rebuildMermaid(executionId);
 		out({ status: "done" });
 		return;
 	}
-
 	if (result.type === "failure") {
 		ExecutionStore.update(executionId, {
 			status: "failed",
 			phase: "idle",
-			cursor: "null",
+			cursor: NULL_CURSOR,
 		});
-		rebuildMermaid(executionId);
 		out({ status: "failure" });
 		return;
 	}
-
+	const cur = encodeCursor({ path: result.path, step: result.step });
 	if (result.type === "evaluate") {
-		const cur = JSON.stringify({ path: result.path, step: result.step });
-		ExecutionStore.update(executionId, { phase: "evaluating", cursor: cur });
+		ExecutionStore.update(executionId, {
+			status: "running",
+			phase: "evaluating",
+			cursor: cur,
+		});
 		out({ type: "evaluate", name: result.name, expression: result.expression });
 		return;
 	}
-
 	if (result.type === "instruct") {
-		const cur = JSON.stringify({ path: result.path, step: result.step });
-		ExecutionStore.update(executionId, { phase: "performing", cursor: cur });
+		ExecutionStore.update(executionId, {
+			status: "running",
+			phase: "performing",
+			cursor: cur,
+		});
 		out({
 			type: "instruct",
 			name: result.name,
 			instruction: result.instruction,
 		});
+	}
+}
+
+export function cmdNext(executionId: string) {
+	const doc = ExecutionStore.findById(executionId);
+	if (!doc) die(`Execution '${executionId}' not found`);
+
+	if (!doc.protocol_accepted) {
+		handleProtocolPhase(executionId, doc);
 		return;
 	}
 
-	out({ status: "done" });
+	const treeDef = TreeSnapshotStore.get(doc.snapshot);
+
+	if (doc.phase === "evaluating" || doc.phase === "performing") {
+		replayCurrentStep(treeDef.root, doc);
+		return;
+	}
+
+	emitTickResult(executionId, tickRoot(executionId, treeDef.root));
 }
 
 export function cmdEval(executionId: string, result: boolean) {
@@ -211,22 +216,21 @@ export function cmdEval(executionId: string, result: boolean) {
 	if (doc.phase !== "evaluating")
 		die(`Execution is not in evaluating phase (current: ${doc.phase})`);
 
-	const cursor = JSON.parse(doc.cursor);
+	const cursor = decodeCursor(doc.cursor);
+	if (!cursor) die("cursor missing");
 	const path: number[] = cursor.path;
 	const stepIdx: number = cursor.step;
 
 	if (result) {
 		setStepIndex(executionId, path, stepIdx + 1);
-		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(executionId);
+		ExecutionStore.update(executionId, { phase: "idle", cursor: NULL_CURSOR });
 		out({
 			status: "evaluation_passed",
 			message: "Precondition met. Advancing.",
 		});
 	} else {
 		setNodeResult(executionId, path, "failure");
-		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(executionId);
+		ExecutionStore.update(executionId, { phase: "idle", cursor: NULL_CURSOR });
 		out({
 			status: "evaluation_failed",
 			message: "Precondition not met. Action failed.",
@@ -234,49 +238,47 @@ export function cmdEval(executionId: string, result: boolean) {
 	}
 }
 
-export function cmdSubmit(
+function handleProtocolSubmit(
 	executionId: string,
 	status: "success" | "failure" | "running",
-) {
-	const doc = ExecutionStore.findById(executionId);
-	if (!doc) die(`Execution '${executionId}' not found`);
-
-	if (doc.phase === "protocol") {
-		if (status === "running") {
-			out({
-				status: "running",
-				message: "Acknowledged. Call next when ready to continue.",
-			});
-			return;
-		}
-		if (status === "success") {
-			ExecutionStore.update(executionId, {
-				protocol_accepted: true,
-				phase: "idle",
-				cursor: "null",
-			});
-			out({
-				status: "protocol_accepted",
-				message: "Protocol acknowledged. Call next to begin the tree.",
-			});
-			return;
-		}
-		ExecutionStore.update(executionId, {
-			status: "failed",
-			phase: "idle",
-			cursor: "null",
-		});
+): void {
+	if (status === "running") {
 		out({
-			status: "protocol_rejected",
-			message: "Protocol not acknowledged. Execution aborted.",
+			status: "running",
+			message: "Acknowledged. Call next when ready to continue.",
 		});
 		return;
 	}
+	if (status === "success") {
+		ExecutionStore.update(executionId, {
+			protocol_accepted: true,
+			phase: "idle",
+			cursor: NULL_CURSOR,
+		});
+		out({
+			status: "protocol_accepted",
+			message: "Protocol acknowledged. Call next to begin the tree.",
+		});
+		return;
+	}
+	ExecutionStore.update(executionId, {
+		status: "failed",
+		phase: "idle",
+		cursor: NULL_CURSOR,
+	});
+	out({
+		status: "protocol_rejected",
+		message: "Protocol not acknowledged. Execution aborted.",
+	});
+}
 
-	if (doc.phase !== "performing")
-		die(`Execution is not in performing phase (current: ${doc.phase})`);
-
-	const cursor = JSON.parse(doc.cursor);
+function handlePerformingSubmit(
+	executionId: string,
+	doc: ExecutionDoc,
+	status: "success" | "failure" | "running",
+): void {
+	const cursor = decodeCursor(doc.cursor);
+	if (!cursor) die("cursor missing");
 	const path: number[] = cursor.path;
 	const stepIdx: number = cursor.step;
 
@@ -290,8 +292,7 @@ export function cmdSubmit(
 
 	if (status === "failure") {
 		setNodeResult(executionId, path, "failure");
-		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(executionId);
+		ExecutionStore.update(executionId, { phase: "idle", cursor: NULL_CURSOR });
 		out({
 			status: "action_failed",
 			message: "Instruction failed. Action marked as failure.",
@@ -306,25 +307,41 @@ export function cmdSubmit(
 
 	if (nextStep >= node.steps.length) {
 		setNodeResult(executionId, path, "success");
-		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(executionId);
+		ExecutionStore.update(executionId, { phase: "idle", cursor: NULL_CURSOR });
 		out({
 			status: "action_complete",
 			message: "All steps done. Action succeeded.",
 		});
 	} else {
 		setStepIndex(executionId, path, nextStep);
-		ExecutionStore.update(executionId, { phase: "idle", cursor: "null" });
-		rebuildMermaid(executionId);
+		ExecutionStore.update(executionId, { phase: "idle", cursor: NULL_CURSOR });
 		out({ status: "step_complete", message: "Step done. More steps remain." });
 	}
 }
 
+export function cmdSubmit(
+	executionId: string,
+	status: "success" | "failure" | "running",
+) {
+	const doc = ExecutionStore.findById(executionId);
+	if (!doc) die(`Execution '${executionId}' not found`);
+
+	if (doc.phase === "protocol") {
+		handleProtocolSubmit(executionId, status);
+		return;
+	}
+
+	if (doc.phase !== "performing")
+		die(`Execution is not in performing phase (current: ${doc.phase})`);
+
+	handlePerformingSubmit(executionId, doc, status);
+}
+
 export function cmdLocalRead(executionId: string, path?: string) {
 	if (path) {
-		out({ path, value: ExecutionStore.getLocal(executionId, path) });
+		out({ path, value: ExecutionStore.getScope(executionId, "local", path) });
 	} else {
-		out(ExecutionStore.getLocal(executionId));
+		out(ExecutionStore.getScope(executionId, "local"));
 	}
 }
 
@@ -339,16 +356,15 @@ export function cmdLocalWrite(
 	} catch {
 		parsed = value;
 	}
-	ExecutionStore.setLocal(executionId, path, parsed);
-	rebuildMermaid(executionId);
+	ExecutionStore.setScope(executionId, "local", path, parsed);
 	out({ path, value: parsed });
 }
 
 export function cmdGlobalRead(executionId: string, path?: string) {
 	if (path) {
-		out({ path, value: ExecutionStore.getGlobal(executionId, path) });
+		out({ path, value: ExecutionStore.getScope(executionId, "global", path) });
 	} else {
-		out(ExecutionStore.getGlobal(executionId));
+		out(ExecutionStore.getScope(executionId, "global"));
 	}
 }
 

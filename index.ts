@@ -18,12 +18,14 @@ import {
 	cmdSubmit,
 	cmdTreeList,
 } from "./src/commands.ts";
+import { rebuildMermaid } from "./src/mermaid.ts";
 import {
 	EXECUTIONS_DIR,
 	ensureDir,
 	SNAPSHOTS_DIR,
 	TREES_DIR,
 } from "./src/paths.ts";
+import { setMutationListener } from "./src/repos.ts";
 import {
 	parseEvalResult,
 	parseExecutionId,
@@ -33,6 +35,8 @@ import {
 	parseTreeSlug,
 } from "./src/validate.ts";
 import TREE_SCHEMA from "./tree.schema.json" with { type: "text" };
+
+setMutationListener(rebuildMermaid);
 
 const program = new Command()
 	.name("abtree")

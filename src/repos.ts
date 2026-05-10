@@ -8,15 +8,19 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { EXECUTIONS_DIR, ensureDir } from "./paths.ts";
-import type {
-	ExecutionDoc,
-	ExecutionRow,
-	NodeStatus,
-	RuntimeState,
-} from "./types.ts";
+import type { ExecutionDoc, ExecutionRow, RuntimeState } from "./types.ts";
 
 function emptyRuntime(): RuntimeState {
 	return { node_status: {}, step_index: {}, retry_count: {} };
+}
+
+// Registered at startup; runs after every successful writeDoc.
+// Lets the store own the "after every state change, refresh derived
+// artifacts" invariant without depending on mermaid.ts directly.
+let mutationListener: ((id: string) => void) | null = null;
+
+export function setMutationListener(fn: (id: string) => void): void {
+	mutationListener = fn;
 }
 
 const ID_PATTERN = /^[a-z0-9_-]+__[a-z0-9_-]+__\d+$/;
@@ -26,7 +30,9 @@ function executionPath(id: string): string {
 	return join(EXECUTIONS_DIR, `${id}.json`);
 }
 
-function readDoc(id: string): ExecutionDoc | null {
+// Exported for use by the sibling RuntimeStore in runtime-store.ts;
+// not part of the public API.
+export function readDocInternal(id: string): ExecutionDoc | null {
 	const path = executionPath(id);
 	if (!existsSync(path)) return null;
 	try {
@@ -36,13 +42,17 @@ function readDoc(id: string): ExecutionDoc | null {
 	}
 }
 
-function writeDoc(doc: ExecutionDoc): void {
+export function writeDocInternal(doc: ExecutionDoc): void {
 	ensureDir(EXECUTIONS_DIR);
 	const path = executionPath(doc.id);
 	const tmp = `${path}.tmp`;
 	writeFileSync(tmp, JSON.stringify(doc, null, 2));
 	renameSync(tmp, path);
+	if (mutationListener) mutationListener(doc.id);
 }
+
+const readDoc = readDocInternal;
+const writeDoc = writeDocInternal;
 
 function walkPath(obj: Record<string, unknown>, path: string): unknown {
 	if (!path) throw new Error("Path required");
@@ -146,134 +156,32 @@ export const ExecutionStore = {
 		if (existsSync(path)) unlinkSync(path);
 	},
 
-	// Scope helpers
-	getLocal(id: string, path?: string): unknown {
+	// Scope helpers — scope-parameterised so $LOCAL and $GLOBAL share one implementation.
+	getScope(id: string, scope: "local" | "global", path?: string): unknown {
 		const doc = readDoc(id);
 		if (!doc) return null;
-		return path ? walkPath(doc.local, path) : doc.local;
+		return path ? walkPath(doc[scope], path) : doc[scope];
 	},
 
-	setLocal(id: string, path: string, value: unknown): void {
-		mutateScope(id, "local", (s) => setPath(s, path, value));
+	setScope(
+		id: string,
+		scope: "local" | "global",
+		path: string,
+		value: unknown,
+	): void {
+		mutateScope(id, scope, (s) => setPath(s, path, value));
 	},
 
-	replaceLocal(id: string, data: Record<string, unknown>): void {
-		mutateScope(id, "local", (s) => {
+	replaceScope(
+		id: string,
+		scope: "local" | "global",
+		data: Record<string, unknown>,
+	): void {
+		mutateScope(id, scope, (s) => {
 			for (const k of Object.keys(s)) delete s[k];
 			Object.assign(s, data);
 		});
-	},
-
-	deleteLocal(id: string): void {
-		mutateScope(id, "local", (s) => {
-			for (const k of Object.keys(s)) delete s[k];
-		});
-	},
-
-	getGlobal(id: string, path?: string): unknown {
-		const doc = readDoc(id);
-		if (!doc) return null;
-		return path ? walkPath(doc.global, path) : doc.global;
-	},
-
-	setGlobal(id: string, path: string, value: unknown): void {
-		mutateScope(id, "global", (s) => setPath(s, path, value));
-	},
-
-	replaceGlobal(id: string, data: Record<string, unknown>): void {
-		mutateScope(id, "global", (s) => {
-			for (const k of Object.keys(s)) delete s[k];
-			Object.assign(s, data);
-		});
-	},
-
-	deleteGlobal(id: string): void {
-		mutateScope(id, "global", (s) => {
-			for (const k of Object.keys(s)) delete s[k];
-		});
-	},
-
-	// ---- Runtime helpers ----------------------------------------------------
-	// Internal-only state used by the tick engine. Not exposed via local read /
-	// local write — these maps live in `doc.runtime` and the CLI never touches
-	// them directly. Keys are dot-joined paths (e.g. "0.1.2") used as flat
-	// dictionary keys, not walked.
-
-	getRuntimeStatus(id: string, path: number[]): NodeStatus | null {
-		const doc = readDoc(id);
-		if (!doc) return null;
-		return doc.runtime.node_status[path.join(".")] ?? null;
-	},
-
-	setRuntimeStatus(id: string, path: number[], status: NodeStatus): void {
-		const doc = readDoc(id);
-		if (!doc) throw new Error(`Execution not found: ${id}`);
-		doc.runtime.node_status[path.join(".")] = status;
-		doc.updated_at = new Date().toISOString();
-		writeDoc(doc);
-	},
-
-	getRuntimeStep(id: string, path: number[]): number {
-		const doc = readDoc(id);
-		if (!doc) return 0;
-		return doc.runtime.step_index[path.join(".")] ?? 0;
-	},
-
-	setRuntimeStep(id: string, path: number[], step: number): void {
-		const doc = readDoc(id);
-		if (!doc) throw new Error(`Execution not found: ${id}`);
-		doc.runtime.step_index[path.join(".")] = step;
-		doc.updated_at = new Date().toISOString();
-		writeDoc(doc);
-	},
-
-	getRuntimeRetryCount(id: string, path: number[]): number {
-		const doc = readDoc(id);
-		if (!doc) return 0;
-		return doc.runtime.retry_count[path.join(".")] ?? 0;
-	},
-
-	incrementRuntimeRetryCount(id: string, path: number[]): number {
-		const doc = readDoc(id);
-		if (!doc) throw new Error(`Execution not found: ${id}`);
-		const key = path.join(".");
-		const next = (doc.runtime.retry_count[key] ?? 0) + 1;
-		doc.runtime.retry_count[key] = next;
-		doc.updated_at = new Date().toISOString();
-		writeDoc(doc);
-		return next;
-	},
-
-	// Wipe all runtime keys whose path begins with `prefix`. Used when a node
-	// retries: its node_status / step_index for itself and every descendant
-	// must be cleared so the next tick re-attempts from a clean slate.
-	// User-written $LOCAL data is untouched — the next attempt sees the
-	// previous attempt's outputs, which is the whole point of feedback.
-	resetRuntimeSubtree(id: string, prefix: number[]): void {
-		const doc = readDoc(id);
-		if (!doc) throw new Error(`Execution not found: ${id}`);
-		const prefixKey = prefix.join(".");
-		const matches = (k: string) =>
-			prefixKey === ""
-				? true
-				: k === prefixKey || k.startsWith(`${prefixKey}.`);
-		for (const map of [
-			doc.runtime.node_status,
-			doc.runtime.step_index,
-		] as Record<string, unknown>[]) {
-			for (const k of Object.keys(map)) {
-				if (matches(k)) delete map[k];
-			}
-		}
-		doc.updated_at = new Date().toISOString();
-		writeDoc(doc);
-	},
-
-	resetRuntime(id: string): void {
-		const doc = readDoc(id);
-		if (!doc) throw new Error(`Execution not found: ${id}`);
-		doc.runtime = emptyRuntime();
-		doc.updated_at = new Date().toISOString();
-		writeDoc(doc);
 	},
 };
+
+export { emptyRuntime };
