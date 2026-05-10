@@ -1,6 +1,32 @@
+import { existsSync, readdirSync } from "node:fs";
+import { resolve } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitepress";
 import llmstxt from "vitepress-plugin-llms";
+
+function titleCase(s: string): string {
+	return s
+		.split(/[-_]/)
+		.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+		.join(" ");
+}
+
+function exampleSidebarItems() {
+	const dir = resolve(import.meta.dirname, "../examples");
+	const base = [{ text: "Registry", link: "/examples" }];
+	if (!existsSync(dir)) return base;
+	const slugs = readdirSync(dir)
+		.filter((f) => f.endsWith(".md"))
+		.map((f) => f.replace(/\.md$/, ""))
+		.sort();
+	return [
+		...base,
+		...slugs.map((slug) => ({
+			text: titleCase(slug),
+			link: `/examples/${slug}`,
+		})),
+	];
+}
 
 function robotsTxt(siteUrl: string): Plugin {
 	return {
@@ -261,7 +287,7 @@ export default defineConfig({
 			},
 			{
 				text: "Examples",
-				items: [{ text: "Registry", link: "/examples" }],
+				items: exampleSidebarItems(),
 			},
 		],
 
