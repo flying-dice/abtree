@@ -55,6 +55,10 @@ function runSnippet(slug: string): string {
 	return `claude "Run the abtree ${slug} tree. Use 'abtree --help' to learn the execution protocol, then create an execution with 'abtree execution create ${slug} \\"<summary>\\"' and drive it to completion."`;
 }
 
+function yamlString(s: string): string {
+	return `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
 function titleCase(s: string): string {
 	return s
 		.split(/[-_]/)
@@ -65,7 +69,7 @@ function titleCase(s: string): string {
 function renderExamplePage(tree: TreeMeta): string {
 	return `---
 title: ${titleCase(tree.name)}
-description: ${tree.description.replace(/\n/g, " ")}
+description: ${yamlString(tree.description.replace(/\n/g, " "))}
 ---
 
 # ${titleCase(tree.name)}
