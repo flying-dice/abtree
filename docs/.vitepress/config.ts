@@ -300,7 +300,7 @@ export default defineConfig({
 
 		footer: {
 			message: "MIT licensed",
-			copyright: "Built by Flying Dice",
+			copyright: "Built with ❤️ by Flying Dice 🎲",
 		},
 
 		search: {
