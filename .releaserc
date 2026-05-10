@@ -2,7 +2,15 @@
   "branches": ["main"],
   "repositoryUrl": "https://github.com/flying-dice/abtree.git",
   "plugins": [
-    "@semantic-release/commit-analyzer",
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "angular",
+        "releaseRules": [
+          { "breaking": true, "release": "minor" }
+        ]
+      }
+    ],
     "@semantic-release/release-notes-generator",
     [
       "@semantic-release/npm",
