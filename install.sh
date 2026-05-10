@@ -19,7 +19,16 @@ case "$ARCH" in
 esac
 
 ASSET="${BIN}-${OS}-${ARCH}"
-URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
+
+# __ABTREE_VERSION__ is replaced at release time by .releaserc with the
+# git tag (e.g. v1.2.3). When this script is fetched from main the
+# placeholder is left untouched and we fall back to /releases/latest/.
+VERSION="${ABTREE_VERSION:-__ABTREE_VERSION__}"
+case "$VERSION" in
+  __ABTREE_VERSION__|latest|"") URL_PATH="latest/download" ;;
+  *) URL_PATH="download/${VERSION}" ;;
+esac
+URL="https://github.com/${REPO}/releases/${URL_PATH}/${ASSET}"
 
 echo "Downloading ${ASSET}..."
 TMPFILE=$(mktemp)
