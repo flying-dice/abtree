@@ -42,9 +42,7 @@ async function loadTrees(): Promise<TreeMeta[]> {
 		};
 		const tree = await loadTree(slug);
 		const name = parsed.name ?? slug;
-		const mermaid = tree
-			? renderTreeMermaid(tree.root, { title: name })
-			: "";
+		const mermaid = tree ? renderTreeMermaid(tree.root, { title: name }) : "";
 		out.push({
 			slug,
 			name,
