@@ -143,10 +143,10 @@ Sitting as a separate coordination layer, **abtree** functions as the structural
 curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/install.sh | sh
 ```
 
-To install to a custom directory, set `INSTALL_DIR` before running:
+Installs `abtree` to `~/.local/bin`. To install system-wide instead, set `INSTALL_DIR`:
 
 ```sh
-INSTALL_DIR=~/.local/bin curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/install.sh | sh
+INSTALL_DIR=/usr/local/bin curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/install.sh | sh
 ```
 
 **Windows (PowerShell)**

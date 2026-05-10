@@ -27,7 +27,8 @@ trap 'rm -f "$TMPFILE"' EXIT
 curl -fsSL "$URL" -o "$TMPFILE"
 chmod +x "$TMPFILE"
 
-INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
+INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
+mkdir -p "$INSTALL_DIR"
 if [ -w "$INSTALL_DIR" ]; then
   mv "$TMPFILE" "${INSTALL_DIR}/${BIN}"
 else
@@ -35,4 +36,9 @@ else
   sudo mv "$TMPFILE" "${INSTALL_DIR}/${BIN}"
 fi
 
-echo "Installed: $(command -v ${BIN})"
+case ":$PATH:" in
+  *":$INSTALL_DIR:"*) ;;
+  *) echo "Note: ${INSTALL_DIR} is not on your PATH — add it to your shell profile and restart your terminal." ;;
+esac
+
+echo "Installed: ${INSTALL_DIR}/${BIN}"
