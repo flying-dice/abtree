@@ -20,12 +20,6 @@ import {
 	cmdUpgrade,
 } from "./src/commands.ts";
 import { rebuildMermaid } from "./src/mermaid.ts";
-import {
-	EXECUTIONS_DIR,
-	ensureDir,
-	SNAPSHOTS_DIR,
-	TREES_DIR,
-} from "./src/paths.ts";
 import { setMutationListener } from "./src/repos.ts";
 import {
 	parseEvalResult,
@@ -215,7 +209,4 @@ program
 		},
 	);
 
-ensureDir(EXECUTIONS_DIR);
-ensureDir(SNAPSHOTS_DIR);
-ensureDir(TREES_DIR);
 program.parse();
