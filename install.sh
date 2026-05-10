@@ -22,15 +22,16 @@ ASSET="${BIN}-${OS}-${ARCH}"
 URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
 
 echo "Downloading ${ASSET}..."
-curl -fsSL "$URL" -o "/tmp/${BIN}"
-chmod +x "/tmp/${BIN}"
+TMPFILE=$(mktemp)
+curl -fsSL "$URL" -o "$TMPFILE"
+chmod +x "$TMPFILE"
 
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 if [ -w "$INSTALL_DIR" ]; then
-  mv "/tmp/${BIN}" "${INSTALL_DIR}/${BIN}"
+  mv "$TMPFILE" "${INSTALL_DIR}/${BIN}"
 else
   echo "Writing to ${INSTALL_DIR} requires sudo..."
-  sudo mv "/tmp/${BIN}" "${INSTALL_DIR}/${BIN}"
+  sudo mv "$TMPFILE" "${INSTALL_DIR}/${BIN}"
 fi
 
 echo "Installed: $(command -v ${BIN})"
