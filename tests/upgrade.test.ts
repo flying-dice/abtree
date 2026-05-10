@@ -110,11 +110,11 @@ describe("assetUrl", () => {
 
 describe("fetchLatestTag", () => {
 	test("returns tag_name from API response", async () => {
-		const stubFetch = mock(async (url: string, opts: RequestInit) => {
+		const stubFetch = mock(async (_url: string, opts: RequestInit) => {
 			expect(opts.headers).toBeDefined();
 			const headers = opts.headers as Record<string, string>;
 			expect(headers["User-Agent"]).toBe(`abtree/${VERSION}`);
-			expect(headers["Accept"]).toBe("application/vnd.github+json");
+			expect(headers.Accept).toBe("application/vnd.github+json");
 			return new Response(JSON.stringify({ tag_name: "v1.2.3" }), {
 				status: 200,
 			});
@@ -161,7 +161,9 @@ describe("downloadAsset", () => {
 	});
 
 	test("throws on 404 status", async () => {
-		const stubFetch = mock(async () => new Response("Not Found", { status: 404 }));
+		const stubFetch = mock(
+			async () => new Response("Not Found", { status: 404 }),
+		);
 		const dest = join(tmpDir, "abtree-404");
 		await expect(
 			downloadAsset(FAKE_URL, dest, stubFetch as unknown as typeof fetch),

@@ -2,11 +2,11 @@ import {
 	accessSync,
 	chmodSync,
 	constants,
+	realpathSync,
 	renameSync,
 	unlinkSync,
 } from "node:fs";
 import { join } from "node:path";
-import { realpathSync } from "node:fs";
 import { VERSION } from "./version.ts";
 
 export type Platform = {
@@ -79,10 +79,7 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 {
 	return 0;
 }
 
-export function assetUrl(
-	tag: string | "latest",
-	asset: string,
-): string {
+export function assetUrl(tag: string | "latest", asset: string): string {
 	if (tag === "latest") {
 		return `https://github.com/flying-dice/abtree/releases/latest/download/${asset}`;
 	}
