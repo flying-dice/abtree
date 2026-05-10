@@ -517,9 +517,7 @@ export async function cmdUpgrade(
 	if (!isWritable(installDir)) {
 		const dest = execPath;
 		const tmp = tmpPath(installDir);
-		process.stderr.write(
-			`Install directory ${installDir} is not writable.\n`,
-		);
+		process.stderr.write(`Install directory ${installDir} is not writable.\n`);
 		process.stderr.write(`sudo mv ${tmp} ${dest}\n`);
 		process.exit(1);
 	}

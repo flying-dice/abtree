@@ -19,7 +19,6 @@ import {
 	cmdTreeList,
 	cmdUpgrade,
 } from "./src/commands.ts";
-import { VERSION } from "./src/version.ts";
 import { rebuildMermaid } from "./src/mermaid.ts";
 import {
 	EXECUTIONS_DIR,
@@ -36,6 +35,7 @@ import {
 	parseSummary,
 	parseTreeSlug,
 } from "./src/validate.ts";
+import { VERSION } from "./src/version.ts";
 import TREE_SCHEMA from "./tree.schema.json" with { type: "text" };
 
 setMutationListener(rebuildMermaid);
