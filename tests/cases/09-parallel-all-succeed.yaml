@@ -1,0 +1,12 @@
+description: Parallel composite ticks each child in order; all three succeed; tree reaches done.
+tree: parallel-basic
+steps:
+  - { type: instruct, name: Step_A, write: { a: done } }
+  - { type: instruct, name: Step_B, write: { b: done } }
+  - { type: instruct, name: Step_C, write: { c: done } }
+final:
+  status: done
+  local:
+    a: done
+    b: done
+    c: done

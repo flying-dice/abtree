@@ -1,0 +1,14 @@
+description: Parallel composite where second child's evaluate gate is false; tree ends in failure (parallel = success iff every child succeeds).
+tree: parallel-fails-on-child
+initial:
+  local:
+    flag_a: true
+    flag_b: false
+steps:
+  - { type: evaluate, name: Step_A, result: true }
+  - { type: instruct, name: Step_A, write: { a_done: done } }
+  - { type: evaluate, name: Step_B, result: false }
+final:
+  status: failure
+  local:
+    a_done: done

@@ -1,0 +1,26 @@
+name: parallel-basic
+version: 1.0.0
+description: Parallel composite with three child actions; each writes its own scoped key.
+
+state:
+  local:
+    a: null
+    b: null
+    c: null
+
+tree:
+  type: parallel
+  name: All_Three
+  children:
+    - type: action
+      name: Step_A
+      steps:
+        - instruct: Set $LOCAL.a to "done".
+    - type: action
+      name: Step_B
+      steps:
+        - instruct: Set $LOCAL.b to "done".
+    - type: action
+      name: Step_C
+      steps:
+        - instruct: Set $LOCAL.c to "done".

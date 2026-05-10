@@ -235,10 +235,7 @@ test("execution reset restores initial state", () => {
 	expect((json(resetOut.stdout) as { status: string }).status).toBe("reset");
 
 	// First next after reset should re-prompt the protocol gate.
-	const gate = json(abtree(["next", id], tmp).stdout) as Record<
-		string,
-		string
-	>;
+	const gate = json(abtree(["next", id], tmp).stdout) as Record<string, string>;
 	expect(gate.type).toBe("instruct");
 	expect(gate.name).toBe("Acknowledge_Protocol");
 	abtree(["submit", id, "success"], tmp);
@@ -248,4 +245,133 @@ test("execution reset restores initial state", () => {
 	const parsed = json(step.stdout) as Record<string, string>;
 	expect(parsed.type).toBe("instruct");
 	expect(parsed.name).toBe("Determine_Time");
+});
+
+test("protocol gate: submit failure aborts the execution", () => {
+	const { id } = json(
+		abtree(["execution", "create", "hello-world", "gate fail"], tmp).stdout,
+	) as { id: string };
+
+	// Receive the protocol gate, then reject it.
+	abtree(["next", id], tmp);
+	const reject = json(abtree(["submit", id, "failure"], tmp).stdout) as {
+		status: string;
+	};
+	expect(reject.status).toBe("protocol_rejected");
+
+	// Subsequent next must NOT re-prompt the gate; the execution is failed.
+	const after = json(abtree(["next", id], tmp).stdout) as {
+		status: string;
+		name?: string;
+	};
+	expect(after.name).toBeUndefined();
+	expect(after.status === "failure" || after.status === "done").toBeTrue();
+});
+
+test("protocol gate: submit running re-emits the same instruct on next call", () => {
+	const { id } = json(
+		abtree(["execution", "create", "hello-world", "gate running"], tmp).stdout,
+	) as { id: string };
+
+	const first = json(abtree(["next", id], tmp).stdout) as { name: string };
+	expect(first.name).toBe("Acknowledge_Protocol");
+
+	const ack = json(abtree(["submit", id, "running"], tmp).stdout) as {
+		status: string;
+	};
+	expect(ack.status).toBe("running");
+
+	const second = json(abtree(["next", id], tmp).stdout) as { name: string };
+	expect(second.name).toBe("Acknowledge_Protocol");
+});
+
+test("next on non-existent execution exits non-zero with not-found", () => {
+	const r = abtree(["next", "nope__hello-world__999"], tmp);
+	expect(r.exitCode).not.toBe(0);
+	expect(r.stderr).toContain("not found");
+});
+
+test("eval on non-existent execution exits non-zero with not-found", () => {
+	const r = abtree(["eval", "nope__hello-world__999", "true"], tmp);
+	expect(r.exitCode).not.toBe(0);
+	expect(r.stderr).toContain("not found");
+});
+
+test("submit on non-existent execution exits non-zero with not-found", () => {
+	const r = abtree(["submit", "nope__hello-world__999", "success"], tmp);
+	expect(r.exitCode).not.toBe(0);
+	expect(r.stderr).toContain("not found");
+});
+
+test("execution create with unknown tree slug exits non-zero", () => {
+	const r = abtree(["execution", "create", "no-such-tree", "x"], tmp);
+	expect(r.exitCode).not.toBe(0);
+	expect(r.stderr).toContain("not found");
+});
+
+test("eval while not in evaluating phase exits non-zero", () => {
+	const { id } = json(
+		abtree(["execution", "create", "hello-world", "eval phase"], tmp).stdout,
+	) as { id: string };
+	abtree(["next", id], tmp); // protocol gate, phase becomes "protocol"
+	const r = abtree(["eval", id, "true"], tmp);
+	expect(r.exitCode).not.toBe(0);
+	expect(r.stderr).toContain("not in evaluating phase");
+});
+
+test("submit while not in performing phase exits non-zero", () => {
+	const { id } = json(
+		abtree(["execution", "create", "hello-world", "submit phase"], tmp).stdout,
+	) as { id: string };
+	// Clear the protocol gate so phase returns to idle.
+	abtree(["next", id], tmp);
+	abtree(["submit", id, "success"], tmp);
+	// Idle phase, no instruct outstanding -> submit should refuse.
+	const r = abtree(["submit", id, "success"], tmp);
+	expect(r.exitCode).not.toBe(0);
+	expect(r.stderr).toContain("not in performing phase");
+});
+
+test("local write falls back to literal string for non-JSON values", () => {
+	const { id } = json(
+		abtree(["execution", "create", "hello-world", "string fallback"], tmp)
+			.stdout,
+	) as { id: string };
+	// Clear protocol gate so the write isn't blocked elsewhere.
+	abtree(["next", id], tmp);
+	abtree(["submit", id, "success"], tmp);
+
+	const w = abtree(
+		["local", "write", id, "note", "not-json-just-a-string"],
+		tmp,
+	);
+	expect(w.exitCode).toBe(0);
+	const r = json(abtree(["local", "read", id, "note"], tmp).stdout) as {
+		path: string;
+		value: unknown;
+	};
+	expect(r.value).toBe("not-json-just-a-string");
+});
+
+test("global read returns full scope and dot-pathed leaves", () => {
+	const { id } = json(
+		abtree(["execution", "create", "hello-world", "global read"], tmp).stdout,
+	) as { id: string };
+
+	// Whole-scope read returns the seeded $GLOBAL object.
+	const full = json(abtree(["global", "read", id], tmp).stdout) as Record<
+		string,
+		unknown
+	>;
+	expect(typeof full).toBe("object");
+	expect(Object.keys(full).length).toBeGreaterThan(0);
+
+	// Dot-pathed read returns the leaf value, not the whole scope.
+	const firstKey = Object.keys(full)[0] as string;
+	const leaf = json(abtree(["global", "read", id, firstKey], tmp).stdout) as {
+		path: string;
+		value: unknown;
+	};
+	expect(leaf.path).toBe(firstKey);
+	expect(leaf.value).toEqual(full[firstKey]);
 });

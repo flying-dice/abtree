@@ -1,0 +1,22 @@
+name: selector-first-fails
+version: 1.0.0
+description: Selector with first branch failing its evaluate; second branch succeeds; selector must report success.
+
+state:
+  local:
+    take_a: null
+    chosen: null
+
+tree:
+  type: selector
+  name: Pick_Either
+  children:
+    - type: action
+      name: Branch_A
+      steps:
+        - evaluate: $LOCAL.take_a is true
+        - instruct: Set $LOCAL.chosen to "a".
+    - type: action
+      name: Branch_B
+      steps:
+        - instruct: Set $LOCAL.chosen to "b".

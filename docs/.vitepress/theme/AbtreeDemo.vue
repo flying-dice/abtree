@@ -262,15 +262,19 @@ function scrollBottom() {
 	});
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function lineIndent(text: string): string {
 	return text.match(/^(\s*)/)?.[1] ?? "";
 }
+// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function lineHasMarker(text: string): boolean {
 	return /^\s*- /.test(text);
 }
+// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function lineRest(text: string): string {
 	return text.replace(/^\s*- /, "");
 }
+// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function markerStatusFor(line: YamlLine): NodeStatus | undefined {
 	if (!line.node) return undefined;
 	if (line.step) return stepStatuses.value[line.node]?.[line.step];
@@ -356,12 +360,15 @@ function run() {
 
 		// After the response line appears, complete the step status
 		if (frame.node && frame.completesStep && frame.completesStepAs) {
+			const node = frame.node;
+			const step = frame.completesStep;
+			const stepAs = frame.completesStepAs;
 			later(() => {
 				stepStatuses.value = {
 					...stepStatuses.value,
-					[frame.node!]: {
-						...(stepStatuses.value[frame.node!] || {}),
-						[frame.completesStep!]: frame.completesStepAs!,
+					[node]: {
+						...(stepStatuses.value[node] || {}),
+						[step]: stepAs,
 					},
 				};
 			}, completionAt);
@@ -369,10 +376,12 @@ function run() {
 
 		// After the response line appears, transition the node to its final status
 		if (frame.completes && frame.completesAs) {
+			const completes = frame.completes;
+			const completesAs = frame.completesAs;
 			later(() => {
 				nodeStatuses.value = {
 					...nodeStatuses.value,
-					[frame.completes!]: frame.completesAs!,
+					[completes]: completesAs,
 				};
 			}, completionAt);
 		}
@@ -387,6 +396,7 @@ function run() {
 	}, t + 400);
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function expand() {
 	timers.forEach(clearTimeout);
 	timers = [];
@@ -420,6 +430,7 @@ function expand() {
 	cliLines.value = allLines;
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function collapse() {
 	expanded.value = false;
 	run();

@@ -127,10 +127,7 @@ export const ExecutionStore = {
 	update(
 		id: string,
 		fields: Partial<
-			Pick<
-				ExecutionRow,
-				"status" | "cursor" | "phase" | "protocol_accepted"
-			>
+			Pick<ExecutionRow, "status" | "cursor" | "phase" | "protocol_accepted">
 		>,
 	): void {
 		const doc = readDoc(id);
