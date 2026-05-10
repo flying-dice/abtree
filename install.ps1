@@ -1,9 +1,13 @@
 #!/usr/bin/env pwsh
+# __ABTREE_VERSION__ is replaced at release time by .releaserc with the
+# git tag (e.g. v1.2.3). When this script is fetched from main the
+# placeholder is left untouched and we fall back to /releases/latest/.
 param(
-  [String]$Version = "latest",
+  [String]$Version = "__ABTREE_VERSION__",
   [Switch]$NoPathUpdate = $false,
   [Switch]$DownloadWithoutCurl = $false
 );
+if ($Version -eq "__ABTREE_VERSION__") { $Version = "latest" }
 
 $ErrorActionPreference = "Stop"
 
