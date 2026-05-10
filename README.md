@@ -157,6 +157,22 @@ irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 |
 
 Installs `abtree.exe` to `~\.local\bin` and adds it to your user `PATH`.
 
+## Upgrading
+
+```sh
+abtree upgrade
+```
+
+Upgrades abtree in-place to the latest GitHub release. The binary is replaced atomically; the old version is never left in a partially-written state.
+
+| Flag | Description |
+|------|-------------|
+| `--check` | Print current and latest versions without installing. |
+| `--version <tag>` | Install a specific release tag (e.g. `v1.2.3`). |
+| `--yes` | Skip the confirmation prompt (useful in scripts). |
+
+If the install directory is not writable, abtree exits immediately with a `sudo mv` hint rather than wasting a network round-trip.
+
 ## Usage
 
 ```sh

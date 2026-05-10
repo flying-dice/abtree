@@ -466,6 +466,21 @@ export async function cmdUpgrade(
 		process.exit(3);
 	}
 
+	let execPath = "";
+	let installDir = "";
+	if (!opts.check) {
+		execPath = realpathExec();
+		installDir = dirname(execPath);
+		if (!isWritable(installDir)) {
+			const tmp = tmpPath(installDir);
+			process.stderr.write(
+				`Install directory ${installDir} is not writable.\n`,
+			);
+			process.stderr.write(`sudo mv ${tmp} ${execPath}\n`);
+			process.exit(1);
+		}
+	}
+
 	let latest: string;
 	if (opts.version) {
 		latest = opts.version.startsWith("v") ? opts.version : `v${opts.version}`;
@@ -510,17 +525,7 @@ export async function cmdUpgrade(
 		}
 	}
 
-	const execPath = realpathExec();
 	process.stdout.write(`Installing to: ${execPath}\n`);
-	const installDir = dirname(execPath);
-
-	if (!isWritable(installDir)) {
-		const dest = execPath;
-		const tmp = tmpPath(installDir);
-		process.stderr.write(`Install directory ${installDir} is not writable.\n`);
-		process.stderr.write(`sudo mv ${tmp} ${dest}\n`);
-		process.exit(1);
-	}
 
 	const url = assetUrl(opts.version ? latest : "latest", target.asset);
 	const tmp = tmpPath(installDir);
