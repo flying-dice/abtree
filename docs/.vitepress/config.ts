@@ -252,7 +252,10 @@ export default defineConfig({
 		sidebar: [
 			{
 				text: "Introduction",
-				items: [{ text: "Get started", link: "/getting-started" }],
+				items: [
+					{ text: "Motivation", link: "/motivation" },
+					{ text: "Get started", link: "/getting-started" },
+				],
 			},
 			{
 				text: "Core concepts",
