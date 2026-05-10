@@ -51,7 +51,7 @@ Top-level shape:
 | `tree` | Slug of the tree this execution was created from. |
 | `summary` | The human label you passed to `execution create`. |
 | `status` | `running`, `complete`, or `failed`. The terminal state of the workflow. |
-| `snapshot` | A JSON-encoded copy of the tree definition at execution-creation time. The execution runs against this snapshot, not the live YAML — editing `.abtree/trees/<slug>.yaml` after creation does not affect existing executions. |
+| `snapshot` | A JSON-encoded copy of the tree definition at execution-creation time. The execution runs against this snapshot, not the live YAML — editing `.abtree/trees/<slug>/TREE.yaml` after creation does not affect existing executions. |
 | `cursor` | A JSON-encoded position inside the tree. `null` means "no step in flight"; otherwise an object like `{"path":[1,0],"step":1}` pointing at a node and a step within it. |
 | `phase` | `idle` (no current request), `performing` (an `instruct` is in flight, awaiting `submit`), or `evaluating` (an `evaluate` is in flight, awaiting `eval`). |
 | `created_at` / `updated_at` | ISO 8601 timestamps. `updated_at` advances on every mutation. |
@@ -122,21 +122,9 @@ flowchart TD
     0_Choose_Greeting --> 0_1_Evening_Greeting
     0_1_Default_Greeting["Default Greeting\n[action]"]
     0_Choose_Greeting --> 0_1_Default_Greeting
-    0_Gather_Context{{"Gather Context\n[parallel]"}}
-    Hello_World --> 0_Gather_Context
-    style 0_Gather_Context fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_2_Check_Weather["Check Weather\n[action]"]
-    0_Gather_Context --> 0_2_Check_Weather
-    style 0_2_Check_Weather fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_2_Check_News["Check News\n[action]"]
-    0_Gather_Context --> 0_2_Check_News
-    style 0_2_Check_News fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_Compose_Response["Compose Response\n[action]"]
-    Hello_World --> 0_Compose_Response
-    style 0_Compose_Response fill:#4ade80,stroke:#16a34a,color:#052e16
 ```
 
-Every reachable node is green. The selector picked Morning Greeting; the afternoon, evening, and default branches stayed uncoloured because a sibling already won. Both halves of the parallel ran. The sequence advanced through every direct child top to bottom.
+Every reachable node is green. The selector picked Morning Greeting; the afternoon, evening, and default branches stayed uncoloured because a sibling already won. The sequence advanced through every direct child top to bottom.
 
 ## Debugging a stuck execution
 

@@ -132,7 +132,7 @@ children:
       - instruct: ...
 ```
 
-That's the full hello-world tree. Four primitives. Sixteen lines of structure. Reproducible execution.
+Four primitives. Sixteen lines of structure. Reproducible execution. The bundled `hello-world` covers the first three (sequence, selector, action); `improve-codebase` is a real-world parallel.
 
 ## How the loop runs
 

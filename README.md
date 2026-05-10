@@ -45,16 +45,13 @@ By using this hierarchy, the result of every action propagates up the tree. This
 
 ```yaml
 name: hello-world
-version: 1.0.0
-description: Greet a user based on time of day with weather and news context. Demonstrates all 4 BT primitives.
+version: 2.0.0
+description: Greet a user based on time of day. Demonstrates sequence, selector, and action primitives.
 
 state:
   local:
     time_of_day: null
     greeting: null
-    weather: null
-    news: null
-    response: null
   global:
     user_name: retrieve by running the shell command "whoami"
     tone: friendly
@@ -80,7 +77,8 @@ tree:
           steps:
             - evaluate: $LOCAL.time_of_day is "morning"
             - instruct: >
-                Compose a cheerful morning greeting addressing $GLOBAL.user_name.
+                Compose a cheerful morning greeting addressing $GLOBAL.user_name
+                in $GLOBAL.language with a $GLOBAL.tone tone.
                 Store at $LOCAL.greeting.
 
         - type: action
@@ -88,7 +86,8 @@ tree:
           steps:
             - evaluate: $LOCAL.time_of_day is "afternoon"
             - instruct: >
-                Compose a warm afternoon greeting addressing $GLOBAL.user_name.
+                Compose a warm afternoon greeting addressing $GLOBAL.user_name
+                in $GLOBAL.language with a $GLOBAL.tone tone.
                 Store at $LOCAL.greeting.
 
         - type: action
@@ -96,52 +95,20 @@ tree:
           steps:
             - evaluate: $LOCAL.time_of_day is "evening"
             - instruct: >
-                Compose a relaxed evening greeting addressing $GLOBAL.user_name.
+                Compose a relaxed evening greeting addressing $GLOBAL.user_name
+                in $GLOBAL.language with a $GLOBAL.tone tone.
                 Store at $LOCAL.greeting.
 
         - type: action
           name: Default_Greeting
           steps:
             - instruct: >
-                Compose a neutral greeting addressing $GLOBAL.user_name.
+                Compose a neutral greeting addressing $GLOBAL.user_name
+                in $GLOBAL.language with a $GLOBAL.tone tone.
                 Store at $LOCAL.greeting.
-
-    - type: parallel
-      name: Gather_Context
-      children:
-        - type: action
-          name: Check_Weather
-          steps:
-            - evaluate: $LOCAL.greeting is set
-            - instruct: >
-                Use a web search tool to find the current weather conditions for today.
-                Store a one-sentence summary at $LOCAL.weather.
-                If web search is unavailable, store the literal string "weather unavailable".
-
-        - type: action
-          name: Check_News
-          steps:
-            - evaluate: $LOCAL.greeting is set
-            - instruct: >
-                Use a web search tool to find one current news headline from today.
-                Store the headline at $LOCAL.news.
-                If web search is unavailable, store the literal string "news unavailable".
-
-    - type: action
-      name: Compose_Response
-      steps:
-        - evaluate: $LOCAL.weather is set and $LOCAL.news is set
-        - instruct: >
-            Compose a final response by combining the following $LOCAL values:
-            - Use $LOCAL.greeting as the opening line
-            - Append a sentence about $LOCAL.weather
-            - Mention $LOCAL.news
-            Address the response to $GLOBAL.user_name.
-            Write in $GLOBAL.language with a $GLOBAL.tone tone.
-            Store the complete composed text at $LOCAL.response.
 ```
 
-The YAML defines the structure. At runtime, abtree generates a live execution diagram after every state change — nodes colour green on success, red on failure, grey when bypassed. Here's the `hello-world` tree (included in `.abtree/trees/`) after a complete run. The selector chose Morning Greeting and stopped — the afternoon, evening, and default branches were never entered. The two context-gathering actions ran in parallel. Every node reached is green.
+The YAML defines the structure. At runtime, abtree generates a live execution diagram after every state change — nodes colour green on success, red on failure, grey when bypassed. Here's the `hello-world` tree (included in `.abtree/trees/`) after a complete run. The selector chose Morning Greeting and stopped — the afternoon, evening, and default branches were never entered. Every node reached is green.
 
 ```mermaid
 ---
@@ -164,18 +131,6 @@ flowchart TD
     0_Choose_Greeting --> 0_1_Evening_Greeting
     0_1_Default_Greeting["Default Greeting\n[action]"]
     0_Choose_Greeting --> 0_1_Default_Greeting
-    0_Gather_Context{{"Gather Context\n[parallel]"}}
-    Hello_World --> 0_Gather_Context
-    style 0_Gather_Context fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_2_Check_Weather["Check Weather\n[action]"]
-    0_Gather_Context --> 0_2_Check_Weather
-    style 0_2_Check_Weather fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_2_Check_News["Check News\n[action]"]
-    0_Gather_Context --> 0_2_Check_News
-    style 0_2_Check_News fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_Compose_Response["Compose Response\n[action]"]
-    Hello_World --> 0_Compose_Response
-    style 0_Compose_Response fill:#4ade80,stroke:#16a34a,color:#052e16
 ```
 
 Sitting as a separate coordination layer, **abtree** functions as the structural backbone for agentic sessions, distinct from standard prompts or skills. It operates via a YAML spec and a CLI that enforces a strict "start at the root" protocol, progressively disclosing instructions only after the agent satisfies specific evaluation invariants. This keeps the LLM on rails by preventing instruction fatigue and "jumping ahead," while per-execution JSON documents snapshot the workflow and persist state. The result is a durable execution environment where trees can grow to unbounded size, allowing for granular control and predictable resumption across sessions.
@@ -232,12 +187,11 @@ Ready-to-use trees are included in [`.abtree/trees/`](.abtree/trees/):
 
 | Tree | Description |
 |------|-------------|
-| [hello-world](.abtree/trees/hello-world.yaml) | Greet a user based on time of day with weather and news context. Demonstrates all 4 BT primitives. |
-| [refine](.abtree/trees/refine.yaml) | Refine a change request into an approved spec through iterative review. |
-| [implement](.abtree/trees/implement.yaml) | Implement a feature from an approved spec with structured execution steps. |
-| [code-review](.abtree/trees/code-review.yaml) | Run a structured code review against a set of quality invariants. |
-| [frontend-design](.abtree/trees/frontend-design.yaml) | Design and scaffold a frontend component or page from a brief. |
-| [backend-design](.abtree/trees/backend-design.yaml) | Design and scaffold a backend service or API from a brief. |
+| [hello-world](.abtree/trees/hello-world/TREE.yaml) | Greet a user based on time of day. Demonstrates sequence, selector, and action primitives. |
+| [refine-plan](.abtree/trees/refine-plan/TREE.yaml) | Turn a change request into an approved plan through iterative critique. |
+| [implement](.abtree/trees/implement/TREE.yaml) | Implement a feature from an approved spec with structured execution steps. |
+| [technical-writer](.abtree/trees/technical-writer/TREE.yaml) | Document a topic with a styleguide gate, three review checks, and bounded retries. |
+| [improve-codebase](.abtree/trees/improve-codebase/TREE.yaml) | Continuous code-quality improvement cycle with parallel scoring, human-approved triage and bounded refactor attempts. |
 
 ## Explore the Ecosystem
 * **Workflow-Builder Skill:** Use this skill to help your agent collaboratively design and iterate on new tree specs.

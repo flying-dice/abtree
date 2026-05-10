@@ -1,18 +1,18 @@
-name: refine
-version: 1.0.0
-description: Analyze a change request, draft a structured spec, critique it, and save the hardened result.
+name: refine-plan
+version: 3.0.0
+description: "Refine a one-line change request into a hardened, codeowner-reviewable plan: analyse intent, draft a structured plan, critique as a Staff Engineer, save to plans/."
 
 state:
   local:
     change_request: null
     intent_analysis: null
-    draft_spec: null
-    hardened_spec: null
-    spec_path: null
+    draft_plan: null
+    hardened_plan: null
+    plan_path: null
 
 tree:
   type: sequence
-  name: Refine_Spec
+  name: Refine_Plan_Workflow
   children:
     - type: action
       name: Understand_Intent
@@ -88,14 +88,14 @@ tree:
 
 
             The reviewed_by field MUST remain empty. Only a codeowner can add their name there.
-            Store the draft at $LOCAL.draft_spec.
+            Store the draft at $LOCAL.draft_plan.
 
     - type: action
       name: Critique_Draft
       steps:
-        - evaluate: $LOCAL.draft_spec is set
+        - evaluate: $LOCAL.draft_plan is set
         - instruct: >
-            Act as a Staff Engineer reviewing a design spec. Evaluate $LOCAL.draft_spec:
+            Act as a Staff Engineer reviewing a change plan. Evaluate $LOCAL.draft_plan:
 
             - Is the scope clearly bounded? (no creep, no ambiguity)
             - Are requirements specific enough to implement without guessing?
@@ -104,15 +104,16 @@ tree:
             - Are risks realistic (not hypothetical paranoia)?
             - Are open questions genuine blockers or just hedging?
 
-            Tighten, clarify, and remove anything vague. Output a hardened spec.
-            Store the result at $LOCAL.hardened_spec.
+            Tighten, clarify, and remove anything vague. Output a hardened plan.
+            Store the result at $LOCAL.hardened_plan.
 
     - type: action
-      name: Save_Spec
+      name: Save_Plan
       steps:
-        - evaluate: $LOCAL.hardened_spec is set
+        - evaluate: $LOCAL.hardened_plan is set
         - instruct: >
-            Write $LOCAL.hardened_spec to the specs/ folder.
-            Filename: specs/[kebab-case-title].md
-            Derive the filename from the spec title.
-            Store the file path at $LOCAL.spec_path.
+            Write $LOCAL.hardened_plan to the plans/ folder.
+            Filename: plans/[kebab-case-title].md
+            Derive the filename from the plan title.
+            Create the plans/ directory if it does not exist.
+            Store the file path at $LOCAL.plan_path.

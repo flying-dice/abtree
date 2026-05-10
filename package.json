@@ -10,6 +10,7 @@
 	"scripts": {
 		"release": "semantic-release",
 		"schema": "bun scripts/generate-schema.ts",
+		"build": "bun scripts/build.ts",
 		"docs:dev": "vitepress dev docs",
 		"docs:build": "vitepress build docs",
 		"docs:preview": "vitepress preview docs"

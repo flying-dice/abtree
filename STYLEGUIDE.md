@@ -71,7 +71,7 @@ term, don't lecture about it.
 ## File and heading naming
 
 - **File names:** kebab-case (`getting-started.md`, `branches-and-actions.md`).
-- **Tree slugs (YAML names):** kebab-case (`hello-world`, `code-review`).
+- **Tree slugs (YAML names and folder names):** kebab-case (`hello-world`, `improve-codebase`).
 - **Behaviour-tree node names** in YAML: PascalCase with underscores
   (`Choose_Greeting`, `Check_Weather`) — these render as spaces in
   Mermaid diagrams.

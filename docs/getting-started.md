@@ -42,12 +42,12 @@ abtree is a CLI **for agents**. You don't drive executions yourself — you hand
 
 ```sh
 mkdir my-abtree-demo && cd my-abtree-demo
-mkdir -p .abtree/trees
-curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/hello-world.yaml \
-  -o .abtree/trees/hello-world.yaml
+mkdir -p .abtree/trees/hello-world
+curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/hello-world/TREE.yaml \
+  -o .abtree/trees/hello-world/TREE.yaml
 ```
 
-`hello-world` is a small tree: greet a user based on the time of day, then enrich the greeting with weather and news. It exercises all four behaviour-tree primitives in fifteen lines.
+`hello-world` is a small tree: classify the time of day, then pick the matching greeting from a four-way selector. It exercises three of the four behaviour-tree primitives — `sequence`, `selector`, and `action` — in a few dozen lines.
 
 ## 2. Hand it off to your agent
 
@@ -132,18 +132,6 @@ flowchart TD
     0_Choose_Greeting --> 0_1_Evening_Greeting
     0_1_Default_Greeting["Default Greeting\n[action]"]
     0_Choose_Greeting --> 0_1_Default_Greeting
-    0_Gather_Context{{"Gather Context\n[parallel]"}}
-    Hello_World --> 0_Gather_Context
-    style 0_Gather_Context fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_2_Check_Weather["Check Weather\n[action]"]
-    0_Gather_Context --> 0_2_Check_Weather
-    style 0_2_Check_Weather fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_2_Check_News["Check News\n[action]"]
-    0_Gather_Context --> 0_2_Check_News
-    style 0_2_Check_News fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_Compose_Response["Compose Response\n[action]"]
-    Hello_World --> 0_Compose_Response
-    style 0_Compose_Response fill:#4ade80,stroke:#16a34a,color:#052e16
 ```
 
 The cursor advanced through the sequence. The selector chose Morning Greeting and stopped — the afternoon, evening, and default branches were never entered. Both context-gathering actions ran in parallel. Every action passed its `evaluate` invariant before its `instruct` ran.

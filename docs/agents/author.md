@@ -1,6 +1,6 @@
 # Tree Authoring Guide
 
-Authoring an abtree tree means writing a YAML file that an agent can drive deterministically through `abtree next`, `eval`, and `submit`. Trees live in `.abtree/trees/<slug>.yaml` (project-local) or `~/.abtree/trees/<slug>.yaml` (user-global). Project-local shadows global on slug collision.
+Authoring an abtree tree means writing a YAML file that an agent can drive deterministically through `abtree next`, `eval`, and `submit`. Trees live in `.abtree/trees/<slug>/TREE.yaml` (project-local) or `~/.abtree/trees/<slug>/TREE.yaml` (user-global). The folder name is the slug. Project-local shadows global on slug collision.
 
 ::: tip
 Run `abtree docs schema` to print the JSON Schema, or reference the published copy via the YAML language-server comment:

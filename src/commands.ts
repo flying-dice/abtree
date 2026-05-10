@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { select } from "@inquirer/prompts";
+import EXECUTE_DOC from "../docs/agents/execute.md" with { type: "text" };
 import { rebuildMermaid } from "./mermaid.ts";
 import {
 	ensureDir,
@@ -44,6 +45,7 @@ export async function cmdExecutionCreate(treeSlug: string, summary: string) {
 		snapshot: TreeSnapshotStore.put(treeDef),
 		cursor: "[]",
 		phase: "idle",
+		protocol_accepted: false,
 		created_at: now,
 		updated_at: now,
 	});
@@ -88,14 +90,42 @@ export function cmdExecutionReset(executionId: string) {
 		status: "running",
 		cursor: "[]",
 		phase: "idle",
+		protocol_accepted: false,
 	});
 	rebuildMermaid(executionId);
 	out({ status: "reset" });
 }
 
+const PROTOCOL_GATE_NAME = "Acknowledge_Protocol";
+
+function emitProtocolGate(): void {
+	out({
+		type: "instruct",
+		name: PROTOCOL_GATE_NAME,
+		instruction:
+			"Read the runtime protocol below in full. It is the binding contract " +
+			"for the rest of this execution — in particular, all $LOCAL/$GLOBAL " +
+			"reads must go through `abtree local read` / `abtree global read`, " +
+			"never from your own context. Submit success to acknowledge and proceed; " +
+			"submit failure to abort.\n\n---\n\n" +
+			EXECUTE_DOC,
+	});
+}
+
 export function cmdNext(executionId: string) {
 	const doc = ExecutionStore.findById(executionId);
 	if (!doc) die(`Execution '${executionId}' not found`);
+
+	if (!doc.protocol_accepted) {
+		if (doc.phase !== "protocol") {
+			ExecutionStore.update(executionId, {
+				phase: "protocol",
+				cursor: "null",
+			});
+		}
+		emitProtocolGate();
+		return;
+	}
 
 	const treeDef = TreeSnapshotStore.get(doc.snapshot);
 	const phase = doc.phase;
@@ -201,6 +231,40 @@ export function cmdSubmit(
 ) {
 	const doc = ExecutionStore.findById(executionId);
 	if (!doc) die(`Execution '${executionId}' not found`);
+
+	if (doc.phase === "protocol") {
+		if (status === "running") {
+			out({
+				status: "running",
+				message: "Acknowledged. Call next when ready to continue.",
+			});
+			return;
+		}
+		if (status === "success") {
+			ExecutionStore.update(executionId, {
+				protocol_accepted: true,
+				phase: "idle",
+				cursor: "null",
+			});
+			out({
+				status: "protocol_accepted",
+				message:
+					"Protocol acknowledged. Call next to begin the tree.",
+			});
+			return;
+		}
+		ExecutionStore.update(executionId, {
+			status: "failed",
+			phase: "idle",
+			cursor: "null",
+		});
+		out({
+			status: "protocol_rejected",
+			message: "Protocol not acknowledged. Execution aborted.",
+		});
+		return;
+	}
+
 	if (doc.phase !== "performing")
 		die(`Execution is not in performing phase (current: ${doc.phase})`);
 

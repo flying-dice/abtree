@@ -3,7 +3,7 @@ description: |
   creation time and the runtime sees one assembled snapshot.
 tree: split-root
 files:
-  split-root.yaml: |
+  split-root/TREE.yaml: |
     name: split-root
     version: 1.0.0
     state:
@@ -19,7 +19,7 @@ files:
           name: Outer_Step
           steps:
             - instruct: Set $LOCAL.outer to "set".
-  fragments/inner.yaml: |
+  split-root/fragments/inner.yaml: |
     type: action
     name: Inner_Step
     steps:
