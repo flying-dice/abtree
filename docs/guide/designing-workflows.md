@@ -36,7 +36,7 @@ If `Run_Tests` fails, the build never happens. The push never happens. The execu
 
 ### Selector
 
-Children run top-to-bottom **until one succeeds**. If all fail, the selector fails. This is the BT equivalent of an if/elif/else chain. The "decision" is encoded by each child's `evaluate` precondition — the first child whose evaluate passes runs its instruct.
+Children run top-to-bottom **until one succeeds**. If all fail, the selector fails. This is the behaviour tree equivalent of an if/elif/else chain. The "decision" is encoded by each child's `evaluate` precondition — the first child whose evaluate passes runs its instruct.
 
 ```yaml
 type: selector
@@ -492,4 +492,4 @@ When a human asks "help me design a tree for `<X>`", work in this order:
 - [Writing trees](/guide/writing-trees) — full YAML field reference.
 - [Inspecting executions](/guide/inspecting-executions) — what the runtime writes back as an execution runs.
 - [Branches and actions](/concepts/branches-and-actions) — primitive semantics in detail.
-- [Examples](/examples) — six ready-to-use trees that exercise every idiom on this page.
+- [Examples](/examples) — five ready-to-use trees that exercise every idiom on this page.
