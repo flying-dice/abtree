@@ -1,5 +1,11 @@
 #!/usr/bin/env bun
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dir, "..");

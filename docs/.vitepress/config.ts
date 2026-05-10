@@ -19,7 +19,13 @@ function exampleSidebarItems() {
 		.filter((f) => f.endsWith(".md"))
 		.map((f) => f.replace(/\.md$/, ""))
 		.sort();
-	return [...base, ...slugs.map((slug) => ({ text: titleCase(slug), link: `/examples/${slug}` }))];
+	return [
+		...base,
+		...slugs.map((slug) => ({
+			text: titleCase(slug),
+			link: `/examples/${slug}`,
+		})),
+	];
 }
 
 function robotsTxt(siteUrl: string): Plugin {
