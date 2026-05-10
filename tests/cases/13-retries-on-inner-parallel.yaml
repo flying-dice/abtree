@@ -1,0 +1,24 @@
+description: |
+  retries: 1 on an INNER parallel — one child fails on attempt 1, the
+  retry budget kicks in (eager retry on the parallel node when its
+  failure propagates up), attempt 2 succeeds. Companion to case 12 for
+  parallels. Refs flying-dice/abtree#6.
+tree: inner-retries-parallel
+steps:
+  - { type: instruct, name: Pre }
+  # parallel attempt 1 — Always_Pass succeeds, Pass_On_Retry fails its eval
+  - { type: instruct, name: Always_Pass }
+  - { type: instruct, name: Pass_On_Retry, write: { attempts: 1 } }
+  - { type: evaluate, name: Pass_On_Retry, result: false }
+  # retry triggers — parallel runtime wiped, both children re-tick
+  - { type: instruct, name: Always_Pass }
+  - { type: instruct, name: Pass_On_Retry, write: { attempts: 2 } }
+  - { type: evaluate, name: Pass_On_Retry, result: true }
+  - { type: instruct, name: Post }
+final:
+  status: done
+  local:
+    attempts: 2
+  runtime:
+    retry_count:
+      "1": 1

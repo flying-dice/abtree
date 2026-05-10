@@ -221,6 +221,17 @@ export function tickNode(
 			}
 			if (result.type === "failure") {
 				setNodeResult(executionId, childPath, "failure");
+				// Eagerly try the failed child's retries here. The lazy check
+				// at the top of the loop only fires on a subsequent tick, but
+				// in sequences/selectors/parallels we propagate failure UP
+				// immediately — so without an eager check the inner-composite
+				// retry budget never sees the failure (the parent's own
+				// failure propagation runs first). Re-attempt this child's
+				// index so its fresh tick produces the next request.
+				if (maybeRetry(executionId, childPath, child)) {
+					i--;
+					continue;
+				}
 				return { type: "failure" };
 			}
 			return result;
@@ -248,6 +259,11 @@ export function tickNode(
 			}
 			if (result.type === "failure") {
 				setNodeResult(executionId, childPath, "failure");
+				// Eager retry — see sequence note above.
+				if (maybeRetry(executionId, childPath, child)) {
+					i--;
+					continue;
+				}
 				continue;
 			}
 			return result;
@@ -277,6 +293,11 @@ export function tickNode(
 			}
 			if (result.type === "failure") {
 				setNodeResult(executionId, childPath, "failure");
+				// Eager retry — see sequence note above.
+				if (maybeRetry(executionId, childPath, child)) {
+					i--;
+					continue;
+				}
 				return { type: "failure" };
 			}
 			allDone = false;
