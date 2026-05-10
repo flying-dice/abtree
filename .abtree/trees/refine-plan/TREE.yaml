@@ -1,14 +1,19 @@
 name: refine-plan
-version: 3.0.0
-description: "Refine a one-line change request into a hardened, codeowner-reviewable plan: analyse intent, draft a structured plan, critique as a Staff Engineer, save to plans/."
+version: 4.1.0
+description: |
+  Refine a change request into an approved plan: analyse intent, draft to a per-execution draft file, 
+  critique it in place, promote to plans/, then take it through codeowner approval (either in-session or via an assigned MR).
+  
+  Open ended changes can be provided in the initial prompt, or ask to refine a outline of a plan in a file.
 
 state:
   local:
     change_request: null
     intent_analysis: null
-    draft_plan: null
-    hardened_plan: null
+    draft_path: null
     plan_path: null
+    codeowner_approved: null
+    mr_url: null
 
 tree:
   type: sequence
@@ -25,14 +30,24 @@ tree:
             - What are the constraints and requirements?
             - Who are the likely codeowners? (check CODEOWNERS file if present)
             - What acceptance criteria would prove this is done?
-            Store your analysis at $LOCAL.intent_analysis.
+            Keep this analysis terse — a few bullets per question, not prose.
+            Store it at $LOCAL.intent_analysis.
 
     - type: action
       name: Write_Draft
       steps:
         - evaluate: $LOCAL.intent_analysis is set
         - instruct: >
-            Based on $LOCAL.intent_analysis, draft a change spec with this structure:
+            Write the draft plan to a per-execution draft file at
+            `plans/drafts/<execution-id>.md`, where <execution-id> is the
+            id of the execution you are driving. Create the
+            plans/drafts/ directory if it does not exist. Store the
+            resulting path at $LOCAL.draft_path.
+
+            Do NOT return the draft contents in state — only the path.
+            The whole point of this step is to keep the document on disk.
+
+            The file must use this structure:
 
 
             ---
@@ -87,15 +102,17 @@ tree:
             [Anything unresolved that needs codeowner input]
 
 
-            The reviewed_by field MUST remain empty. Only a codeowner can add their name there.
-            Store the draft at $LOCAL.draft_plan.
+            Leave the reviewed_by field empty during drafting — it gets
+            populated in the final Codeowner_Approval stage (either by the
+            in-session codeowner, or by the agent when assigning the MR).
 
     - type: action
       name: Critique_Draft
       steps:
-        - evaluate: $LOCAL.draft_plan is set
+        - evaluate: $LOCAL.draft_path is set
         - instruct: >
-            Act as a Staff Engineer reviewing a change plan. Evaluate $LOCAL.draft_plan:
+            Read the file at $LOCAL.draft_path. Act as a Staff Engineer
+            reviewing the plan:
 
             - Is the scope clearly bounded? (no creep, no ambiguity)
             - Are requirements specific enough to implement without guessing?
@@ -104,16 +121,66 @@ tree:
             - Are risks realistic (not hypothetical paranoia)?
             - Are open questions genuine blockers or just hedging?
 
-            Tighten, clarify, and remove anything vague. Output a hardened plan.
-            Store the result at $LOCAL.hardened_plan.
+            Tighten, clarify, and remove anything vague. Edit the file at
+            $LOCAL.draft_path in place — do not create a new file, do not
+            return the contents to state, do not introduce a new state key.
+            The same path stays valid for the next step.
 
     - type: action
       name: Save_Plan
       steps:
-        - evaluate: $LOCAL.hardened_plan is set
+        - evaluate: $LOCAL.draft_path is set
         - instruct: >
-            Write $LOCAL.hardened_plan to the plans/ folder.
-            Filename: plans/[kebab-case-title].md
-            Derive the filename from the plan title.
-            Create the plans/ directory if it does not exist.
-            Store the file path at $LOCAL.plan_path.
+            Read the title from the frontmatter of the file at
+            $LOCAL.draft_path. Move (not copy) the file to
+            plans/[kebab-case-title].md. Store the new path at
+            $LOCAL.plan_path.
+            After this step $LOCAL.draft_path is no longer valid — the
+            draft has been promoted, not duplicated.
+        - instruct: >
+            The file at $LOCAL.plan_path is now the final plan. Update the status to
+            "refined" in the frontmatter.
+        - evaluate: $LOCAL.plan_path is set and the plan status is "refined".
+
+    - type: selector
+      name: Codeowner_Approval
+      children:
+        - type: action
+          name: Approve_In_Session
+          steps:
+            - evaluate: $LOCAL.plan_path is set
+            - evaluate: the agent is able to ask the user a question in this session (interactive human-in-the-loop, not a headless / unattended run)
+            - instruct: >
+                Ask the user directly: "Do you approve the plan at
+                $LOCAL.plan_path?" Show them the path so they can read
+                it. If they want changes first, treat this as a
+                rejection.
+
+                If they approve, have them:
+                  (1) edit the frontmatter of $LOCAL.plan_path and set
+                      `reviewed_by` to their git identity (matching the
+                      identifier used in CODEOWNERS); and
+                  (2) call `abtree local write <flow-id> codeowner_approved true`.
+
+                Submit `running` while waiting. If they reject — not
+                approving, or they'd rather route via MR — submit failure
+                so the selector falls through to the MR path.
+            - evaluate: $LOCAL.codeowner_approved is true
+
+        - type: action
+          name: Open_MR_For_Codeowner
+          steps:
+            - evaluate: $LOCAL.plan_path is set
+            - instruct: >
+                No codeowner is approving in-session. Identify the
+                appropriate codeowner from the CODEOWNERS file based on
+                the systems listed in the plan at $LOCAL.plan_path. Set
+                `reviewed_by` in the plan's frontmatter to that
+                codeowner's identifier — this records the assigned
+                reviewer; the MR merge itself is the authoritative
+                approval. Commit $LOCAL.plan_path on a new branch named
+                `plan/<plan-id>` (derive plan-id from the frontmatter
+                `id` field), push, and open an MR/PR using the plan's
+                body as the description. Assign the codeowner as the
+                reviewer on the MR. Store the MR URL at $LOCAL.mr_url.
+            - evaluate: $LOCAL.mr_url is set

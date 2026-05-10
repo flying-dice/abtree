@@ -55,5 +55,10 @@ docs/examples.md
 # abtree runtime directory (local executions, snapshots)
 .abt/
 
+# abtree per-execution draft scratch — drafts get promoted (renamed)
+# to their final location on successful completion; aborted runs leave
+# work-in-progress files here that should not be tracked.
+plans/drafts/
+
 # playwright MCP screenshot / log scratch dir
 .playwright-mcp
