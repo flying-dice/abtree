@@ -120,12 +120,7 @@ export async function runCase(specPath: string): Promise<void> {
 		const treePath = join(treesDir, treeName, "TREE.yaml");
 		if (!existsSync(treePath)) {
 			// fall back to tests/trees/<slug>/TREE.yaml
-			const fixtureSrc = join(
-				import.meta.dir,
-				"trees",
-				treeName,
-				"TREE.yaml",
-			);
+			const fixtureSrc = join(import.meta.dir, "trees", treeName, "TREE.yaml");
 			if (existsSync(fixtureSrc)) {
 				cpSync(join(import.meta.dir, "trees"), treesDir, { recursive: true });
 			} else {
@@ -150,9 +145,7 @@ export async function runCase(specPath: string): Promise<void> {
 		const ackNext = abt(tmp, ["next", execution]);
 		const ackOut = ackNext.stdout as { name?: string };
 		if (ackOut?.name !== "Acknowledge_Protocol") {
-			throw new Error(
-				`expected Acknowledge_Protocol gate, got ${fmt(ackOut)}`,
-			);
+			throw new Error(`expected Acknowledge_Protocol gate, got ${fmt(ackOut)}`);
 		}
 		const ackSubmit = abt(tmp, ["submit", execution, "success"]);
 		if (ackSubmit.exit !== 0)

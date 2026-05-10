@@ -147,7 +147,9 @@ function flatten(root: TreeNode): FlatNode[] {
 	return out;
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 const simpleFlat = flatten(simpleTree);
+// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 const complexFlat = flatten(complexTree);
 
 const simpleStatuses = ref<Record<string, NodeStatus>>({});

@@ -1,0 +1,9 @@
+description: Selector first child evaluates false; second child has no gate and succeeds; selector reports success.
+tree: selector-first-fails
+steps:
+  - { type: evaluate, name: Branch_A, result: false }
+  - { type: instruct, name: Branch_B, write: { chosen: b } }
+final:
+  status: done
+  local:
+    chosen: b

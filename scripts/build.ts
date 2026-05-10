@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { parseArgs } from "node:util";
 import { resolve } from "node:path";
+import { parseArgs } from "node:util";
 
 type Target = {
 	bunTarget: string;

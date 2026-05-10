@@ -116,6 +116,15 @@ export function cmdNext(executionId: string) {
 	const doc = ExecutionStore.findById(executionId);
 	if (!doc) die(`Execution '${executionId}' not found`);
 
+	if (doc.status === "failed") {
+		out({ status: "failure" });
+		return;
+	}
+	if (doc.status === "complete") {
+		out({ status: "done" });
+		return;
+	}
+
 	if (!doc.protocol_accepted) {
 		if (doc.phase !== "protocol") {
 			ExecutionStore.update(executionId, {
@@ -248,8 +257,7 @@ export function cmdSubmit(
 			});
 			out({
 				status: "protocol_accepted",
-				message:
-					"Protocol acknowledged. Call next to begin the tree.",
+				message: "Protocol acknowledged. Call next to begin the tree.",
 			});
 			return;
 		}

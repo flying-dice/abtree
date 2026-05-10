@@ -1,0 +1,25 @@
+name: parallel-fails-on-child
+version: 1.0.0
+description: Parallel composite where one child's evaluate gate is false; tree must end in failure.
+
+state:
+  local:
+    flag_a: null
+    flag_b: null
+    a_done: null
+    b_done: null
+
+tree:
+  type: parallel
+  name: A_And_B
+  children:
+    - type: action
+      name: Step_A
+      steps:
+        - evaluate: $LOCAL.flag_a is true
+        - instruct: Set $LOCAL.a_done to "done".
+    - type: action
+      name: Step_B
+      steps:
+        - evaluate: $LOCAL.flag_b is true
+        - instruct: Set $LOCAL.b_done to "done".

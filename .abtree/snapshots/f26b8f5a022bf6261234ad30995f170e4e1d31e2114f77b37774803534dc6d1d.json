@@ -1,0 +1,72 @@
+{
+  "local": {
+    "change_request": null,
+    "intent_analysis": null,
+    "draft_plan": null,
+    "hardened_plan": null,
+    "plan_path": null
+  },
+  "global": {},
+  "root": {
+    "type": "sequence",
+    "name": "Refine_Plan_Workflow",
+    "children": [
+      {
+        "type": "action",
+        "name": "Understand_Intent",
+        "steps": [
+          {
+            "kind": "evaluate",
+            "expression": "$LOCAL.change_request is set"
+          },
+          {
+            "kind": "instruct",
+            "instruction": "Analyze $LOCAL.change_request. Determine: - What is being asked for? (feature, fix, refactor, migration, etc.) - What systems/files are likely affected? - What are the constraints and requirements? - Who are the likely codeowners? (check CODEOWNERS file if present) - What acceptance criteria would prove this is done? Store your analysis at $LOCAL.intent_analysis."
+          }
+        ]
+      },
+      {
+        "type": "action",
+        "name": "Write_Draft",
+        "steps": [
+          {
+            "kind": "evaluate",
+            "expression": "$LOCAL.intent_analysis is set"
+          },
+          {
+            "kind": "instruct",
+            "instruction": "Based on $LOCAL.intent_analysis, draft a change spec with this structure:\n\n---\nid: [generate using format: {timestamp}-{adjective}-{noun}-{verb}]\ntitle: [concise title]\nstatus: draft\nauthor: [from git config user.name]\ncreated: [today's date]\nreviewed_by:\n---\n\n## Summary\n[1-3 sentences on what this change does and why]\n\n## Requirements\n[Bulleted list of functional requirements]\n\n## Technical Approach\n[How this will be implemented — files, patterns, dependencies]\n\n## Affected Systems\n[List of systems/modules/services touched]\n\n## Acceptance Criteria\n[Testable conditions that prove the change is complete]\n\n## Risks & Considerations\n[Edge cases, backwards compatibility, performance, security]\n\n## Open Questions\n[Anything unresolved that needs codeowner input]\n\nThe reviewed_by field MUST remain empty. Only a codeowner can add their name there. Store the draft at $LOCAL.draft_plan."
+          }
+        ]
+      },
+      {
+        "type": "action",
+        "name": "Critique_Draft",
+        "steps": [
+          {
+            "kind": "evaluate",
+            "expression": "$LOCAL.draft_plan is set"
+          },
+          {
+            "kind": "instruct",
+            "instruction": "Act as a Staff Engineer reviewing a change plan. Evaluate $LOCAL.draft_plan:\n- Is the scope clearly bounded? (no creep, no ambiguity) - Are requirements specific enough to implement without guessing? - Does the technical approach account for existing patterns in the codebase? - Are acceptance criteria testable and complete? - Are risks realistic (not hypothetical paranoia)? - Are open questions genuine blockers or just hedging?\nTighten, clarify, and remove anything vague. Output a hardened plan. Store the result at $LOCAL.hardened_plan."
+          }
+        ]
+      },
+      {
+        "type": "action",
+        "name": "Save_Plan",
+        "steps": [
+          {
+            "kind": "evaluate",
+            "expression": "$LOCAL.hardened_plan is set"
+          },
+          {
+            "kind": "instruct",
+            "instruction": "Write $LOCAL.hardened_plan to the plans/ folder. Filename: plans/[kebab-case-title].md Derive the filename from the plan title. Create the plans/ directory if it does not exist. Store the file path at $LOCAL.plan_path."
+          }
+        ]
+      }
+    ]
+  }
+}
