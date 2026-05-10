@@ -3,6 +3,7 @@ import { join } from "node:path";
 import $RefParser from "@apidevtools/json-schema-ref-parser";
 import { TREE_SOURCES } from "./paths.ts";
 import { ExecutionStore } from "./repos.ts";
+import { RuntimeStore } from "./runtime-store.ts";
 import type {
 	NodeStatus,
 	NormalizedNode,
@@ -97,7 +98,7 @@ export function getNodeResult(
 	executionId: string,
 	path: number[],
 ): NodeStatus | null {
-	return ExecutionStore.getRuntimeStatus(executionId, path);
+	return RuntimeStore.getStatus(executionId, path);
 }
 
 export function setNodeResult(
@@ -105,15 +106,15 @@ export function setNodeResult(
 	path: number[],
 	status: NodeStatus,
 ) {
-	ExecutionStore.setRuntimeStatus(executionId, path, status);
+	RuntimeStore.setStatus(executionId, path, status);
 }
 
 function getStepIndex(executionId: string, path: number[]): number {
-	return ExecutionStore.getRuntimeStep(executionId, path);
+	return RuntimeStore.getStep(executionId, path);
 }
 
 function setStepIndex(executionId: string, path: number[], step: number) {
-	ExecutionStore.setRuntimeStep(executionId, path, step);
+	RuntimeStore.setStep(executionId, path, step);
 }
 
 // If `node` has a retries config and we haven't exhausted it, reset the
@@ -132,10 +133,10 @@ function maybeRetry(
 	if (node.type === "ref") return false;
 	const retries = node.retries ?? 0;
 	if (retries <= 0) return false;
-	const attempts = ExecutionStore.getRuntimeRetryCount(executionId, path);
+	const attempts = RuntimeStore.getRetryCount(executionId, path);
 	if (attempts >= retries) return false;
-	ExecutionStore.incrementRuntimeRetryCount(executionId, path);
-	ExecutionStore.resetRuntimeSubtree(executionId, path);
+	RuntimeStore.incrementRetryCount(executionId, path);
+	RuntimeStore.resetSubtree(executionId, path);
 	return true;
 }
 
