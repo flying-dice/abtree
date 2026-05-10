@@ -1,0 +1,207 @@
+{
+  "id": "review-improve-codebase-session__improve-tree__1",
+  "tree": "improve-tree",
+  "summary": "review improve-codebase session",
+  "status": "complete",
+  "snapshot": "3afd56cc4c6894f45e2c64def490bf62a99e089dfeba328597b8d3173aeb9674",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T01:26:48.778Z",
+  "updated_at": "2026-05-10T01:30:20.486Z",
+  "local": {
+    "session_ref": "full-repo-improvement-cycle__improve-codebase__1",
+    "tree_slug": "improve-codebase",
+    "session_evidence": {
+      "session_id": "full-repo-improvement-cycle__improve-codebase__1",
+      "terminal_status": "complete",
+      "verdict": "Cycle_Passed",
+      "iterative_refactor_retries": 6,
+      "iterative_refactor_retries_budget": 50,
+      "items_attempted": 7,
+      "items_done": 7,
+      "items_failed": 0,
+      "baseline_scores": {
+        "dry": 0.7,
+        "srp": 0.65,
+        "coupling": 0.7,
+        "cohesion": 0.7
+      },
+      "final_scores": {
+        "dry": 0.85,
+        "srp": 0.9,
+        "coupling": 0.85,
+        "cohesion": 0.85
+      },
+      "global_test_command_was_descriptive_prose": true,
+      "global_test_command_value": "the command that runs the project's full regression test suite (e.g. 'bun test', 'pnpm test')",
+      "global_test_command_seeded_at_create_time": true,
+      "human_gates_self_approved": [
+        "scope_confirmed",
+        "triage_approved"
+      ],
+      "double_call_to_next_required_after_each_continue_or_done_failure": true,
+      "items_left_with_unsubmitted_pop": "Pick_Next_Item provides an instruct telling the agent to pop the head of the queue, but the runtime does not pop it; the agent must do the JSON manipulation themselves and then submit success",
+      "implement_refactor_instructs_silent_about_what_constitutes_progress": true,
+      "stage_halt_default_was_false_so_first_halt_check_eval_passed": true,
+      "no_pre_existing_metric_thresholds_per_item_distinguished": "all four were 0.7 — no nuance per metric",
+      "online_references_consumption_only_implicit": "Lookup_Online populated $LOCAL.online_references but only High_Risk_Critique and Implement_Refactor mention consulting it; for low-risk items it sat unused",
+      "selector_pre_refactor_critique_evaluate_was_quoted_string_literal": "evaluate: $LOCAL.current_item.risk is \"high\" — the literal needed to escape the inner quote and the agent had to read $LOCAL.current_item carefully",
+      "record_item_done_required_manual_done_log_append": "the runtime did not append for the agent; the agent had to do jq surgery to push current_item + final_score onto $LOCAL.done_log",
+      "continue_or_done_evaluate_relies_on_outer_retries_to_loop": true,
+      "no_running_signal_during_long_running_implement_steps": "Implement_Refactor instruct told the agent to set stage_halt only on dead-end; no instruction to submit running between attempts so progress was opaque to anything tailing the execution",
+      "all_local_keys_seeded_to_null_at_create_time_so_evaluates_could_dereference_safely": true,
+      "current_item_threshold_lookup_in_evaluate_used_a_dotted_path_against_a_local_object": "$LOCAL.current_item.threshold worked because the runtime treats expressions as opaque strings, but the convention isn't documented",
+      "items_done_in_order": [
+        "I1",
+        "I11",
+        "I6",
+        "I7",
+        "I9",
+        "I10",
+        "I13"
+      ],
+      "tree_yaml_size_lines": 390
+    },
+    "effectiveness_score": {
+      "score": 0.7,
+      "observations": [
+        {
+          "node_path": "Iterative_Refactor / Pick_Next_Item",
+          "severity": "med",
+          "evidence": "items_left_with_unsubmitted_pop — instruct asks the agent to pop the queue head and store it at current_item, but the runtime does not do the manipulation. The agent had to issue four separate local writes per item (current_item, refactor_queue, current_score, refactor_plan)."
+        },
+        {
+          "node_path": "Iterative_Refactor / Record_Item_Done",
+          "severity": "med",
+          "evidence": "Same shape as Pick_Next_Item: the agent writes done_log via manual jq surgery rather than the runtime appending. Two adjacent actions both demand list-mutation that the runtime could express as primitives."
+        },
+        {
+          "node_path": "Iterative_Refactor / Continue_Or_Done",
+          "severity": "med",
+          "evidence": "double_call_to_next_required_after_each_continue_or_done_failure — the loop is encoded as eval-false→outer-retry, which means the very first next after the eval returns status:failure to the agent, then the second next emits Halt_Check. This is correct per runtime semantics but reads as a runtime quirk, not a tree authoring decision."
+        },
+        {
+          "node_path": "Iterative_Refactor / Pre_Refactor_Critique / High_Risk_Critique",
+          "severity": "low",
+          "evidence": "selector_pre_refactor_critique_evaluate_was_quoted_string_literal — the evaluate string contains a literal quoted token (risk is \"high\") that doubles up the YAML escaping. None of the other evaluates do this."
+        },
+        {
+          "node_path": "Iterative_Refactor / Implement_Refactor",
+          "severity": "low",
+          "evidence": "implement_refactor_instructs_silent_about_what_constitutes_progress and no_running_signal_during_long_running_implement_steps — for big items the agent has no idiomatic way to surface progress; submit running is mentioned in the protocol but no tree action prompts for it."
+        },
+        {
+          "node_path": "Iterative_Refactor / Lookup_Online → online_references usage",
+          "severity": "low",
+          "evidence": "online_references_consumption_only_implicit — populated once at the top, then only referenced by High_Risk_Critique and Implement_Refactor. Skip_Critique and the inner reassessment never read it."
+        },
+        {
+          "node_path": "Verify_Baseline / state.global.test_command",
+          "severity": "med",
+          "evidence": "global_test_command_was_descriptive_prose — the seeded value is human-readable prose, not a literal command. The agent has to interpret. Works because expressions are opaque strings, but every fresh run hits this gotcha."
+        },
+        {
+          "node_path": "Compile_Report → metric_thresholds",
+          "severity": "low",
+          "evidence": "no_pre_existing_metric_thresholds_per_item_distinguished — all four metrics share 0.7. The structure suggests per-metric tuning was anticipated but unused."
+        },
+        {
+          "node_path": "Cycle_Verdict / Cycle_Passed evaluate",
+          "severity": "low",
+          "evidence": "evaluate string is a long sentence (every metric in $LOCAL.final_scores is at or above its $GLOBAL.metric_thresholds value). The agent had to mentally walk it; a more mechanical phrasing would let the runtime gate without judgement."
+        },
+        {
+          "node_path": "Iterative_Refactor / retries: 50",
+          "severity": "low",
+          "evidence": "iterative_refactor_retries used 6 of 50 budget. Cap is sensible but the value 50 is folklore — no scaling rule is stated."
+        }
+      ]
+    },
+    "improvements": [
+      {
+        "kind": "split",
+        "target": "Iterative_Refactor / Pick_Next_Item",
+        "change": "Replace the human-readable instruct with a small list-mutation primitive in the runtime (e.g. abtree local pop <id> <key>) so the tree can simply invoke it. If introducing a CLI op is too big, at minimum reword the instruct to spell out the four writes the agent must make.",
+        "rationale": "Six sessions in a row required the agent to do four-write jq surgery per item (current_item, refactor_queue, current_score, refactor_plan)."
+      },
+      {
+        "kind": "split",
+        "target": "Iterative_Refactor / Record_Item_Done",
+        "change": "Same shape as Pick_Next_Item. Either a runtime primitive (abtree local push <id> <key> <value>) or an explicit list of writes in the instruct.",
+        "rationale": "Manual done_log append is a copy-paste of the popping pattern."
+      },
+      {
+        "kind": "reword",
+        "target": "state.global.test_command",
+        "change": "Seed with the literal command for the project (e.g. \"bun test\") rather than a descriptive sentence. If genuinely tree-author-agnostic guidance is wanted, store both: { command: \"bun test\", description: \"...\" }.",
+        "rationale": "Every fresh run hits the same ambiguity. The current value is a directive that requires interpretation; expressions like is set still gate true on prose, masking the issue."
+      },
+      {
+        "kind": "reword",
+        "target": "Iterative_Refactor / Pre_Refactor_Critique / High_Risk_Critique evaluate",
+        "change": "Switch from $LOCAL.current_item.risk is \"high\" to $LOCAL.current_item.risk equals high (or strip the inner quotes). Match the phrasing used by the other evaluates in the tree.",
+        "rationale": "selector_pre_refactor_critique_evaluate_was_quoted_string_literal — the doubled escaping is the only place in the tree using literal-quoted matches."
+      },
+      {
+        "kind": "add-evaluate",
+        "target": "Iterative_Refactor / Implement_Refactor",
+        "change": "Add an instruct step at the start that emits a one-line progress note to be written to $LOCAL.implement_progress, then carries on. Call out submit running as the canonical signal for long-running attempts.",
+        "rationale": "no_running_signal_during_long_running_implement_steps — agents had no idiomatic place to surface progress."
+      },
+      {
+        "kind": "other",
+        "target": "Iterative_Refactor / Continue_Or_Done",
+        "change": "Document the eval-false-then-outer-retry pattern in the comment above this action (or in docs/agents/author.md). The double-call-to-next quirk surprised the driver during the cycle.",
+        "rationale": "The runtime semantics are correct but the loop encoding is non-obvious, especially since cmdNext returns status:failure on the first call after Continue_Or_Done eval false."
+      },
+      {
+        "kind": "merge",
+        "target": "Iterative_Refactor / Lookup_Online + Implement_Refactor",
+        "change": "Either drop online_references entirely if Skip_Critique items never use it, or have Skip_Critique also instruct the agent to consult $LOCAL.online_references[current_item.metric] before implementing.",
+        "rationale": "online_references_consumption_only_implicit — for low-risk items the lookup output is dead state."
+      },
+      {
+        "kind": "reword",
+        "target": "Cycle_Verdict / Cycle_Passed evaluate",
+        "change": "Pre-compute a boolean at Final_Reassessment (e.g. $LOCAL.all_metrics_passed) and have the evaluate gate on that flag instead of the long sentence.",
+        "rationale": "Long English evaluate strings push computation onto the agent; a flag keeps the gate boolean."
+      },
+      {
+        "kind": "rename",
+        "target": "state.local.refactor_plan",
+        "change": "Rename to per_item_plan or pre_refactor_plan. The current name collides cognitively with refactor_queue and the broader concept of the cycles plan.",
+        "rationale": "Multiple steps in this run referenced refactor_plan in writes that semantically were per-item; the name carries the wrong scope."
+      },
+      {
+        "kind": "add-retries",
+        "target": "Iterative_Refactor",
+        "change": "Codify a heuristic for the 50 cap (e.g. retries = ceil(initial_queue_length * 1.5) or whatever applies). Either parameterise via $GLOBAL.outer_retries or comment why 50.",
+        "rationale": "iterative_refactor_retries used 6 of 50 — the value is folklore."
+      }
+    ],
+    "plan_path": "plans/2026-05-10-improve-improve-codebase.md",
+    "commit_sha": "d33ad52569a291811372f9260023071a6a8b23e2"
+  },
+  "global": {
+    "authoring_guide": "run `abtree docs author` for the YAML authoring guide and the rules a tree should satisfy"
+  },
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "success",
+      "1.0": "success",
+      "1.1": "success"
+    },
+    "step_index": {
+      "0": 2,
+      "2": 3,
+      "3": 1,
+      "1.0": 1,
+      "1.1": 1
+    },
+    "retry_count": {}
+  }
+}
