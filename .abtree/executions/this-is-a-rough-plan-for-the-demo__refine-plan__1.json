@@ -1,0 +1,39 @@
+{
+  "id": "this-is-a-rough-plan-for-the-demo__refine-plan__1",
+  "tree": "refine-plan",
+  "summary": "This is a rough plan for the demo.",
+  "status": "complete",
+  "snapshot": "813287f7eefc8840103cee919d65ee3c0eba37230e7f8af2c203c5fc3fd01fb2",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T15:07:46.020Z",
+  "updated_at": "2026-05-10T15:14:29.305Z",
+  "local": {
+    "change_request": "This is a rough plan for the demo.",
+    "intent_analysis": "Ask: Author a refined plan for \"the demo\" — change_request is intentionally meta/test-shaped. Treat as: produce a runnable demo plan that showcases abtree (most plausible referent given repo context).\nType: feature/docs (demo asset), not a fix or migration.\nAffected systems/files: docs/ (likely a guide page), .abtree/trees/* (existing bundled trees as demo material), README.md (entry pointers), scripts/generate-examples.ts.\nConstraints/requirements: must run end-to-end with shipped CLI; no extra deps; align with STYLEGUIDE.md tone; reproducible from a fresh clone; aligns with existing bundled-tree examples surfaced in docs.\nLikely codeowners: no CODEOWNERS file present. Default reviewer: repo owner / git author Jonathan Turnock <jonathanturnock@flying-dice.com>.\nAcceptance criteria:\n- A demo script/walkthrough exists describing setup -> tree pick -> execution loop -> outcome.\n- Uses a bundled tree (hello-world or refine-plan) so no custom YAML is needed.\n- Steps verified by running them locally; output matches what the doc shows.\n- Linked from docs index and/or README so a new user can find it.",
+    "draft_path": "plans/drafts/this-is-a-rough-plan-for-the-demo__refine-plan__1.md",
+    "plan_path": "plans/ship-a-refine-plan-demo-walkthrough.md",
+    "codeowner_approved": true,
+    "mr_url": null
+  },
+  "global": {},
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "success",
+      "4": "success",
+      "4.0": "success"
+    },
+    "step_index": {
+      "0": 1,
+      "1": 1,
+      "2": 1,
+      "3": 4,
+      "4.0": 4
+    },
+    "retry_count": {}
+  }
+}
