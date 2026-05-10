@@ -92,15 +92,15 @@ function Install-Abtree {
     $openProcesses = Get-Process -Name abtree -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $ExePath }
     if ($openProcesses.Count -gt 0) {
       Write-Output "Install Failed - abtree.exe is currently running. Please close it and try again."
-      return 1
+      exit 1
     }
     Write-Output "Install Failed - could not remove existing installation."
     Write-Output $_
-    return 1
+    exit 1
   } catch {
     Write-Output "Install Failed - could not remove existing installation."
     Write-Output $_
-    return 1
+    exit 1
   }
 
   $BaseURL = "https://github.com/flying-dice/abtree/releases"
@@ -119,7 +119,7 @@ function Install-Abtree {
       Invoke-RestMethod -Uri $URL -OutFile $TmpPath
     } catch {
       Write-Output "Install Failed - could not download $URL"
-      return 1
+      exit 1
     } finally {
       $global:ProgressPreference = 'Continue'
     }
@@ -127,7 +127,7 @@ function Install-Abtree {
 
   if (!(Test-Path $TmpPath)) {
     Write-Output "Install Failed - download did not produce a file. Did an antivirus delete it?`n"
-    return 1
+    exit 1
   }
 
   Move-Item $TmpPath $ExePath -Force
@@ -135,7 +135,7 @@ function Install-Abtree {
   $AbtreeVersion = "$(& $ExePath --version 2>&1)"
   if ($LASTEXITCODE -ne 0) {
     Write-Output "Install Failed - abtree.exe did not run correctly (exit $LASTEXITCODE).`n"
-    return 1
+    exit 1
   }
 
   $C_RESET = [char]27 + "[0m"
@@ -167,5 +167,4 @@ function Install-Abtree {
   }
 }
 
-$result = Install-Abtree -Version $Version -WinArch $WinArch
-if ($result -eq 1) { exit 1 }
+Install-Abtree -Version $Version -WinArch $WinArch
