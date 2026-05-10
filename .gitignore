@@ -50,6 +50,7 @@ docs/.vitepress/cache
 
 # generated docs — produced by `bun run generate-examples` at docs build time
 docs/examples/
+docs/examples.md
 
 # abtree runtime directory (local executions, snapshots)
 .abt/

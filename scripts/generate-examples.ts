@@ -17,6 +17,7 @@ interface TreeMeta {
 }
 
 function loadTrees(): TreeMeta[] {
+	if (!existsSync(TREES_DIR)) return [];
 	return readdirSync(TREES_DIR)
 		.filter((entry) => existsSync(join(TREES_DIR, entry, "TREE.yaml")))
 		.sort()
