@@ -35,11 +35,11 @@ let tmp: string;
 
 beforeAll(() => {
 	tmp = mkdtempSync(join(tmpdir(), "abtree-test-"));
-	mkdirSync(join(tmp, ".abtree", "trees"), { recursive: true });
+	mkdirSync(join(tmp, ".abtree", "trees", "hello-world"), { recursive: true });
 	// Copy only hello-world so the tree list is deterministic.
 	copyFileSync(
-		resolve(import.meta.dir, ".abtree", "trees", "hello-world.yaml"),
-		join(tmp, ".abtree", "trees", "hello-world.yaml"),
+		resolve(import.meta.dir, ".abtree", "trees", "hello-world", "TREE.yaml"),
+		join(tmp, ".abtree", "trees", "hello-world", "TREE.yaml"),
 	);
 });
 
@@ -85,8 +85,15 @@ test("hello-world execution: full execution reaches done", () => {
 		return json(r.stdout);
 	}
 
-	// Step 1: Determine_Time (instruct)
+	// Step 0: Acknowledge_Protocol (runtime-level gate, applies to every execution)
 	let step = next();
+	expect(step.type).toBe("instruct");
+	expect(step.name).toBe("Acknowledge_Protocol");
+	expect(step.instruction).toContain("Execution Protocol");
+	submit("success");
+
+	// Step 1: Determine_Time (instruct)
+	step = next();
 	expect(step.type).toBe("instruct");
 	expect(step.name).toBe("Determine_Time");
 	localWrite("time_of_day", "morning");
@@ -104,48 +111,6 @@ test("hello-world execution: full execution reaches done", () => {
 	expect(step.type).toBe("instruct");
 	expect(step.name).toBe("Morning_Greeting");
 	localWrite("greeting", "Good morning, test-user!");
-	submit("success");
-
-	// Step 4: Gather_Context parallel — Check_Weather evaluate
-	step = next();
-	expect(step.type).toBe("evaluate");
-	expect(step.name).toBe("Check_Weather");
-	evalStep(true);
-
-	// Step 5: Check_Weather instruct
-	step = next();
-	expect(step.type).toBe("instruct");
-	expect(step.name).toBe("Check_Weather");
-	localWrite("weather", "weather unavailable");
-	submit("success");
-
-	// Step 6: Check_News evaluate
-	step = next();
-	expect(step.type).toBe("evaluate");
-	expect(step.name).toBe("Check_News");
-	evalStep(true);
-
-	// Step 7: Check_News instruct
-	step = next();
-	expect(step.type).toBe("instruct");
-	expect(step.name).toBe("Check_News");
-	localWrite("news", "news unavailable");
-	submit("success");
-
-	// Step 8: Compose_Response evaluate
-	step = next();
-	expect(step.type).toBe("evaluate");
-	expect(step.name).toBe("Compose_Response");
-	evalStep(true);
-
-	// Step 9: Compose_Response instruct
-	step = next();
-	expect(step.type).toBe("instruct");
-	expect(step.name).toBe("Compose_Response");
-	localWrite(
-		"response",
-		"Good morning, test-user! Weather unavailable. No news today.",
-	);
 	submit("success");
 
 	// Final: done
@@ -182,7 +147,9 @@ test("snapshot store: two executions of the same tree share one snapshot file", 
 });
 
 test("snapshot store: a different tree produces a different etag", () => {
-	const altPath = join(tmp, ".abtree", "trees", "snap-alt.yaml");
+	const altDir = join(tmp, ".abtree", "trees", "snap-alt");
+	const altPath = join(altDir, "TREE.yaml");
+	mkdirSync(altDir, { recursive: true });
 	writeFileSync(
 		altPath,
 		`name: snap-alt
@@ -204,12 +171,14 @@ tree:
 		expect(snaps).toContain(`${alt.snapshot}.json`);
 		expect(snaps).toContain(`${base.snapshot}.json`);
 	} finally {
-		unlinkSync(altPath);
+		rmSync(altDir, { recursive: true, force: true });
 	}
 });
 
 test("validation: malformed tree YAML is rejected with a path-prefixed error", () => {
-	const badPath = join(tmp, ".abtree", "trees", "bad.yaml");
+	const badDir = join(tmp, ".abtree", "trees", "bad");
+	const badPath = join(badDir, "TREE.yaml");
+	mkdirSync(badDir, { recursive: true });
 	writeFileSync(
 		badPath,
 		`name: bad
@@ -226,12 +195,18 @@ tree:
 		expect(r.stderr).toContain("tree file failed validation");
 		expect(r.stderr).toContain("tree.steps");
 	} finally {
-		unlinkSync(badPath);
+		rmSync(badDir, { recursive: true, force: true });
 	}
 });
 
 test("snapshot store: deleting the snapshot file makes reads fail", () => {
 	const created = createExecution("hello-world", "missing snap");
+
+	// Clear the protocol gate first — it does not touch the snapshot, so we
+	// must get past it before the missing-snapshot path can fail.
+	abtree(["next", created.id], tmp);
+	abtree(["submit", created.id, "success"], tmp);
+
 	unlinkSync(join(tmp, ".abtree", "snapshots", `${created.snapshot}.json`));
 
 	const r = abtree(["next", created.id], tmp);
@@ -247,6 +222,10 @@ test("execution reset restores initial state", () => {
 	);
 	const { id } = json(createOut.stdout) as { id: string };
 
+	// Ack the protocol gate so we can confirm reset clears it back to false.
+	abtree(["next", id], tmp);
+	abtree(["submit", id, "success"], tmp);
+
 	// Write something
 	abtree(["local", "write", id, "time_of_day", "evening"], tmp);
 
@@ -255,7 +234,16 @@ test("execution reset restores initial state", () => {
 	expect(resetOut.exitCode).toBe(0);
 	expect((json(resetOut.stdout) as { status: string }).status).toBe("reset");
 
-	// First next should be Determine_Time again
+	// First next after reset should re-prompt the protocol gate.
+	const gate = json(abtree(["next", id], tmp).stdout) as Record<
+		string,
+		string
+	>;
+	expect(gate.type).toBe("instruct");
+	expect(gate.name).toBe("Acknowledge_Protocol");
+	abtree(["submit", id, "success"], tmp);
+
+	// Then the tree resumes from Determine_Time.
 	const step = abtree(["next", id], tmp);
 	const parsed = json(step.stdout) as Record<string, string>;
 	expect(parsed.type).toBe("instruct");

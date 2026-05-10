@@ -12,20 +12,20 @@ Every command outputs JSON. That's deliberate — abtree is meant to be driven b
 
 Lists every available tree as an array of slugs.
 
-Trees are loaded from two locations:
+Trees live one per folder, with the definition at `<slug>/TREE.yaml`. The folder gives the tree somewhere to keep its own fragments and playbooks alongside the definition. Trees are loaded from two locations:
 
 | Location | Purpose |
 |---|---|
-| `.abtree/trees/` (cwd) | Project-local trees, committed alongside the code they apply to. |
-| `~/.abtree/trees/` | User-global trees, available in every project. |
+| `.abtree/trees/<slug>/TREE.yaml` (cwd) | Project-local trees, committed alongside the code they apply to. |
+| `~/.abtree/trees/<slug>/TREE.yaml` | User-global trees, available in every project. |
 
-Project-local wins on duplicate slugs — drop `~/.abtree/trees/code-review.yaml` for a default review tree, override it per-project by committing a `.abtree/trees/code-review.yaml` to the repo.
+Project-local wins on duplicate slugs — drop `~/.abtree/trees/refine-plan/TREE.yaml` for a default refine-plan tree, override it per-project by committing a `.abtree/trees/refine-plan/TREE.yaml` to the repo.
 
 ```sh
 $ abtree tree list
 [
   "hello-world",
-  "code-review",
+  "refine-plan",
   "deploy"
 ]
 ```

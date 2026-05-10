@@ -41,9 +41,9 @@ export type TestStep =
 export type TestCase = {
 	name?: string;
 	description?: string;
-	tree: string; // top-level tree YAML, relative to .abtree/trees/ in the test workspace
-	files?: Record<string, string>; // additional inline files (path → contents)
-	bundled?: string[]; // copy these files from the repo's .abtree/trees/ into the workspace
+	tree: string; // tree slug; resolves to .abtree/trees/<slug>/TREE.yaml in the workspace
+	files?: Record<string, string>; // additional inline files (path under .abtree/trees/ → contents). Use "<slug>/TREE.yaml" for the main file and "<slug>/fragments/x.yaml" for fragments.
+	bundled?: string[]; // copy these files from the repo's .abtree/trees/ into the workspace (e.g. "hello-world/TREE.yaml", "<slug>/fragments/<name>.yaml")
 	initial?: {
 		local?: Record<string, unknown>;
 		global?: Record<string, unknown>;
@@ -94,7 +94,7 @@ export async function runCase(specPath: string): Promise<void> {
 		const treesDir = join(tmp, ".abtree", "trees");
 		mkdirSync(treesDir, { recursive: true });
 
-		// Copy bundled trees from the repo (e.g. ["hello-world.yaml", "fragments/pass.yaml"]).
+		// Copy bundled trees from the repo (e.g. ["hello-world/TREE.yaml"]).
 		for (const rel of spec.bundled ?? []) {
 			const src = join(REPO_ROOT, ".abtree", "trees", rel);
 			const dst = join(treesDir, rel);
@@ -112,14 +112,20 @@ export async function runCase(specPath: string): Promise<void> {
 			await Bun.write(dst, contents);
 		}
 
-		// Tests dir co-located trees (under tests/trees/) — convenient for
-		// fixtures specific to one test case. spec.tree may either name a
-		// .yaml file already in the workspace or include its contents inline.
+		// Tests dir co-located trees (under tests/trees/<slug>/TREE.yaml) —
+		// convenient for fixtures specific to one test case. spec.tree may
+		// either name a slug already present in the workspace (via inline
+		// files or bundled) or live as a fixture under tests/trees/.
 		const treeName = spec.tree;
-		const treePath = join(treesDir, `${treeName}.yaml`);
+		const treePath = join(treesDir, treeName, "TREE.yaml");
 		if (!existsSync(treePath)) {
-			// fall back to tests/trees/
-			const fixtureSrc = join(import.meta.dir, "trees", `${treeName}.yaml`);
+			// fall back to tests/trees/<slug>/TREE.yaml
+			const fixtureSrc = join(
+				import.meta.dir,
+				"trees",
+				treeName,
+				"TREE.yaml",
+			);
 			if (existsSync(fixtureSrc)) {
 				cpSync(join(import.meta.dir, "trees"), treesDir, { recursive: true });
 			} else {
@@ -138,6 +144,19 @@ export async function runCase(specPath: string): Promise<void> {
 		}
 		const created = create.stdout as { id: string };
 		const execution = created.id;
+
+		// 1b. Auto-acknowledge the runtime protocol gate. This is a runtime-level
+		// concern, not part of any test fixture — every execution starts with it.
+		const ackNext = abt(tmp, ["next", execution]);
+		const ackOut = ackNext.stdout as { name?: string };
+		if (ackOut?.name !== "Acknowledge_Protocol") {
+			throw new Error(
+				`expected Acknowledge_Protocol gate, got ${fmt(ackOut)}`,
+			);
+		}
+		const ackSubmit = abt(tmp, ["submit", execution, "success"]);
+		if (ackSubmit.exit !== 0)
+			throw new Error(`protocol ack submit failed: ${ackSubmit.stderr}`);
 
 		// 2. Apply initial state.
 		for (const [k, v] of Object.entries(spec.initial?.local ?? {})) {

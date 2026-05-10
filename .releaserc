@@ -13,7 +13,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "bun scripts/generate-schema.ts && bun build --compile --target=bun-linux-x64 index.ts --outfile=abtree-linux-x64 && bun build --compile --target=bun-linux-arm64 index.ts --outfile=abtree-linux-arm64 && bun build --compile --target=bun-darwin-x64 index.ts --outfile=abtree-darwin-x64 && bun build --compile --target=bun-darwin-arm64 index.ts --outfile=abtree-darwin-arm64 && bun build --compile --target=bun-windows-x64 index.ts --outfile=abtree-windows-x64.exe"
+        "prepareCmd": "bun run schema && bun scripts/build.ts --all"
       }
     ],
     [

@@ -178,9 +178,9 @@ tree:
             list at $LOCAL.refactor_queue. The threshold field is the
             target the per-item Reassess_Metric will gate against.
 
-    # 6. Critique-and-harden pass. Matches the rhythm of refine /
-    #    implement / frontend-design — a Senior-Principal lens stress-
-    #    tests the proposed work before it's locked in.
+    # 6. Critique-and-harden pass. Matches the rhythm of refine-plan /
+    #    implement — a Senior-Principal lens stress-tests the proposed
+    #    work before it's locked in.
     - type: action
       name: Critique_Findings
       steps:
@@ -359,8 +359,9 @@ tree:
             $LOCAL.final_scores =
               { dry: <n>, srp: <n>, coupling: <n>, cohesion: <n> }.
 
-    # 12. Verdict selector — pass / partial. Matches the
-    #     code-review.Approve_Or_Request_Changes shape.
+    # 12. Verdict selector — pass / partial. The first child claims
+    #     success when its evaluate gate holds; otherwise the second
+    #     child records the partial outcome.
     - type: selector
       name: Cycle_Verdict
       children:

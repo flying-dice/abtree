@@ -85,7 +85,7 @@ Tree terminated. Report the outcome to the human.
 
 ## Available trees
 
-Run `abtree tree list` for the live set. Bundled trees include: `hello-world`, `refine`, `implement`, `code-review`, `backend-design`, `frontend-design`, `technical-writer`.
+Run `abtree tree list` for the live set. Bundled trees include: `hello-world`, `refine-plan`, `implement`, `technical-writer`, `improve-codebase`.
 
 ## State commands
 

@@ -263,23 +263,23 @@ abtree doesn't have a native "wait for human" primitive. Express the wait as an 
 
 The agent uses `submit running` to ack-and-pause without advancing the cursor. The human's `local write` is what unblocks the next `evaluate`.
 
-### Idiom: spec-approved gate
+### Idiom: plan-approved gate
 
-A common variant of the human gate: a downstream tree (`implement`, `backend-design`, `frontend-design`) refuses to run unless an upstream `refine` execution produced a spec with `reviewed_by` populated. Encode it as an early action whose `instruct` checks the file:
+A common variant of the human gate: a downstream tree (`implement` is the bundled example) refuses to run unless an upstream `refine-plan` execution produced a plan with `reviewed_by` populated. Encode it as an early action whose `instruct` checks the file:
 
 ```yaml
 - type: action
-  name: Check_Spec_Approval
+  name: Check_Plan_Approval
   steps:
     - evaluate: $LOCAL.change_request is set
     - instruct: |
-        Find the spec in specs/ matching $LOCAL.change_request. Read
+        Find the plan in plans/ matching $LOCAL.change_request. Read
         the frontmatter. If reviewed_by is empty, return failure with
         a note that codeowner approval is needed. Otherwise store the
-        full spec content at $LOCAL.spec_content.
+        full plan content at $LOCAL.plan_content.
 ```
 
-The action either succeeds (spec content available) or fails (parent sequence aborts, surfacing the missing approval).
+The action either succeeds (plan content available) or fails (parent sequence aborts, surfacing the missing approval).
 
 ### Idiom: parallel context-gathering with shared dependency
 
@@ -303,13 +303,13 @@ Each parallel branch can have its own `evaluate: $LOCAL.x is set` precondition f
 
 When a chunk of work has well-known guidance — code-review checklists, design heuristics, security-review playbooks — don't reproduce it inside an `instruct` and don't store a raw URL or path either. Store the **retrieval directive itself** in `$GLOBAL`. Actions invoke it by name.
 
-The default home for shared playbooks is `.abtree/playbooks/<name>.md`, alongside `.abtree/trees/`:
+The natural home for a per-tree playbook is alongside its `TREE.yaml`, e.g. `.abtree/trees/<slug>/playbooks/<name>.md`:
 
 ```yaml
 state:
   global:
-    code_review: |
-      Read the file at .abtree/playbooks/code-review.md
+    review_playbook: |
+      Read the file at .abtree/trees/my-review/playbooks/review.md
       (relative to the project root) and return its full body
       as text.
 
@@ -320,7 +320,7 @@ tree:
     steps:
       - evaluate: $LOCAL.target is set
       - instruct: >
-          Use $GLOBAL.code_review to assess $LOCAL.target.
+          Use $GLOBAL.review_playbook to assess $LOCAL.target.
           Capture findings at $LOCAL.findings.
 ```
 
@@ -330,7 +330,7 @@ The global is a parameterless directive: "read X, return text." The action compo
 
 - **Action prose stays focused.** Each `instruct` says *what to do with the result*, not how to retrieve it.
 - **Single source of truth.** One place defines where the playbook lives. Swap the path in one spot to repoint every action that uses it.
-- **Composable.** Multiple actions can invoke the same global (`Use $GLOBAL.code_review's pre-flight against …`, `Use $GLOBAL.code_review's posting rules to …`) without duplicating retrieval instructions.
+- **Composable.** Multiple actions can invoke the same global (`Use $GLOBAL.review_playbook's pre-flight against …`, `Use $GLOBAL.review_playbook's posting rules to …`) without duplicating retrieval instructions.
 - **Curated.** Local files let you trim third-party guidance to your project's lens — strip vendor-specific tooling, tighten the bar, add house rules — without forking the upstream document.
 - **Reproducible.** A playbook checked into the repo is git-tracked; flows created against today's tree run against today's playbook.
 
@@ -380,7 +380,7 @@ The selector always succeeds: either the cache read worked, or the no-op did.
 
 ## Naming and structure rules
 
-- **Tree slug** (the YAML `name` and the filename): kebab-case (`hello-world`, `code-review`).
+- **Tree slug** (the YAML `name` and the folder name): kebab-case (`hello-world`, `improve-codebase`).
 - **Node names**: PascalCase with underscores (`Choose_Greeting`, `Check_Weather`). Mermaid renders `_` as space.
 - **Composite names** describe the *decision*: `Choose_Greeting`, `Gather_Context`, `Write_With_Retries`. Action names describe the *work*: `Determine_Time`, `Compose_Response`.
 - **Root sequence name** is usually `<Tree>_Workflow`.
@@ -485,7 +485,7 @@ When a human asks "help me design a tree for `<X>`", work in this order:
 7. **Identify retries.** Each "we should try this a few times before giving up" → `selector` of N attempts, each carrying notes from the previous failure.
 8. **State the input contract.** What `$LOCAL` keys must be set before the first action evaluates? Document them in `state.local`.
 9. **Sketch the tree top-down**, then walk the failure modes — what happens if action N fails? Does the parent composite handle it the way the design intended?
-10. **Save as `.abtree/trees/<slug>.yaml`** and run `abtree tree list` to validate the YAML.
+10. **Save as `.abtree/trees/<slug>/TREE.yaml`** and run `abtree tree list` to validate the YAML.
 
 ## Next
 

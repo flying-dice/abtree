@@ -52,6 +52,10 @@ export interface ExecutionRow {
 	snapshot: string;
 	cursor: string;
 	phase: string;
+	// Whether the agent has acknowledged the runtime protocol for this execution.
+	// Until true, `abtree next` returns a synthetic instruct demanding the agent
+	// read `abtree docs execute` and submit success to accept.
+	protocol_accepted: boolean;
 	created_at: string;
 	updated_at: string;
 }

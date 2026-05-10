@@ -1,6 +1,6 @@
 ---
 name: abtree
-description: Drive abtree behaviour-tree workflows. Use when the user asks to run, resume, or inspect an abtree execution; when they invoke a bundled tree (hello-world, refine, implement, code-review, backend-design, frontend-design, technical-writer); or when they ask to design a new tree.
+description: Drive abtree behaviour-tree workflows. Use when the user asks to run, resume, or inspect an abtree execution; when they invoke a bundled tree (hello-world, refine-plan, implement, technical-writer, improve-codebase); or when they ask to design a new tree.
 ---
 
 <!--
@@ -128,13 +128,11 @@ trees include:
 
 | Slug | Purpose |
 |---|---|
-| `hello-world` | Greeting demo. Exercises all four BT primitives in fifteen lines. |
-| `refine` | Turn a one-line change request into a hardened, codeowner-reviewable spec under `specs/`. |
+| `hello-world` | Greeting demo. Exercises sequence, selector, and action in a few dozen lines. |
+| `refine-plan` | Turn a one-line change request into a hardened, codeowner-reviewable plan under `plans/`. |
 | `implement` | Implement a feature from an approved spec — plan, critique, code. |
-| `code-review` | Review an MR for correctness, test coverage, conventions. Approves or requests changes. |
-| `backend-design` | Design and build a backend service from an approved spec. |
-| `frontend-design` | Design and build a frontend component from an approved spec. |
 | `technical-writer` | Document a topic with a styleguide gate, three review checks, and bounded retries. |
+| `improve-codebase` | Continuous code-quality cycle: parallel scoring, human-approved triage, bounded refactor attempts, baseline-vs-final verdict. |
 
 For details and Claude handover prompts for each, see
 `https://flying-dice.github.io/abtree/examples`.

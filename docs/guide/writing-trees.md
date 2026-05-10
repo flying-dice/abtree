@@ -8,14 +8,19 @@ This page walks through the YAML structure of a tree using the bundled `hello-wo
 
 ## File layout
 
-Trees live in `.abtree/trees/<slug>.yaml`. The slug becomes the tree name shown in `abtree tree list`.
+Trees live in `.abtree/trees/<slug>/TREE.yaml`. The slug (the folder name) becomes the tree name shown in `abtree tree list`. The folder gives the tree somewhere to keep its own fragments and playbooks alongside the definition.
 
 ```
 .abtree/
   trees/
-    hello-world.yaml
-    code-review.yaml
-    deploy.yaml
+    hello-world/
+      TREE.yaml
+    refine-plan/
+      TREE.yaml
+    my-big-workflow/
+      TREE.yaml
+      fragments/
+        auth.yaml
   executions/                              # populated as you create executions
     first-run__hello-world__1.json
     first-run__hello-world__1.mermaid
@@ -40,7 +45,7 @@ abtree resolves them at execution-creation time via
 so the rest of the runtime sees one fully-resolved snapshot.
 
 ```yaml
-# .abtree/trees/big-workflow.yaml
+# .abtree/trees/big-workflow/TREE.yaml
 name: big-workflow
 version: 1.0.0
 description: Composed of separately-authored fragments.
@@ -55,7 +60,7 @@ tree:
 ```
 
 ```yaml
-# .abtree/trees/fragments/auth.yaml
+# .abtree/trees/big-workflow/fragments/auth.yaml
 type: sequence
 name: Auth_Sequence
 children:
@@ -111,9 +116,6 @@ state:
   local:
     time_of_day: null      # filled in by Determine_Time
     greeting: null         # filled in by Choose_Greeting branch
-    weather: null
-    news: null
-    response: null
   global:
     user_name: retrieve by running the shell command "whoami"
     tone: friendly
@@ -171,9 +173,9 @@ This is the canonical replacement for the older "selector of N hand-written pass
 
 ## Naming
 
-Use **PascalCase with underscores** for node names: `Choose_Greeting`, `Check_Weather`. Mermaid diagrams render `_` as spaces, so `Choose_Greeting` becomes "Choose Greeting" in the rendered output.
+Use **PascalCase with underscores** for node names: `Choose_Greeting`, `Determine_Time`. Mermaid diagrams render `_` as spaces, so `Choose_Greeting` becomes "Choose Greeting" in the rendered output.
 
-Tree slugs (the filename) are **kebab-case**: `hello-world`, `code-review`.
+Tree slugs (the folder name) are **kebab-case**: `hello-world`, `improve-codebase`.
 
 ## Worked example
 
@@ -181,16 +183,13 @@ The full hello-world tree, annotated:
 
 ```yaml
 name: hello-world
-version: 1.0.0
-description: Greet a user based on time of day with weather and news context.
+version: 2.0.0
+description: Greet a user based on time of day.
 
 state:
   local:
     time_of_day: null     # filled by Determine_Time
     greeting: null        # filled by the Choose_Greeting branch that wins
-    weather: null
-    news: null
-    response: null
   global:
     user_name: retrieve by running the shell command "whoami"
     tone: friendly
@@ -227,37 +226,27 @@ tree:
           name: Default_Greeting
           steps:
             - instruct: Compose a neutral greeting...    # no evaluate = always passes
-
-    # 3. Parallel — both children must succeed.
-    - type: parallel
-      name: Gather_Context
-      children:
-        - type: action
-          name: Check_Weather
-          steps:
-            - evaluate: $LOCAL.greeting is set
-            - instruct: Use a web search tool to find current weather...
-        - type: action
-          name: Check_News
-          steps:
-            - evaluate: $LOCAL.greeting is set
-            - instruct: Use a web search tool to find one current headline...
-
-    # 4. Final action — depends on the parallel's outputs.
-    - type: action
-      name: Compose_Response
-      steps:
-        - evaluate: $LOCAL.weather is set and $LOCAL.news is set
-        - instruct: Combine $LOCAL.greeting, $LOCAL.weather, and $LOCAL.news...
 ```
+
+`hello-world` covers `sequence`, `selector`, and `action`. The fourth primitive — `parallel` — runs all children at once and succeeds only if every child succeeds. Drop one in when you have two independent reads that don't depend on each other:
+
+```yaml
+- type: parallel
+  name: Gather_Context
+  children:
+    - { type: action, name: Read_Schema, steps: [...] }
+    - { type: action, name: Read_Conventions, steps: [...] }
+```
+
+`improve-codebase` ships a real-world parallel — four metric scorers running concurrently against the same codebase.
 
 ## Editing your own
 
 Copy a bundled tree to a new file and tweak. Try:
 
 - Add a new `evening_off_hours` branch to `Choose_Greeting` with an evaluate that fires after 22:00.
-- Add a `Check_Calendar` action to `Gather_Context` (parallel will pick it up automatically).
-- Replace `Compose_Response` with two actions: one to draft, one to format.
+- Wrap the selector's chosen greeting and a follow-up `Compose_Closing` action in a final `sequence`, so the closing always runs after the greeting is set.
+- Add a `parallel` after `Choose_Greeting` to fan out two enrichment actions before the tree finishes.
 
 Every change is reflected the next time you run `abtree execution create <your-tree>`.
 

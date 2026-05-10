@@ -126,13 +126,20 @@ export const ExecutionStore = {
 
 	update(
 		id: string,
-		fields: Partial<Pick<ExecutionRow, "status" | "cursor" | "phase">>,
+		fields: Partial<
+			Pick<
+				ExecutionRow,
+				"status" | "cursor" | "phase" | "protocol_accepted"
+			>
+		>,
 	): void {
 		const doc = readDoc(id);
 		if (!doc) throw new Error(`Execution not found: ${id}`);
 		if (fields.status !== undefined) doc.status = fields.status;
 		if (fields.cursor !== undefined) doc.cursor = fields.cursor;
 		if (fields.phase !== undefined) doc.phase = fields.phase;
+		if (fields.protocol_accepted !== undefined)
+			doc.protocol_accepted = fields.protocol_accepted;
 		doc.updated_at = new Date().toISOString();
 		writeDoc(doc);
 	},

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import $RefParser from "@apidevtools/json-schema-ref-parser";
 import { TREE_SOURCES } from "./paths.ts";
@@ -23,9 +23,12 @@ import { normalizeNode, validateTreeFile } from "./validate.ts";
 //       - $ref: "./fragments/work.yaml"
 //
 // The dereferenced object is identical in shape to a single-file tree.
+// Trees live in <source>/<slug>/TREE.yaml. The folder gives the tree
+// somewhere to keep its own fragments and playbooks alongside the
+// definition (e.g. <slug>/fragments/<name>.yaml).
 export async function loadTree(slug: string): Promise<ParsedTree | null> {
 	for (const dir of TREE_SOURCES) {
-		const yamlPath = join(dir, `${slug}.yaml`);
+		const yamlPath = join(dir, slug, "TREE.yaml");
 		if (!existsSync(yamlPath)) continue;
 		// circular: 'ignore' leaves cyclic edges as literal { $ref: "..." }
 		// objects in the resolved tree. Non-cyclic refs are still expanded.
@@ -50,12 +53,13 @@ export function listTreeSlugs(): string[] {
 	const slugs: string[] = [];
 	for (const dir of TREE_SOURCES) {
 		if (!existsSync(dir)) continue;
-		for (const f of readdirSync(dir)) {
-			if (!f.endsWith(".yaml")) continue;
-			const slug = f.slice(0, -5);
-			if (seen.has(slug)) continue;
-			seen.add(slug);
-			slugs.push(slug);
+		for (const entry of readdirSync(dir)) {
+			const entryPath = join(dir, entry);
+			if (!statSync(entryPath).isDirectory()) continue;
+			if (!existsSync(join(entryPath, "TREE.yaml"))) continue;
+			if (seen.has(entry)) continue;
+			seen.add(entry);
+			slugs.push(entry);
 		}
 	}
 	return slugs;

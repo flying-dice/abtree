@@ -4,7 +4,7 @@ description: |
   cyclic edge surfaces a clean failure.
 tree: cycle-root
 files:
-  cycle-root.yaml: |
+  cycle-root/TREE.yaml: |
     name: cycle-root
     version: 1.0.0
     state:
