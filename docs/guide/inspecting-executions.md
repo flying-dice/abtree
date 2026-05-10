@@ -140,7 +140,7 @@ Common situations:
 
 - **`status: running`, `phase: idle`, `cursor: null`.** Healthy mid-execution state between requests. Call `abtree next` to advance.
 - **`phase: performing` for hours.** The agent picked up an `instruct` and never reported back. The execution is waiting for `abtree submit <id> success | failure`. Resume it by submitting, or call `abtree execution reset <id>` to start over.
-- **`status: failed`.** A `selector` exhausted all its children, or an action in a `sequence` failed. Look at the `_node_status__*` keys in `$LOCAL` to see which node was the immediate cause; look at the leaf's `evaluate` expression in the `snapshot` to see why it didn't pass.
+- **`status: failed`.** A `selector` exhausted all its children, or an action in a `sequence` failed. Look at `runtime.node_status` to see which node was the immediate cause; look at the leaf's `evaluate` expression in the `snapshot` to see why it didn't pass.
 - **The mermaid diagram has red nodes but `status: running`.** A failure was recorded but a parent (selector) is still trying alternatives. The execution is fine — read the next `abtree next` to see what's coming.
 
 For a richer dump, `abtree execution get <id>` returns the same JSON as the on-disk file, formatted to stdout. Useful for piping into `jq` or `python -m json.tool`.

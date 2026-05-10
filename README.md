@@ -9,13 +9,13 @@ Abtree is an agentic, progressively disclosed behavioural tree toolkit. Create e
 - **Progressive Disclosure:** Agents only see the next step when they reach it, eliminating "instruction fatigue."
 - **Platform Agnostic:** Works seamlessly with any agentic framework or platform.
 
-## What’s different about Behaviour Trees?
+## What’s different about behaviour trees?
 
 While modern LLMs are capable of following Markdown-based instructions, two fundamental issues often emerge. **Instruction Fatigue** and **Non-Determinism**. When instructions become too dense, agents lose focus, when decision-making is left entirely to the model, workflows can feel random.
 
 Behaviour Trees solve this by providing a formal logic layer. Long used in video games and robotics to manage complex AI actors, they provide a modular way to build tasks that are both scalable and predictable.
 
-## The 3 Core Elements of a Tree
+## The 3 core elements of a tree
 
 abtree strips away the complexity of BTs to focus on three functional components: **State**, **Branches**, and **Actions**.
 
@@ -181,7 +181,7 @@ abtree local read <execution-id>
 
 Run `abtree --help` for the full execution protocol.
 
-## Example Trees
+## Example trees
 
 Ready-to-use trees are included in [`.abtree/trees/`](.abtree/trees/):
 
@@ -193,7 +193,7 @@ Ready-to-use trees are included in [`.abtree/trees/`](.abtree/trees/):
 | [technical-writer](.abtree/trees/technical-writer/TREE.yaml) | Document a topic with a styleguide gate, three review checks, and bounded retries. |
 | [improve-codebase](.abtree/trees/improve-codebase/TREE.yaml) | Continuous code-quality improvement cycle with parallel scoring, human-approved triage and bounded refactor attempts. |
 
-## Explore the Ecosystem
+## Explore the ecosystem
 * **Workflow-Builder Skill:** Use this skill to help your agent collaboratively design and iterate on new tree specs.
 * **Workflow-Runner Skill:** Equip your agent with the ability to navigate trees, persist state, and enforce invariants across sessions.
 
