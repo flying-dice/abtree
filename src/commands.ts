@@ -1,5 +1,5 @@
 import { writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { select } from "@inquirer/prompts";
 import EXECUTE_DOC from "../docs/agents/execute.md" with { type: "text" };
 import {
@@ -22,7 +22,19 @@ import {
 	tickRoot,
 } from "./tree.ts";
 import type { ExecutionDoc, NormalizedNode, TickResult } from "./types.ts";
+import {
+	assetUrl,
+	compareVersions,
+	detectTarget,
+	downloadAsset,
+	fetchLatestTag,
+	installBinary,
+	isWritable,
+	realpathExec,
+	tmpPath,
+} from "./upgrade.ts";
 import { die, out } from "./utils.ts";
+import { VERSION } from "./version.ts";
 
 export function cmdTreeList() {
 	out(listTreeSlugs());
@@ -414,4 +426,120 @@ async function resolveScope(flag?: string): Promise<SkillScope> {
 			{ name: "User — home directory", value: "user" },
 		],
 	})) as SkillScope;
+}
+
+async function readLine(): Promise<string> {
+	return new Promise((resolve) => {
+		process.stdin.setEncoding("utf8");
+		let buf = "";
+		const onData = (chunk: string) => {
+			const nl = chunk.indexOf("\n");
+			if (nl !== -1) {
+				buf += chunk.slice(0, nl);
+				process.stdin.removeListener("data", onData);
+				process.stdin.pause();
+				resolve(buf.replace(/\r$/, ""));
+			} else {
+				buf += chunk;
+			}
+		};
+		process.stdin.on("data", onData);
+		process.stdin.resume();
+	});
+}
+
+export async function cmdUpgrade(
+	opts: {
+		check?: boolean;
+		version?: string;
+		yes?: boolean;
+	},
+	fetchFn: typeof fetch = globalThis.fetch,
+): Promise<void> {
+	const current = `v${VERSION}`;
+
+	let target: ReturnType<typeof detectTarget>;
+	try {
+		target = detectTarget();
+	} catch (err) {
+		process.stderr.write(`${(err as Error).message}\n`);
+		process.exit(3);
+	}
+
+	let latest: string;
+	if (opts.version) {
+		latest = opts.version.startsWith("v") ? opts.version : `v${opts.version}`;
+	} else {
+		try {
+			latest = await fetchLatestTag(fetchFn);
+		} catch (err) {
+			process.stderr.write(`Network error: ${(err as Error).message}\n`);
+			process.exit(2);
+		}
+	}
+
+	if (opts.check) {
+		try {
+			if (!opts.version && compareVersions(current, latest) === 0) {
+				process.stdout.write(`abtree is up to date (${current})\n`);
+			} else {
+				process.stdout.write(`current=${current} latest=${latest}\n`);
+			}
+		} catch {
+			process.stdout.write(`current=${current} latest=${latest}\n`);
+		}
+		return;
+	}
+
+	if (!opts.version) {
+		try {
+			if (compareVersions(current, latest) === 0) {
+				process.stdout.write(`abtree is up to date (${current})\n`);
+				return;
+			}
+		} catch {
+			// unparseable version — proceed with install
+		}
+	}
+
+	if (process.stdin.isTTY && !opts.yes) {
+		process.stdout.write(`Upgrade abtree ${current} → ${latest}? [y/N] `);
+		const answer = await readLine();
+		if (!/^(y|yes)$/i.test(answer.trim())) {
+			return;
+		}
+	}
+
+	const execPath = realpathExec();
+	process.stdout.write(`Installing to: ${execPath}\n`);
+	const installDir = dirname(execPath);
+
+	if (!isWritable(installDir)) {
+		const dest = execPath;
+		const tmp = tmpPath(installDir);
+		process.stderr.write(
+			`Install directory ${installDir} is not writable.\n`,
+		);
+		process.stderr.write(`sudo mv ${tmp} ${dest}\n`);
+		process.exit(1);
+	}
+
+	const url = assetUrl(opts.version ? latest : "latest", target.asset);
+	const tmp = tmpPath(installDir);
+
+	try {
+		await downloadAsset(url, tmp, fetchFn);
+	} catch (err) {
+		process.stderr.write(`Download failed: ${(err as Error).message}\n`);
+		process.exit(2);
+	}
+
+	try {
+		installBinary(tmp, execPath);
+	} catch (err) {
+		process.stderr.write(`Install failed: ${(err as Error).message}\n`);
+		process.exit(1);
+	}
+
+	process.stdout.write(`abtree upgraded to ${latest}\n`);
 }
