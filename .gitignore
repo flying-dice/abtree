@@ -47,3 +47,6 @@ abtree-windows-x64.exe
 # vitepress build artifacts
 docs/.vitepress/dist
 docs/.vitepress/cache
+
+# playwright MCP screenshot / log scratch dir
+.playwright-mcp
