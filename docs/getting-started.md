@@ -66,7 +66,23 @@ That is the entire human-side interaction. The agent reads the protocol from `--
 
 Each turn, the agent calls one command and reads its JSON response.
 
-`abtree next first-run__hello-world__1` returns the next step:
+The very first `abtree next` on any execution is a runtime-level gate that hands the agent the execution protocol — every execution starts here, regardless of which tree it's running:
+
+```json
+{
+  "type": "instruct",
+  "name": "Acknowledge_Protocol",
+  "instruction": "Read the runtime protocol below in full..."
+}
+```
+
+The agent reads the protocol and acknowledges:
+
+```sh
+abtree submit first-run__hello-world__1 success
+```
+
+After the gate, `abtree next` returns the tree's first real step:
 
 ```json
 {
@@ -134,7 +150,7 @@ flowchart TD
     0_Choose_Greeting --> 0_1_Default_Greeting
 ```
 
-The cursor advanced through the sequence. The selector chose Morning Greeting and stopped — the afternoon, evening, and default branches were never entered. Both context-gathering actions ran in parallel. Every action passed its `evaluate` invariant before its `instruct` ran.
+The cursor advanced through the sequence. The selector chose Morning Greeting after its `evaluate` precondition held — the afternoon, evening, and default branches were never entered.
 
 ## What just happened
 
