@@ -5,11 +5,13 @@ param(
   [Switch]$DownloadWithoutCurl = $false
 );
 
+$ErrorActionPreference = "Stop"
+
 $Arch = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment').PROCESSOR_ARCHITECTURE
 if (-not ($Arch -eq "AMD64" -or $Arch -eq "ARM64")) {
   Write-Output "Install Failed:"
   Write-Output "abtree for Windows is only available for x86 64-bit and ARM64.`n"
-  return 1
+  exit 1
 }
 $WinArch = if ($Arch -eq "ARM64") { "arm64" } else { "x64" }
 
@@ -18,11 +20,10 @@ $MinBuildName = "Windows 10 1809 / Windows Server 2019"
 
 $WinVer = [System.Environment]::OSVersion.Version
 if ($WinVer.Major -lt 10 -or ($WinVer.Major -eq 10 -and $WinVer.Build -lt $MinBuild)) {
-  Write-Warning "abtree requires ${MinBuildName} or newer.`n"
-  return 1
+  Write-Output "Install Failed:"
+  Write-Output "abtree requires ${MinBuildName} or newer.`n"
+  exit 1
 }
-
-$ErrorActionPreference = "Stop"
 
 # Registry-based env helpers — avoids SetEnvironmentVariable corrupting REG_EXPAND_SZ entries.
 # Adapted from https://github.com/prefix-dev/pixi/pull/692
@@ -75,7 +76,7 @@ function Get-Env {
 }
 
 function Install-Abtree {
-  param([string]$Version)
+  param([string]$Version, [string]$WinArch)
 
   $InstallDir = "$env:USERPROFILE\.local\bin"
   $ExePath = "${InstallDir}\abtree.exe"
@@ -116,10 +117,11 @@ function Install-Abtree {
     try {
       $global:ProgressPreference = 'SilentlyContinue'
       Invoke-RestMethod -Uri $URL -OutFile $TmpPath
-      $global:ProgressPreference = 'Continue'
     } catch {
       Write-Output "Install Failed - could not download $URL"
       return 1
+    } finally {
+      $global:ProgressPreference = 'Continue'
     }
   }
 
@@ -163,8 +165,7 @@ function Install-Abtree {
       }
     }
   }
-
-  $LASTEXITCODE = 0
 }
 
-Install-Abtree -Version $Version
+$result = Install-Abtree -Version $Version -WinArch $WinArch
+if ($result -eq 1) { exit 1 }
