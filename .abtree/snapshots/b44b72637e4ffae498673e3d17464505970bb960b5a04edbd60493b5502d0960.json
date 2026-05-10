@@ -1,0 +1,58 @@
+{
+  "local": {
+    "change_request": null,
+    "spec_content": null,
+    "plan": null
+  },
+  "global": {
+    "clean_code_guide": "Read .abtree/trees/implement/clean-code.md from the repo root for the project's clean-code rules and the 'Done means' / 'When to stop and ask' checklists."
+  },
+  "root": {
+    "type": "sequence",
+    "name": "Implementation_Workflow",
+    "children": [
+      {
+        "type": "action",
+        "name": "Check_Spec_Approval",
+        "steps": [
+          {
+            "kind": "evaluate",
+            "expression": "$LOCAL.change_request is set"
+          },
+          {
+            "kind": "instruct",
+            "instruction": "Find the spec in specs/ matching $LOCAL.change_request. Read its frontmatter and check the reviewed_by field. - If no spec exists: report that a spec must be created first via /abt refine. Return failure. - If reviewed_by is empty: report the spec needs codeowner approval. Return failure. - Otherwise: store the full spec content at $LOCAL.spec_content."
+          }
+        ]
+      },
+      {
+        "type": "action",
+        "name": "Plan",
+        "steps": [
+          {
+            "kind": "evaluate",
+            "expression": "$LOCAL.spec_content is set"
+          },
+          {
+            "kind": "instruct",
+            "instruction": "Analyze $LOCAL.spec_content. Identify the files to modify and the logic required. Draft a focused implementation plan and store it at $LOCAL.plan."
+          }
+        ]
+      },
+      {
+        "type": "action",
+        "name": "Implement",
+        "steps": [
+          {
+            "kind": "evaluate",
+            "expression": "$LOCAL.plan is set"
+          },
+          {
+            "kind": "instruct",
+            "instruction": "Read $GLOBAL.clean_code_guide and follow it while implementing $LOCAL.plan. Apply the rules to every file you write, and treat the guide's \"Done means\" and \"When to stop and ask\" sections as part of this step's success criteria."
+          }
+        ]
+      }
+    ]
+  }
+}
