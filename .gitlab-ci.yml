@@ -1,6 +1,7 @@
 stages:
   - check
   - test
+  - docs
   - release
 
 # ---- Reused pieces -----------------------------------------------------------
@@ -40,6 +41,22 @@ test:
   stage: test
   script:
     - bun test
+
+# ---- Stage: docs -------------------------------------------------------------
+
+# Verify that the docs build succeeds. Runs generate-examples (which compiles
+# pages from the actual TREE.yaml sources) then vitepress build, so a broken
+# tree file or template will fail here rather than silently on the docs deploy.
+docs:build:
+  extends: .bun
+  stage: docs
+  script:
+    - bun run docs:build
+  artifacts:
+    paths:
+      - docs/.vitepress/dist
+    expire_in: 1 day
+    when: always
 
 # ---- Stage: release ----------------------------------------------------------
 
