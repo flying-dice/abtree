@@ -6,11 +6,12 @@ param(
 );
 
 $Arch = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment').PROCESSOR_ARCHITECTURE
-if ($Arch -ne "AMD64") {
+if (-not ($Arch -eq "AMD64" -or $Arch -eq "ARM64")) {
   Write-Output "Install Failed:"
-  Write-Output "abtree for Windows is currently only available for x86 64-bit.`n"
+  Write-Output "abtree for Windows is only available for x86 64-bit and ARM64.`n"
   return 1
 }
+$WinArch = if ($Arch -eq "ARM64") { "arm64" } else { "x64" }
 
 $MinBuild = 17763;
 $MinBuildName = "Windows 10 1809 / Windows Server 2019"
@@ -102,7 +103,7 @@ function Install-Abtree {
   }
 
   $BaseURL = "https://github.com/flying-dice/abtree/releases"
-  $URL = "$BaseURL/$(if ($Version -eq 'latest') { 'latest/download' } else { "download/$Version" })/abtree-windows-x64.exe"
+  $URL = "$BaseURL/$(if ($Version -eq 'latest') { 'latest/download' } else { "download/$Version" })/abtree-windows-${WinArch}.exe"
 
   Write-Output "Downloading abtree..."
   Remove-Item -Force $TmpPath -ErrorAction SilentlyContinue
