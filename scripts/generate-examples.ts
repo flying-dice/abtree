@@ -7,6 +7,8 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
+import { renderTreeMermaid } from "../src/mermaid.ts";
+import { loadTree } from "../src/tree.ts";
 
 const ROOT = resolve(import.meta.dir, "..");
 const TREES_DIR = join(ROOT, ".abtree", "trees");
@@ -20,29 +22,39 @@ interface TreeMeta {
 	version: string;
 	description: string;
 	raw: string;
+	mermaid: string;
 }
 
-function loadTrees(): TreeMeta[] {
+async function loadTrees(): Promise<TreeMeta[]> {
 	if (!existsSync(TREES_DIR)) return [];
-	return readdirSync(TREES_DIR)
+	const slugs = readdirSync(TREES_DIR)
 		.filter((entry) => existsSync(join(TREES_DIR, entry, "TREE.yaml")))
-		.sort()
-		.map((slug) => {
-			const yamlPath = join(TREES_DIR, slug, "TREE.yaml");
-			const raw = readFileSync(yamlPath, "utf-8");
-			const parsed = Bun.YAML.parse(raw) as {
-				name: string;
-				version: string;
-				description: string;
-			};
-			return {
-				slug,
-				name: parsed.name ?? slug,
-				version: parsed.version ?? "1.0.0",
-				description: parsed.description ?? "",
-				raw,
-			};
+		.sort();
+
+	const out: TreeMeta[] = [];
+	for (const slug of slugs) {
+		const yamlPath = join(TREES_DIR, slug, "TREE.yaml");
+		const raw = readFileSync(yamlPath, "utf-8");
+		const parsed = Bun.YAML.parse(raw) as {
+			name: string;
+			version: string;
+			description: string;
+		};
+		const tree = await loadTree(slug);
+		const name = parsed.name ?? slug;
+		const mermaid = tree
+			? renderTreeMermaid(tree.root, { title: name })
+			: "";
+		out.push({
+			slug,
+			name,
+			version: parsed.version ?? "1.0.0",
+			description: parsed.description ?? "",
+			raw,
+			mermaid,
 		});
+	}
+	return out;
 }
 
 function installSnippet(slug: string): string {
@@ -52,7 +64,7 @@ function installSnippet(slug: string): string {
 }
 
 function runSnippet(slug: string): string {
-	return `claude "Run the abtree ${slug} tree. Use 'abtree --help' to learn the execution protocol, then create an execution with 'abtree execution create ${slug} \\"<summary>\\"' and drive it to completion."`;
+	return `claude "Using abtree CLI. Execute the '${slug}' workflow"`;
 }
 
 function yamlString(s: string): string {
@@ -95,6 +107,12 @@ ${runSnippet(tree.slug)}
 \`\`\`
 
 ---
+
+## Diagram
+
+\`\`\`mermaid
+${tree.mermaid.trimEnd()}
+\`\`\`
 
 ## Tree definition
 
@@ -158,8 +176,8 @@ Trees are just YAML — see [Writing trees](/guide/writing-trees) for the format
 `;
 }
 
-function main() {
-	const trees = loadTrees();
+async function main() {
+	const trees = await loadTrees();
 	console.log(`Generating example pages for ${trees.length} trees…`);
 
 	mkdirSync(EXAMPLES_DIR, { recursive: true });
@@ -176,4 +194,4 @@ function main() {
 	console.log("Done.");
 }
 
-main();
+await main();
