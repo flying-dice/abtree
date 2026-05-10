@@ -1,0 +1,34 @@
+name: inner-retries-counter
+version: 1.0.0
+description: Same retry-counter pattern, but the retried sequence is an INNER node (not the tree root). Regression test for retries on inner composites.
+
+state:
+  local:
+    counter: 0
+    threshold: 3
+
+tree:
+  type: sequence
+  name: Outer_Wrapper
+  children:
+    - type: action
+      name: Pre_Setup
+      steps:
+        - instruct: One-shot setup, runs exactly once before the inner retry loop.
+    - type: sequence
+      name: Reach_Threshold
+      retries: 3
+      children:
+        - type: action
+          name: Increment
+          steps:
+            - instruct: Read $LOCAL.counter, add 1, write back.
+        - type: action
+          name: Test
+          steps:
+            - evaluate: $LOCAL.counter is greater than $LOCAL.threshold
+            - instruct: Threshold reached.
+    - type: action
+      name: Post_Step
+      steps:
+        - instruct: Reached only after the inner retry loop succeeds.

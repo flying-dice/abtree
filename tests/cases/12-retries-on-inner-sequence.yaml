@@ -1,0 +1,31 @@
+description: |
+  retries: 3 on an INNER sequence (not the tree root) — same auto-reset
+  + re-tick semantics as the root case. Regression for the bug where
+  inner-composite retries didn't fire because failure was propagating
+  past them via the parent's failure-bubble before the lazy retry
+  check at the parent's next iteration could see the failed status.
+  Refs flying-dice/abtree#6.
+tree: inner-retries-counter
+steps:
+  # Pre_Setup runs once
+  - { type: instruct, name: Pre_Setup }
+  # Reach_Threshold retry loop — same shape as case 05
+  - { type: instruct, name: Increment, write: { counter: 1 } }
+  - { type: evaluate, name: Test, result: false }
+  - { type: instruct, name: Increment, write: { counter: 2 } }
+  - { type: evaluate, name: Test, result: false }
+  - { type: instruct, name: Increment, write: { counter: 3 } }
+  - { type: evaluate, name: Test, result: false }
+  - { type: instruct, name: Increment, write: { counter: 4 } }
+  - { type: evaluate, name: Test, result: true }
+  - { type: instruct, name: Test }
+  # Post_Step runs after the inner retried sequence succeeds
+  - { type: instruct, name: Post_Step }
+final:
+  status: done
+  local:
+    counter: 4
+    threshold: 3
+  runtime:
+    retry_count:
+      "1": 3

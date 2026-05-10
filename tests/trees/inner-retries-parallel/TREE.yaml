@@ -1,0 +1,33 @@
+name: inner-retries-parallel
+version: 1.0.0
+description: Inner PARALLEL with retries:1 — one child fails on first attempt, succeeds on retry.
+
+state:
+  local:
+    attempts: 0
+
+tree:
+  type: sequence
+  name: Outer
+  children:
+    - type: action
+      name: Pre
+      steps:
+        - instruct: pre
+    - type: parallel
+      name: Both
+      retries: 1
+      children:
+        - type: action
+          name: Always_Pass
+          steps:
+            - instruct: always
+        - type: action
+          name: Pass_On_Retry
+          steps:
+            - instruct: bump
+            - evaluate: $LOCAL.attempts is greater than or equal to 1
+    - type: action
+      name: Post
+      steps:
+        - instruct: post
