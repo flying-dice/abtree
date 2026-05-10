@@ -138,13 +138,29 @@
 	}
 }
 
+@keyframes vp-hero-logo-pulse {
+	0%,
+	100% {
+		transform: translate(-50%, -50%) scale(1);
+	}
+	50% {
+		transform: translate(-50%, -50%) scale(1.025);
+	}
+}
+
 .VPHome .VPHero .image-bg {
 	animation: vp-hero-backglow-pulse 4s ease-in-out infinite;
 	will-change: transform, opacity;
 }
 
+.VPHome .VPHero .image-src {
+	animation: vp-hero-logo-pulse 4s ease-in-out infinite;
+	will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
-	.VPHome .VPHero .image-bg {
+	.VPHome .VPHero .image-bg,
+	.VPHome .VPHero .image-src {
 		animation: none;
 	}
 }
