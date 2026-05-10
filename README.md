@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Behaviour trees for AI agents.</strong><br/>
-  Define agent workflows as YAML. The runtime hands the agent one step at a time, verifies the result, and persists the cursor — so workflows stay reproducible no matter how big they get.
+  Define agent workflows as YAML. The runtime hands the agent one step at a time, verifies the result, and persists the cursor — so workflows stay on rails and reproducible no matter how big they get.
 </p>
 
 <p align="center">
