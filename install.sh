@@ -23,6 +23,7 @@ URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
 
 echo "Downloading ${ASSET}..."
 TMPFILE=$(mktemp)
+trap 'rm -f "$TMPFILE"' EXIT
 curl -fsSL "$URL" -o "$TMPFILE"
 chmod +x "$TMPFILE"
 
