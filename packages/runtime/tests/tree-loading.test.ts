@@ -139,6 +139,56 @@ describe("loadTree — slug derivation for execution IDs", () => {
 	});
 });
 
+describe("loadTree — JSON vs YAML entry files", () => {
+	test("loads a tree from a .yaml entry", async () => {
+		writeYaml("pkg/tree.yaml", TRIVIAL_TREE);
+		writeYaml(
+			"pkg/package.json",
+			JSON.stringify({ name: "p", main: "tree.yaml" }),
+		);
+
+		const loaded = await loadTree("./pkg");
+		expect(loaded?.parsed.root.type).toBe("action");
+	});
+
+	test("loads a tree from a .yml entry", async () => {
+		writeYaml("pkg/tree.yml", TRIVIAL_TREE);
+		writeYaml(
+			"pkg/package.json",
+			JSON.stringify({ name: "p", main: "tree.yml" }),
+		);
+
+		const loaded = await loadTree("./pkg");
+		expect(loaded?.parsed.root.type).toBe("action");
+	});
+
+	test("loads a tree from a .json entry", async () => {
+		// JSON is a strict subset of YAML, but the runtime should also accept
+		// a .json-extensioned entry directly so DSL-built packages don't have
+		// to re-serialise to YAML on the way out.
+		const treeJson = JSON.stringify({
+			name: "p",
+			version: "1.0.0",
+			tree: {
+				type: "action",
+				name: "A",
+				steps: [{ instruct: "hi" }],
+			},
+		});
+		writeYaml("pkg/main.json", treeJson);
+		writeYaml(
+			"pkg/package.json",
+			JSON.stringify({ name: "p", main: "main.json" }),
+		);
+
+		const loaded = await loadTree("./pkg");
+		expect(loaded?.parsed.root.type).toBe("action");
+		if (loaded?.parsed.root.type === "action") {
+			expect(loaded.parsed.root.name).toBe("A");
+		}
+	});
+});
+
 describe("loadTree — package.json:main is the entry point", () => {
 	test("a directory with package.json:main loads the file it points at", async () => {
 		writeYaml("pkg/lib/tree.yaml", TRIVIAL_TREE);
