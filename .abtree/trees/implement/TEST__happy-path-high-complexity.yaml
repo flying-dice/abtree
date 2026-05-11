@@ -1,0 +1,79 @@
+feature: Implement applies an approved plan, gated by complexity-based architectural review
+tree: implement
+description: |
+  High-complexity happy path. $LOCAL.plan is seeded with a cross-cutting
+  change. Score_Complexity assigns 0.88 (above $GLOBAL.complexity_threshold
+  of 0.75), so Architectural_Review takes the Escalate_To_Opus branch.
+  An opus-class architect agent reviews the plan and returns a verdict;
+  the consolidated review is stored at $LOCAL.architect_review. Implement
+  then applies the plan, incorporating the review notes.
+
+background:
+  initial:
+    local:
+      plan: "plans/jwt-signing-key-rotation-and-access-token-ttl-reduction.md"
+
+fixtures:
+  side_effects:
+    plan_read:
+      path: plans/jwt-signing-key-rotation-and-access-token-ttl-reduction.md
+      excerpt: "Rotate JWT signing keys on a 30-day schedule and shorten access-token TTL from 24h to 1h."
+    complexity_assessment:
+      score: 0.88
+      rationale: |
+        Cross-cutting auth change touching key management, token issuance,
+        verifier middleware, and downstream service trust. Migration story
+        for in-flight tokens. High blast radius.
+    architect_review:
+      verdict: approve_with_revisions
+      revisions:
+        - Add a graceful-rollover window during which both the previous and current keys verify.
+        - Emit a metric on access-token age at verify time so we can confirm TTL adoption pre-rollout.
+      summary: |
+        Approach is sound. The two revisions above must be in scope before
+        the change merges — both are about minimising production risk
+        during the rollover window.
+    clean_code_guide_load:
+      file: clean-code.md
+      bytes: 2014
+    implementation_outcome:
+      files_changed:
+        - src/auth/keys.ts
+        - src/auth/issuer.ts
+        - src/auth/verifier.ts
+        - src/auth/metrics.ts
+        - tests/auth/keys.test.ts
+        - tests/auth/issuer.test.ts
+      lines_added: 412
+      lines_removed: 87
+    project_tests:
+      command: "bun test"
+      result: pass
+      duration_seconds: 18.9
+    project_linters:
+      command: "bunx biome check"
+      result: pass
+
+scenario:
+  name: High complexity escalates to the opus architect and the implement step passes after incorporating the review
+  given:
+    - $LOCAL.plan is set to a plans/*.md path describing a cross-cutting change
+    - $GLOBAL.complexity_threshold is 0.75
+  when:
+    - Score_Complexity evaluate → true ($LOCAL.plan is set)
+    - Score_Complexity writes $LOCAL.complexity_score = 0.88 (per fixtures.side_effects.complexity_assessment)
+    - Escalate_To_Opus evaluate → true (0.88 > 0.75)
+    - Escalate_To_Opus delegates to an opus-class architect; consolidated review captured at $LOCAL.architect_review (per fixtures.side_effects.architect_review)
+    - Ensure Plan and Review are Set evaluate → true ($LOCAL.plan and $LOCAL.architect_review both set)
+    - Implement loads $GLOBAL.clean_code_guide, applies the plan + incorporates revisions per fixtures.side_effects.implementation_outcome
+    - Implement evaluate (project tests) → true per fixtures.side_effects.project_tests
+    - Implement evaluate (project linters) → true per fixtures.side_effects.project_linters
+  then:
+    local:
+      plan: non-empty
+      complexity_score: 0.88
+      architect_review: non-empty
+    runtime:
+      retry_count:
+        Implement: 0
+    status: done

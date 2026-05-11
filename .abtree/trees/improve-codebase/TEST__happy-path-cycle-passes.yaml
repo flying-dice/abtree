@@ -1,0 +1,131 @@
+feature: Improve_Codebase scores quality metrics, hardens a refactor queue, iterates, and verdicts
+tree: improve-codebase
+description: |
+  Full-cycle happy path. Intent confirmed, baseline green, all four
+  parallel metric scorers run, baseline snapshotted. Critique hardens the
+  queue, online lookups land, triage filters/orders, human approves.
+  Iterative_Refactor processes two items end-to-end — each clears
+  implement → regression-test → reassess on its first attempt. Final
+  reassessment shows every metric at or above its threshold, and
+  Cycle_Verdict picks Cycle_Passed.
+
+background:
+  initial:
+    local:
+      change_request: "Improve DRY and SRP across the request-handler module before we expand the API surface."
+
+fixtures:
+  side_effects:
+    scope_interpretation:
+      summary: "Two metrics in focus: DRY and SRP, on src/api/handlers/."
+      human_confirmation:
+        scope_confirmed: true
+    baseline_test_run:
+      command: "bun test"
+      result: pass
+      duration_seconds: 12.1
+    metric_scores_initial:
+      score_dry: { score: 0.52, observations: [{ file: src/api/handlers/users.ts, severity: med, risk: low, cost_benefit: 0.78 }], risk: low, cost_benefit: 0.78 }
+      score_srp: { score: 0.61, observations: [{ file: src/api/handlers/orders.ts, severity: high, risk: med, cost_benefit: 0.72 }], risk: med, cost_benefit: 0.72 }
+      score_coupling: { score: 0.74, observations: [], risk: low, cost_benefit: 0.30 }
+      score_cohesion: { score: 0.71, observations: [], risk: low, cost_benefit: 0.28 }
+    baseline_snapshot:
+      dry: 0.52
+      srp: 0.61
+      coupling: 0.74
+      cohesion: 0.71
+    critique_outcome:
+      kept:
+        - { id: dry-1, metric: dry, threshold: 0.7, summary: "Extract response-shape builder", file: src/api/handlers/users.ts, risk: low, cost_benefit: 0.82 }
+        - { id: srp-1, metric: srp, threshold: 0.7, summary: "Split order validator from order writer", file: src/api/handlers/orders.ts, risk: med, cost_benefit: 0.74 }
+      dropped:
+        - { id: coupling-1, reason: "score already at threshold" }
+        - { id: cohesion-1, reason: "score already at threshold" }
+    online_references:
+      dry: ["Fowler — Extract Function", "DDD — value objects for response shapes"]
+      srp: ["Martin — single reason to change", "split-the-class refactor (Beck)"]
+    triage_outcome:
+      ordered:
+        - dry-1
+        - srp-1
+      dropped_low_value: []
+      human_confirmation:
+        triage_approved: true
+    refactor_item_outcomes:
+      dry-1:
+        risk_branch: skip_critique
+        implementation:
+          files_changed: [src/api/handlers/users.ts, src/api/handlers/_response.ts]
+          lines_added: 64
+          lines_removed: 38
+        regression_tests:
+          command: "bun test"
+          result: pass
+        reassess:
+          score: 0.84
+      srp-1:
+        risk_branch: high_risk_critique
+        refactor_plan:
+          affected_files: [src/api/handlers/orders.ts, src/api/validators/order.ts, src/api/writers/order.ts]
+          downstream_consumers: [src/services/checkout.ts]
+          tests_to_run_first: [tests/api/handlers/orders.test.ts]
+          safest_edit_order: [add new validator module, switch handler to call validator, then writer, run tests]
+        implementation:
+          files_changed: [src/api/handlers/orders.ts, src/api/validators/order.ts, src/api/writers/order.ts]
+          lines_added: 142
+          lines_removed: 96
+        regression_tests:
+          command: "bun test"
+          result: pass
+        reassess:
+          score: 0.82
+    final_reassessment:
+      dry: 0.84
+      srp: 0.82
+      coupling: 0.74
+      cohesion: 0.71
+
+scenario:
+  name: Full cycle — two items refactored cleanly, every metric clears threshold, Cycle_Passed wins
+  given:
+    - $LOCAL.change_request is set
+    - $GLOBAL.test_command is set
+    - $GLOBAL.metric_thresholds defines a 0.7 floor per metric
+  when:
+    - Check_Intent confirms scope; $LOCAL.scope_confirmed = true
+    - Verify_Baseline runs $GLOBAL.test_command → pass; $LOCAL.baseline_tests_pass = true
+    - Score_Quality_Metrics writes all four score_* slots per fixtures.side_effects.metric_scores_initial
+    - Snapshot_Baseline writes $LOCAL.baseline_scores per fixtures.side_effects.baseline_snapshot
+    - Compile_Report builds $LOCAL.refactor_queue (each item carries threshold from $GLOBAL.metric_thresholds)
+    - Critique_Findings overwrites $LOCAL.refactor_queue with the hardened list per fixtures.side_effects.critique_outcome.kept
+    - Lookup_Online stores patterns under $LOCAL.online_references keyed by metric
+    - Triage_Refactor_Queue orders the queue by cost_benefit descending; surfaces to human
+    - Triage_Approval_Gate human sets $LOCAL.triage_approved = true
+    - Iterative_Refactor pass 1 — Halt_Check eval true, Pick_Next_Item sets $LOCAL.current_item = dry-1
+    - Refactor_Item dry-1 — Pre_Refactor_Critique selector takes Skip_Critique branch (risk=low)
+    - Refactor_Item dry-1 — Implement_Refactor applies changes; Regression_Test passes; Reassess_Metric scores 0.84 ≥ 0.7
+    - Record_Item_Done appends dry-1 to $LOCAL.done_log; clears current_item / current_score / refactor_plan
+    - Continue_Or_Done evaluate → false (queue still has srp-1) → outer retry fires
+    - Iterative_Refactor pass 2 — Pick_Next_Item sets $LOCAL.current_item = srp-1
+    - Refactor_Item srp-1 — Pre_Refactor_Critique takes High_Risk_Critique (risk=med treated as high here per fixture); writes $LOCAL.refactor_plan
+    - Refactor_Item srp-1 — Implement_Refactor applies changes; Regression_Test passes; Reassess_Metric scores 0.82 ≥ 0.7
+    - Record_Item_Done appends srp-1 to $LOCAL.done_log
+    - Continue_Or_Done evaluate → true (queue empty)
+    - Final_Reassessment writes $LOCAL.final_scores per fixtures.side_effects.final_reassessment
+    - Cycle_Verdict selector → Cycle_Passed evaluate true (every metric ≥ threshold)
+    - Cycle_Passed surfaces the final report
+  then:
+    local:
+      change_request: non-empty
+      scope_confirmed: true
+      baseline_tests_pass: true
+      baseline_scores: non-empty
+      refactor_queue: empty
+      done_log: non-empty
+      failed_log: empty
+      stage_halt: false
+      final_scores: non-empty
+    runtime:
+      retry_count:
+        Refactor_Item: 0
+    status: done

@@ -1,0 +1,40 @@
+feature: Improve_Codebase scores quality metrics, hardens a refactor queue, iterates, and verdicts
+tree: improve-codebase
+description: |
+  Guard — the execution is created without seeding $LOCAL.change_request.
+  Check_Intent's first step is `evaluate: $LOCAL.change_request is set`;
+  with change_request=null the evaluate returns false, the action fails,
+  and the parent Improve_Codebase sequence aborts on its first child
+  before any baseline check, scoring, or refactor work occurs.
+
+background:
+  initial:
+    local: {}   # change_request deliberately NOT seeded
+
+scenario:
+  name: No change_request seeded → Check_Intent guard fails and the workflow aborts on its first step
+  given:
+    - $LOCAL.change_request is null
+  when:
+    - Check_Intent evaluate → false ($LOCAL.change_request is not set)
+    - Check_Intent action fails on its guard step
+    - parent sequence Improve_Codebase aborts on the first failing child
+  then:
+    local:
+      change_request: null
+      scope_confirmed: null
+      baseline_tests_pass: null
+      score_dry: null
+      score_srp: null
+      score_coupling: null
+      score_cohesion: null
+      baseline_scores: null
+      refactor_queue: null
+      done_log: []
+      failed_log: []
+      stage_halt: false
+      final_scores: null
+    runtime:
+      retry_count:
+        Iterative_Refactor: 0
+    status: failure

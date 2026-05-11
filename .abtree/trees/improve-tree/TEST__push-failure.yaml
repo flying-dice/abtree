@@ -1,0 +1,80 @@
+feature: Improve_Tree scores a tree against a session, finds improvements, drafts a plan, and commits
+tree: improve-tree
+description: |
+  Push-fails branch. The workflow runs cleanly through scoring, finding,
+  and drafting. Commit_And_Push stages and commits the plan file, then
+  the push fails (no upstream / network). The action surfaces failure
+  with the error message rather than retrying. Because $LOCAL.plan_path
+  was set before the failure, the on-disk plan still exists; the commit
+  is local-only.
+
+background:
+  initial:
+    local:
+      session_ref: "test-tree-run-default-unclassifiable-tim__hello-world__1"
+
+fixtures:
+  side_effects:
+    execution_read:
+      id: test-tree-run-default-unclassifiable-tim__hello-world__1
+      tree: hello-world
+      status: done
+      cursor: null
+      evidence:
+        nodes_reached: [Hello_World, Determine_Time, Choose_Greeting, Default_Greeting]
+        nodes_failed: []
+        retries_exhausted: []
+        stage_halt: false
+        local_keys_null: []
+        local_keys_populated: [time_of_day, greeting]
+    tree_yaml_read:
+      path: .abtree/trees/hello-world/TREE.yaml
+      bytes: 1820
+    authoring_guide_load:
+      command: "abtree docs author"
+      bytes: 12480
+    plan_write:
+      path: plans/2026-05-11-improve-hello-world.md
+      bytes: 1604
+    git_commit:
+      sha: f3a9d2c81d5e44b8915f6a3e2c0c7a1d1e8b9f02
+      message: "docs(plans): improve-tree review of hello-world (session test-tree-run-default-unclassifiable-tim__hello-world__1)"
+      files:
+        - plans/2026-05-11-improve-hello-world.md
+    git_push:
+      remote: origin
+      branch: main
+      result: failure
+      error: |
+        fatal: The current branch main has no upstream branch.
+        To push the current branch and set the remote as upstream, use
+            git push --set-upstream origin main
+
+scenario:
+  name: Push fails with no upstream — workflow surfaces the error and ends in failure
+  given:
+    - $LOCAL.session_ref is set
+    - the local branch has no configured upstream
+  when:
+    - Identify_Target writes $LOCAL.tree_slug = "hello-world" and $LOCAL.session_evidence
+    - Score_And_Find writes $LOCAL.effectiveness_score and $LOCAL.improvements
+    - Draft_Plan writes plans/2026-05-11-improve-hello-world.md and stores $LOCAL.plan_path
+    - Commit_And_Push commits per fixtures.side_effects.git_commit (local-only)
+    - Commit_And_Push attempts to push per fixtures.side_effects.git_push → result "failure"
+    - Commit_And_Push submits failure with the error message; $LOCAL.commit_sha left null (capture was conditional on push success)
+  then:
+    local:
+      tree_slug: hello-world
+      effectiveness_score: non-empty
+      improvements: non-empty
+      plan_path: equals fixtures.side_effects.plan_write.path
+      commit_sha: null
+    files:
+      plan_path:
+        exists: true
+        frontmatter:
+          status: draft
+    git:
+      committed_locally: true
+      pushed: false
+    status: failure

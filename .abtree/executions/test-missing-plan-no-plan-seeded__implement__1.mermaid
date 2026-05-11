@@ -1,0 +1,20 @@
+---
+title: "test-missing-plan no plan seeded (failed)"
+---
+flowchart TD
+    Implementation_Workflow{{"Implementation Workflow\n[sequence]"}}
+    0_Score_Complexity["Score Complexity\n[action]"]
+    Implementation_Workflow --> 0_Score_Complexity
+    style 0_Score_Complexity fill:#f87171,stroke:#dc2626,color:#450a0a
+    0_Architectural_Review{{"Architectural Review\n[selector]"}}
+    Implementation_Workflow --> 0_Architectural_Review
+    0_1_Escalate_To_Opus["Escalate To Opus\n[action]"]
+    0_Architectural_Review --> 0_1_Escalate_To_Opus
+    0_1_Skip_Opus["Skip Opus\n[action]"]
+    0_Architectural_Review --> 0_1_Skip_Opus
+    0_Apply_Plan{{"Apply Plan\n[sequence]"}}
+    Implementation_Workflow --> 0_Apply_Plan
+    0_2_Ensure_Plan_and_Review_are_Set["Ensure Plan and Review are Set\n[action]"]
+    0_Apply_Plan --> 0_2_Ensure_Plan_and_Review_are_Set
+    0_2_Implement["Implement\n[action]"]
+    0_Apply_Plan --> 0_2_Implement

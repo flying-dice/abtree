@@ -1,0 +1,59 @@
+feature: Improve_Codebase scores quality metrics, hardens a refactor queue, iterates, and verdicts
+tree: improve-codebase
+description: |
+  Verify_Baseline aborts when the test suite is already red. Check_Intent
+  passes (change_request set, human confirms scope). Verify_Baseline runs
+  $GLOBAL.test_command; one test fails, so the action submits failure
+  before $LOCAL.baseline_tests_pass is ever set true. The parent sequence
+  aborts on this second child — no scoring, no triage, no refactor work
+  occurs.
+
+background:
+  initial:
+    local:
+      change_request: "Improve code quality across src/auth/ — duplication is hurting onboarding."
+
+fixtures:
+  side_effects:
+    scope_interpretation:
+      summary: "Single-module focus: src/auth/. All four metrics in scope."
+      human_confirmation:
+        scope_confirmed: true
+    baseline_test_run:
+      command: "bun test"
+      result: failure
+      failing_tests:
+        - "tests/auth/issuer.test.ts > issues a token with the active key"
+      duration_seconds: 9.4
+
+scenario:
+  name: Baseline tests are red → Verify_Baseline aborts and no improvement work runs
+  given:
+    - $LOCAL.change_request is set
+    - the project test suite has a pre-existing failure
+  when:
+    - Check_Intent evaluate → true ($LOCAL.change_request is set)
+    - Check_Intent surfaces the scope interpretation; human writes $LOCAL.scope_confirmed = true
+    - Check_Intent evaluate → true ($LOCAL.scope_confirmed is true)
+    - Verify_Baseline evaluate → true ($GLOBAL.test_command is set)
+    - Verify_Baseline runs $GLOBAL.test_command per fixtures.side_effects.baseline_test_run → result "failure"
+    - Verify_Baseline submits failure; $LOCAL.baseline_tests_pass left null
+    - parent sequence Improve_Codebase aborts on Verify_Baseline failure
+  then:
+    local:
+      change_request: non-empty
+      scope_confirmed: true
+      baseline_tests_pass: null
+      score_dry: null
+      score_srp: null
+      score_coupling: null
+      score_cohesion: null
+      baseline_scores: null
+      refactor_queue: null
+      done_log: []
+      failed_log: []
+      final_scores: null
+    runtime:
+      retry_count:
+        Iterative_Refactor: 0
+    status: failure

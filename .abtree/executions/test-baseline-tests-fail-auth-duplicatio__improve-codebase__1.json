@@ -1,0 +1,53 @@
+{
+  "id": "test-baseline-tests-fail-auth-duplicatio__improve-codebase__1",
+  "tree": "improve-codebase",
+  "summary": "test-baseline-tests-fail auth duplication",
+  "status": "failed",
+  "snapshot": "55c4ef647411f84bff2f8f479963867e0215ae230871e7ea3d802e093894e528",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-11T00:21:20.688Z",
+  "updated_at": "2026-05-11T00:21:30.215Z",
+  "local": {
+    "change_request": "Improve code quality across src/auth/ — duplication is hurting onboarding.",
+    "scope_confirmed": true,
+    "baseline_tests_pass": null,
+    "score_dry": null,
+    "score_srp": null,
+    "score_coupling": null,
+    "score_cohesion": null,
+    "baseline_scores": null,
+    "report": null,
+    "refactor_queue": null,
+    "online_references": null,
+    "current_item": null,
+    "current_score": null,
+    "refactor_plan": null,
+    "done_log": [],
+    "failed_log": [],
+    "stage_halt": false,
+    "triage_approved": null,
+    "final_scores": null
+  },
+  "global": {
+    "test_command": "the command that runs the project's full regression test suite (e.g. 'bun test', 'pnpm test')",
+    "metric_thresholds": {
+      "dry": 0.7,
+      "srp": 0.7,
+      "coupling": 0.7,
+      "cohesion": 0.7
+    }
+  },
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "failure"
+    },
+    "step_index": {
+      "0": 3,
+      "1": 1
+    },
+    "retry_count": {}
+  }
+}

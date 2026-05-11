@@ -1,0 +1,15 @@
+---
+title: "runner-implement-test-happy-path-low-complexity (running)"
+---
+flowchart TD
+    Test_Runner{{"Test Runner\n[sequence]"}}
+    0_Load_Spec["Load Spec\n[action]"]
+    Test_Runner --> 0_Load_Spec
+    0_Drive_Workflow["Drive Workflow\n[action]"]
+    Test_Runner --> 0_Drive_Workflow
+    0_Capture_Trace["Capture Trace\n[action]"]
+    Test_Runner --> 0_Capture_Trace
+    0_Compare_Assertions["Compare Assertions\n[action]"]
+    Test_Runner --> 0_Compare_Assertions
+    0_Write_Report["Write Report\n[action]"]
+    Test_Runner --> 0_Write_Report

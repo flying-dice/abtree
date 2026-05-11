@@ -1,0 +1,86 @@
+feature: Improve_Codebase scores quality metrics, hardens a refactor queue, iterates, and verdicts
+tree: improve-codebase
+description: |
+  Partial-verdict path. Cycle runs end to end and processes two refactor
+  items successfully. Final reassessment shows coupling still below
+  its 0.7 threshold despite the work done elsewhere — DRY and SRP
+  improved, but coupling regressed slightly because the new validator
+  module added a fan-in. Cycle_Verdict's first child (Cycle_Passed)
+  fails its evaluate; the selector falls through to Cycle_Partial which
+  surfaces the partial-improvement report.
+
+background:
+  initial:
+    local:
+      change_request: "Improve DRY and SRP across the request-handler module before we expand the API surface."
+
+fixtures:
+  side_effects:
+    scope_interpretation:
+      summary: "Two metrics in focus: DRY and SRP, on src/api/handlers/."
+      human_confirmation:
+        scope_confirmed: true
+    baseline_test_run:
+      command: "bun test"
+      result: pass
+      duration_seconds: 12.1
+    metric_scores_initial:
+      score_dry: { score: 0.52, observations: [{ file: src/api/handlers/users.ts, severity: med, risk: low, cost_benefit: 0.78 }] }
+      score_srp: { score: 0.61, observations: [{ file: src/api/handlers/orders.ts, severity: high, risk: med, cost_benefit: 0.72 }] }
+      score_coupling: { score: 0.72, observations: [], risk: low, cost_benefit: 0.30 }
+      score_cohesion: { score: 0.71, observations: [], risk: low, cost_benefit: 0.28 }
+    baseline_snapshot:
+      dry: 0.52
+      srp: 0.61
+      coupling: 0.72
+      cohesion: 0.71
+    critique_outcome:
+      kept:
+        - { id: dry-1, metric: dry, threshold: 0.7 }
+        - { id: srp-1, metric: srp, threshold: 0.7 }
+    triage_outcome:
+      ordered: [dry-1, srp-1]
+      human_confirmation:
+        triage_approved: true
+    refactor_item_outcomes:
+      dry-1:
+        risk_branch: skip_critique
+        regression_tests: { result: pass }
+        reassess: { score: 0.84 }
+      srp-1:
+        risk_branch: high_risk_critique
+        regression_tests: { result: pass }
+        reassess: { score: 0.82 }
+    final_reassessment:
+      dry: 0.84
+      srp: 0.82
+      coupling: 0.66    # ← regressed below threshold due to new validator's fan-in
+      cohesion: 0.71
+
+scenario:
+  name: Cycle completes but coupling regressed below threshold → Cycle_Partial wins
+  given:
+    - $LOCAL.change_request is set
+    - $GLOBAL.test_command is set
+    - $GLOBAL.metric_thresholds defines a 0.7 floor per metric
+  when:
+    - Improve_Codebase pre-iteration stages all complete identically to the happy path
+    - Iterative_Refactor processes dry-1 and srp-1 — both clear retries cleanly
+    - Continue_Or_Done evaluate → true (queue empty) on outer pass 2
+    - Final_Reassessment writes $LOCAL.final_scores per fixtures.side_effects.final_reassessment
+    - Cycle_Verdict selector → Cycle_Passed evaluate → false (coupling 0.66 < 0.7)
+    - Cycle_Verdict selector → Cycle_Partial wins; surfaces partial-improvement report covering deltas, done_log, failed_log
+  then:
+    local:
+      scope_confirmed: true
+      baseline_tests_pass: true
+      baseline_scores: non-empty
+      refactor_queue: empty
+      done_log: non-empty
+      failed_log: empty
+      stage_halt: false
+      final_scores: non-empty
+    runtime:
+      retry_count:
+        Refactor_Item: 0
+    status: done

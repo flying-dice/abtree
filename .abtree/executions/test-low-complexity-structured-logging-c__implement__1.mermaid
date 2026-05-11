@@ -1,0 +1,26 @@
+---
+title: "test-low-complexity structured logging change (complete)"
+---
+flowchart TD
+    Implementation_Workflow{{"Implementation Workflow\n[sequence]"}}
+    0_Score_Complexity["Score Complexity\n[action]"]
+    Implementation_Workflow --> 0_Score_Complexity
+    style 0_Score_Complexity fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Architectural_Review{{"Architectural Review\n[selector]"}}
+    Implementation_Workflow --> 0_Architectural_Review
+    style 0_Architectural_Review fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_1_Escalate_To_Opus["Escalate To Opus\n[action]"]
+    0_Architectural_Review --> 0_1_Escalate_To_Opus
+    style 0_1_Escalate_To_Opus fill:#f87171,stroke:#dc2626,color:#450a0a
+    0_1_Skip_Opus["Skip Opus\n[action]"]
+    0_Architectural_Review --> 0_1_Skip_Opus
+    style 0_1_Skip_Opus fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Apply_Plan{{"Apply Plan\n[sequence]"}}
+    Implementation_Workflow --> 0_Apply_Plan
+    style 0_Apply_Plan fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_2_Ensure_Plan_and_Review_are_Set["Ensure Plan and Review are Set\n[action]"]
+    0_Apply_Plan --> 0_2_Ensure_Plan_and_Review_are_Set
+    style 0_2_Ensure_Plan_and_Review_are_Set fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_2_Implement["Implement\n[action]"]
+    0_Apply_Plan --> 0_2_Implement
+    style 0_2_Implement fill:#4ade80,stroke:#16a34a,color:#052e16

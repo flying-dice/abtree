@@ -1,0 +1,82 @@
+{
+  "id": "test-with-session-ref-hello-world-locali__improve-tree__1",
+  "tree": "improve-tree",
+  "summary": "test-with-session-ref hello-world localisation",
+  "status": "complete",
+  "snapshot": "3afd56cc4c6894f45e2c64def490bf62a99e089dfeba328597b8d3173aeb9674",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-11T00:18:16.467Z",
+  "updated_at": "2026-05-11T00:18:51.338Z",
+  "local": {
+    "session_ref": "test-tree-run-localisation-formal-french__hello-world__1",
+    "tree_slug": "hello-world",
+    "session_evidence": {
+      "nodes_reached": [
+        "Hello_World",
+        "Determine_Time",
+        "Choose_Greeting",
+        "Morning_Greeting"
+      ],
+      "nodes_failed": [
+        "Morning_Greeting"
+      ],
+      "retries_exhausted": [],
+      "stage_halt": false,
+      "local_keys_null": [
+        "greeting"
+      ],
+      "local_keys_populated": [
+        "time_of_day"
+      ]
+    },
+    "effectiveness_score": {
+      "score": 0.62,
+      "observations": [
+        {
+          "node_path": "Hello_World/Choose_Greeting/Morning_Greeting",
+          "severity": "high",
+          "evidence": "Morning_Greeting failed despite time_of_day=morning; instruction does not account for $GLOBAL.tone=formal + $GLOBAL.language=french override"
+        }
+      ]
+    },
+    "improvements": [
+      {
+        "kind": "reword",
+        "target": "Hello_World/Choose_Greeting/Morning_Greeting",
+        "change": "explicitly fold $GLOBAL.tone and $GLOBAL.language into the prompt",
+        "rationale": "session failed because formal/french override was ignored"
+      },
+      {
+        "kind": "add-evaluate",
+        "target": "Hello_World/Choose_Greeting/Default_Greeting",
+        "change": "explicit fallback eval gate so unclassifiable times do not error",
+        "rationale": "defensive against future time_of_day surprises"
+      }
+    ],
+    "plan_path": "plans/2026-05-11-improve-hello-world.md",
+    "commit_sha": "4a9f1c2bfa7d6e5e93a118b3b2a30a44b1d8e7c1"
+  },
+  "global": {
+    "authoring_guide": "run `abtree docs author` for the YAML authoring guide and the rules a tree should satisfy"
+  },
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "success",
+      "1.0": "success",
+      "1.1": "success"
+    },
+    "step_index": {
+      "0": 2,
+      "2": 3,
+      "3": 1,
+      "1.0": 1,
+      "1.1": 1
+    },
+    "retry_count": {}
+  }
+}

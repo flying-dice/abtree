@@ -1,0 +1,30 @@
+feature: Implement applies an approved plan, gated by complexity-based architectural review
+tree: implement
+description: |
+  Guard — the execution is created without seeding $LOCAL.plan.
+  Score_Complexity's first step is `evaluate: $LOCAL.plan is set`; with
+  plan=null the evaluate returns false, the action fails, and the parent
+  Implementation_Workflow sequence aborts on its first child before any
+  complexity scoring, architectural review, or implementation occurs.
+
+background:
+  initial:
+    local: {}   # plan deliberately NOT seeded
+
+scenario:
+  name: No plan seeded → Score_Complexity guard fails and the workflow aborts on its first step
+  given:
+    - $LOCAL.plan is null
+  when:
+    - Score_Complexity evaluate → false ($LOCAL.plan is not set)
+    - Score_Complexity action fails on its guard step
+    - parent sequence Implementation_Workflow aborts on the first failing child
+  then:
+    local:
+      plan: null
+      complexity_score: null
+      architect_review: null
+    runtime:
+      retry_count:
+        Implement: 0
+    status: failure

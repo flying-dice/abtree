@@ -1,0 +1,64 @@
+feature: Implement applies an approved plan, gated by complexity-based architectural review
+tree: implement
+description: |
+  Low-complexity happy path. $LOCAL.plan is seeded with a single-file edit
+  plan. Score_Complexity assigns 0.40 (below $GLOBAL.complexity_threshold
+  of 0.75), so the Architectural_Review selector takes the Skip_Opus
+  branch and records "skipped" at $LOCAL.architect_review. Implement runs
+  once: the clean-code guide is followed, tests pass, lints pass.
+
+background:
+  initial:
+    local:
+      plan: "plans/structured-logging-for-the-ingestion-service.md"
+
+fixtures:
+  side_effects:
+    plan_read:
+      path: plans/structured-logging-for-the-ingestion-service.md
+      excerpt: "Add structured logging to the ingestion service so traces correlate in Grafana."
+    complexity_assessment:
+      score: 0.40
+      rationale: |
+        Single-service change, one file (logger.ts) + matching test. No
+        public-API change, no migration. Low blast radius.
+    clean_code_guide_load:
+      file: clean-code.md
+      bytes: 2014
+    implementation_outcome:
+      files_changed:
+        - src/ingestion/logger.ts
+        - tests/ingestion/logger.test.ts
+      lines_added: 64
+      lines_removed: 18
+    project_tests:
+      command: "bun test"
+      result: pass
+      duration_seconds: 11.4
+    project_linters:
+      command: "bunx biome check"
+      result: pass
+
+scenario:
+  name: Low complexity skips the architect review and the implement step passes on its first attempt
+  given:
+    - $LOCAL.plan is set to a plans/*.md path
+    - $GLOBAL.complexity_threshold is 0.75
+  when:
+    - Score_Complexity evaluate → true ($LOCAL.plan is set)
+    - Score_Complexity writes $LOCAL.complexity_score = 0.40 (per fixtures.side_effects.complexity_assessment)
+    - Escalate_To_Opus evaluate → false (0.40 ≤ 0.75)
+    - Skip_Opus runs and writes $LOCAL.architect_review = "skipped"
+    - Ensure Plan and Review are Set evaluate → true
+    - Implement loads $GLOBAL.clean_code_guide, applies the plan per fixtures.side_effects.implementation_outcome
+    - Implement evaluate (project tests) → true per fixtures.side_effects.project_tests
+    - Implement evaluate (project linters) → true per fixtures.side_effects.project_linters
+  then:
+    local:
+      plan: non-empty
+      complexity_score: 0.40
+      architect_review: skipped
+    runtime:
+      retry_count:
+        Implement: 0
+    status: done
