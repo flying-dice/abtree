@@ -29,9 +29,7 @@ function exampleSidebarItems() {
 			.filter((f) => f.endsWith(".md") && f !== "index.md")
 			.map((f) => f.replace(/\.md$/, ""));
 		const hasDefinition = subpages.includes("definition");
-		const scenarios = subpages
-			.filter((s) => s !== "definition")
-			.sort();
+		const scenarios = subpages.filter((s) => s !== "definition").sort();
 
 		return {
 			text: titleCase(slug),

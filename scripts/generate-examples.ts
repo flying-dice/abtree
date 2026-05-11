@@ -86,7 +86,10 @@ function loadScenarios(slug: string): ScenarioInfo[] {
 		}));
 
 	const reportRegex = /^REPORT__(.+)__(\d{8}T\d{6}Z)\.md$/;
-	const latestByScenario = new Map<string, { file: string; timestamp: string }>();
+	const latestByScenario = new Map<
+		string,
+		{ file: string; timestamp: string }
+	>();
 	for (const f of files) {
 		const m = f.match(reportRegex);
 		if (!m) continue;
@@ -104,7 +107,9 @@ function loadScenarios(slug: string): ScenarioInfo[] {
 			const specRaw = readFileSync(specPath, "utf-8");
 			let scenarioName: string | null = null;
 			try {
-				const data = Bun.YAML.parse(specRaw) as { scenario?: { name?: string } };
+				const data = Bun.YAML.parse(specRaw) as {
+					scenario?: { name?: string };
+				};
 				scenarioName = data?.scenario?.name ?? null;
 			} catch {
 				scenarioName = null;
@@ -240,9 +245,7 @@ function renderScenarioPage(tree: TreeMeta, s: ScenarioInfo): string {
 		// Strip the H1 (it's the page-level title we already render) and
 		// demote remaining headings by 1 so the report's H2s become H3s under
 		// the page's "## Latest report" heading.
-		lines.push(
-			demoteHeadings(stripFirstH1(s.latestReport.raw), 1).trimEnd(),
-		);
+		lines.push(demoteHeadings(stripFirstH1(s.latestReport.raw), 1).trimEnd());
 		lines.push("");
 	}
 	return lines.join("\n");
@@ -427,13 +430,8 @@ async function main() {
 		for (const scenario of tree.scenarios) {
 			const fname = `${scenario.scenario}.md`;
 			wantedFiles.add(fname);
-			writeFileSync(
-				join(slugDir, fname),
-				renderScenarioPage(tree, scenario),
-			);
-			console.log(
-				`  ✓ docs/examples/${tree.slug}/${scenario.scenario}.md`,
-			);
+			writeFileSync(join(slugDir, fname), renderScenarioPage(tree, scenario));
+			console.log(`  ✓ docs/examples/${tree.slug}/${scenario.scenario}.md`);
 		}
 
 		// Clean up orphaned scenario pages (TEST file was renamed/removed).
