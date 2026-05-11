@@ -21,7 +21,7 @@ import {
 	TreeSnapshotStore,
 	tickRoot,
 } from "abtree_runtime";
-import EXECUTE_DOC from "../docs/agents/execute.md" with { type: "text" };
+import EXECUTE_DOC from "../../../docs/agents/execute.md" with { type: "text" };
 import { SKILL_TARGETS, type SkillScope, type SkillVariant } from "./skills.ts";
 import {
 	assetUrl,

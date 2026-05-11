@@ -23,7 +23,7 @@ const { values } = parseArgs({
 });
 
 const root = resolve(import.meta.dir, "..");
-const entrypoint = resolve(root, "index.ts");
+const entrypoint = resolve(root, "packages/cli/index.ts");
 
 function compile(outfile: string, bunTarget?: string) {
 	const outPath = resolve(root, outfile);

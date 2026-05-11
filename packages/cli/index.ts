@@ -10,8 +10,9 @@ import {
 	setMutationListener,
 } from "abtree_runtime";
 import { Command } from "commander";
-import AUTHOR_DOC from "./docs/agents/author.md" with { type: "text" };
-import EXECUTE_DOC from "./docs/agents/execute.md" with { type: "text" };
+import AUTHOR_DOC from "../../docs/agents/author.md" with { type: "text" };
+import EXECUTE_DOC from "../../docs/agents/execute.md" with { type: "text" };
+import TREE_SCHEMA from "../../tree.schema.json" with { type: "text" };
 import SKILL_CONTENT from "./SKILL.md" with { type: "text" };
 import {
 	cmdDocs,
@@ -29,7 +30,6 @@ import {
 	cmdUpgrade,
 } from "./src/commands.ts";
 import { VERSION } from "./src/version.ts";
-import TREE_SCHEMA from "./tree.schema.json" with { type: "text" };
 
 setMutationListener(rebuildMermaid);
 

@@ -1,15 +1,11 @@
 {
 	"name": "abtree",
 	"version": "0.1.0",
-	"module": "index.ts",
 	"type": "module",
 	"private": true,
 	"workspaces": [
 		"packages/*"
 	],
-	"bin": {
-		"abtree": "index.ts"
-	},
 	"scripts": {
 		"release": "semantic-release",
 		"schema": "bun scripts/generate-schema.ts",
@@ -19,12 +15,9 @@
 		"docs:preview": "vitepress preview docs"
 	},
 	"dependencies": {
-		"@apidevtools/json-schema-ref-parser": "^15.3.5",
-		"@inquirer/prompts": "^8.4.2",
+		"abtree_cli": "workspace:*",
 		"abtree_dsl": "workspace:*",
-		"abtree_runtime": "workspace:*",
-		"commander": "^12",
-		"zod": "^4.4.3"
+		"abtree_runtime": "workspace:*"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.14",

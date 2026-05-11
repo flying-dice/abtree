@@ -17,7 +17,7 @@ function abtree(
 	cwd: string,
 ): { stdout: string; stderr: string; exitCode: number } {
 	const result = Bun.spawnSync(
-		["bun", resolve(import.meta.dir, "index.ts"), ...args],
+		["bun", resolve(import.meta.dir, "packages/cli/index.ts"), ...args],
 		{ cwd, stdout: "pipe", stderr: "pipe" },
 	);
 	return {

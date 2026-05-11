@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
 const REPO_ROOT = resolve(import.meta.dir, "..");
-const CLI = resolve(REPO_ROOT, "index.ts");
+const CLI = resolve(REPO_ROOT, "packages/cli/index.ts");
 
 export type TestStep =
 	| {
