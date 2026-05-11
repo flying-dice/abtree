@@ -50,6 +50,38 @@
         "abtree_runtime": "workspace:*",
       },
     },
+    "packages/implement": {
+      "name": "abtree_implement",
+      "version": "3.0.0",
+      "devDependencies": {
+        "abtree_dsl": "workspace:*",
+        "abtree_runtime": "workspace:*",
+      },
+    },
+    "packages/improve-codebase": {
+      "name": "abtree_improve-codebase",
+      "version": "1.1.0",
+      "devDependencies": {
+        "abtree_dsl": "workspace:*",
+        "abtree_runtime": "workspace:*",
+      },
+    },
+    "packages/improve-tree": {
+      "name": "abtree_improve-tree",
+      "version": "1.0.0",
+      "devDependencies": {
+        "abtree_dsl": "workspace:*",
+        "abtree_runtime": "workspace:*",
+      },
+    },
+    "packages/refine-plan": {
+      "name": "abtree_refine-plan",
+      "version": "4.2.0",
+      "devDependencies": {
+        "abtree_dsl": "workspace:*",
+        "abtree_runtime": "workspace:*",
+      },
+    },
     "packages/runtime": {
       "name": "abtree_runtime",
       "version": "0.1.0",
@@ -62,6 +94,14 @@
       "name": "abtree_srp-refactor",
       "devDependencies": {
         "abtree_test-tree": "workspace:*",
+      },
+    },
+    "packages/technical-writer": {
+      "name": "abtree_technical-writer",
+      "version": "1.2.1",
+      "devDependencies": {
+        "abtree_dsl": "workspace:*",
+        "abtree_runtime": "workspace:*",
       },
     },
     "packages/test-tree": {
@@ -476,9 +516,19 @@
 
     "abtree_hello-world": ["abtree_hello-world@workspace:packages/hello-world"],
 
+    "abtree_implement": ["abtree_implement@workspace:packages/implement"],
+
+    "abtree_improve-codebase": ["abtree_improve-codebase@workspace:packages/improve-codebase"],
+
+    "abtree_improve-tree": ["abtree_improve-tree@workspace:packages/improve-tree"],
+
+    "abtree_refine-plan": ["abtree_refine-plan@workspace:packages/refine-plan"],
+
     "abtree_runtime": ["abtree_runtime@workspace:packages/runtime"],
 
     "abtree_srp-refactor": ["abtree_srp-refactor@workspace:packages/srp-refactor"],
+
+    "abtree_technical-writer": ["abtree_technical-writer@workspace:packages/technical-writer"],
 
     "abtree_test-tree": ["abtree_test-tree@workspace:packages/test-tree"],
 

@@ -1,0 +1,23 @@
+{
+	"name": "abtree_refine-plan",
+	"version": "4.2.0",
+	"description": "Refine a change request into an approved plan: analyse intent, draft to a per-execution draft file, critique it in place, promote to plans/, then take it through codeowner approval (either in-session or via an assigned MR).",
+	"main": "main.json",
+	"files": [
+		"main.json",
+		"tests"
+	],
+	"scripts": {
+		"build": "bun scripts/build.ts"
+	},
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"planning"
+	],
+	"devDependencies": {
+		"abtree_dsl": "workspace:*",
+		"abtree_runtime": "workspace:*"
+	}
+}

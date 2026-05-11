@@ -1,0 +1,24 @@
+{
+	"name": "abtree_improve-codebase",
+	"version": "1.1.0",
+	"description": "Continuous code-improvement cycle. Confirms intent + green baseline, scores quality metrics in parallel, snapshots the baseline, hardens findings via a Senior-Principal critique, looks up best practices, triages with a human gate, then iterates through each refactor with per-item bounded retries until the queue is drained.",
+	"main": "main.json",
+	"files": [
+		"main.json",
+		"tests"
+	],
+	"scripts": {
+		"build": "bun scripts/build.ts"
+	},
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"refactor",
+		"quality"
+	],
+	"devDependencies": {
+		"abtree_dsl": "workspace:*",
+		"abtree_runtime": "workspace:*"
+	}
+}

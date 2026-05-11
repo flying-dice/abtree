@@ -1,10 +1,11 @@
 {
-	"name": "abtree_hello-world",
-	"version": "2.0.0",
-	"description": "Greet a user based on time of day. Demonstrates sequence, selector, and action primitives.",
+	"name": "abtree_implement",
+	"version": "3.0.0",
+	"description": "Implement an approved plan with complexity-gated architectural review, following the clean-code rules in clean-code.md.",
 	"main": "main.json",
 	"files": [
 		"main.json",
+		"clean-code.md",
 		"tests"
 	],
 	"scripts": {
@@ -14,8 +15,7 @@
 		"abtree",
 		"behaviour-tree",
 		"bt",
-		"hello-world",
-		"example"
+		"implement"
 	],
 	"devDependencies": {
 		"abtree_dsl": "workspace:*",

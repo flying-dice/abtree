@@ -1,7 +1,7 @@
 {
-	"name": "abtree_hello-world",
-	"version": "2.0.0",
-	"description": "Greet a user based on time of day. Demonstrates sequence, selector, and action primitives.",
+	"name": "abtree_improve-tree",
+	"version": "1.0.0",
+	"description": "Score the effectiveness of a tree using evidence from one of its sessions, find improvements in parallel, draft a plan in plans/, then commit and push.",
 	"main": "main.json",
 	"files": [
 		"main.json",
@@ -14,8 +14,7 @@
 		"abtree",
 		"behaviour-tree",
 		"bt",
-		"hello-world",
-		"example"
+		"improve"
 	],
 	"devDependencies": {
 		"abtree_dsl": "workspace:*",

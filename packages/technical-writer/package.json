@@ -1,0 +1,23 @@
+{
+	"name": "abtree_technical-writer",
+	"version": "1.2.1",
+	"description": "Take a documentation goal, ground it in the repo's styleguide, find or build a home in the docs tree, write to it, and gate-check structure / flow / atomicity. Up to three write/review passes (one initial + two retries) before surfacing failure to the human.",
+	"main": "main.json",
+	"files": [
+		"main.json",
+		"tests"
+	],
+	"scripts": {
+		"build": "bun scripts/build.ts"
+	},
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"documentation"
+	],
+	"devDependencies": {
+		"abtree_dsl": "workspace:*",
+		"abtree_runtime": "workspace:*"
+	}
+}

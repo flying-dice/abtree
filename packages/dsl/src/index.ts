@@ -547,3 +547,55 @@ export function evaluate(expression: string): void {
 export function instruct(text: string): void {
 	actionFrame().steps.push({ instruct: text.trim().replace(/\s+/g, " ") });
 }
+
+// ─── build helper ────────────────────────────────────────────────────────
+
+/**
+ * Build the canonical TreeFile object from a DSL-authored root node and
+ * the surrounding package metadata. Combines the module-level
+ * {@link ambient} state with the root, threads in `name` / `version` /
+ * `description` from package.json, and stamps the canonical `$schema`
+ * URL.
+ *
+ * Intended for use in a tree package's `scripts/build.ts`.
+ *
+ * @param opts.pkg - Package metadata (`name`, `version`, optional `description`).
+ * @param opts.tree - The root node produced by the DSL.
+ */
+export function buildTreeFile(opts: {
+	pkg: { name: string; version: string; description?: string };
+	tree: TreeNode;
+}): {
+	$schema: string;
+	name: string;
+	version: string;
+	description?: string;
+	state?: { local?: Record<string, unknown>; global?: Record<string, unknown> };
+	tree: TreeNode;
+} {
+	const out: {
+		$schema: string;
+		name: string;
+		version: string;
+		description?: string;
+		state?: {
+			local?: Record<string, unknown>;
+			global?: Record<string, unknown>;
+		};
+		tree: TreeNode;
+	} = {
+		$schema: "https://abtree.sh/schemas/tree.schema.json",
+		name: opts.pkg.name,
+		version: opts.pkg.version,
+		tree: opts.tree,
+	};
+	if (opts.pkg.description) out.description = opts.pkg.description;
+	const state: {
+		local?: Record<string, unknown>;
+		global?: Record<string, unknown>;
+	} = {};
+	if (Object.keys(ambient.local).length > 0) state.local = ambient.local;
+	if (Object.keys(ambient.global).length > 0) state.global = ambient.global;
+	if (Object.keys(state).length > 0) out.state = state;
+	return out;
+}
