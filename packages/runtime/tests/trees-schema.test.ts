@@ -8,7 +8,7 @@ import { join, resolve } from "node:path";
 import $RefParser from "@apidevtools/json-schema-ref-parser";
 import { TreeFileSchema } from "abtree_runtime";
 
-const TREES_DIR = resolve(import.meta.dir, "..", ".abtree", "trees");
+const TREES_DIR = resolve(import.meta.dir, "../../..", ".abtree", "trees");
 
 for (const slug of readdirSync(TREES_DIR).sort()) {
 	const treePath = join(TREES_DIR, slug, "TREE.yaml");

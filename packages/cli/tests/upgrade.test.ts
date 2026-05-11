@@ -9,8 +9,8 @@ import {
 	downloadAsset,
 	fetchLatestTag,
 	installBinary,
-} from "../packages/cli/src/upgrade.ts";
-import { VERSION } from "../packages/cli/src/version.ts";
+} from "../src/upgrade.ts";
+import { VERSION } from "../src/version.ts";
 
 // ── detectTarget ─────────────────────────────────────────────────────────────
 

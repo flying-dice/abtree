@@ -17,7 +17,7 @@ function abtree(
 	cwd: string,
 ): { stdout: string; stderr: string; exitCode: number } {
 	const result = Bun.spawnSync(
-		["bun", resolve(import.meta.dir, "packages/cli/index.ts"), ...args],
+		["bun", resolve(import.meta.dir, "../index.ts"), ...args],
 		{ cwd, stdout: "pipe", stderr: "pipe" },
 	);
 	return {
@@ -41,7 +41,14 @@ beforeAll(() => {
 	// there is no implicit TREE.yaml default.
 	for (const f of ["TREE.yaml", "package.json"]) {
 		copyFileSync(
-			resolve(import.meta.dir, ".abtree", "trees", "hello-world", f),
+			resolve(
+				import.meta.dir,
+				"../../..",
+				".abtree",
+				"trees",
+				"hello-world",
+				f,
+			),
 			join(tmp, ".abtree", "trees", "hello-world", f),
 		);
 	}
