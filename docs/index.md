@@ -2,12 +2,12 @@
 layout: home
 title: abtree — Behaviour Trees for AI Agents and Agentic Workflows
 titleTemplate: false
-description: Open-source behaviour tree runtime for AI agents and autonomous agentic workflows. Build deterministic, durable, resumable LLM agent workflows in YAML and drive them from the CLI — works with Claude, ChatGPT, and any LLM.
+description: Open-source behaviour tree runtime for AI agents and autonomous agentic workflows. Build deterministic, durable, resumable LLM agent workflows in YAML, JSON, or TypeScript and drive them from the CLI — works with Claude, ChatGPT, and any LLM.
 
 hero:
   name: "abtree"
   text: "Behaviour trees for AI agents"
-  tagline: "Define agent workflows as YAML trees. The runtime hands the agent one step at a time, verifies the result, and persists the cursor — so workflows stay reproducible no matter how big they get."
+  tagline: "Define agent workflows as YAML, JSON, or TypeScript. The runtime hands the agent one step at a time and persists the cursor — so workflows stay reproducible no matter how big they get."
   image:
     src: /abtree-mark.svg
     alt: abtree

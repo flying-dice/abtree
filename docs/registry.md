@@ -1,9 +1,9 @@
 ---
-title: Registry
+title: Discover Trees
 description: Searchable catalog of abtree behaviour-tree packages. Each card links to a source repository you can install via npm, pnpm, or bun.
 ---
 
-# Registry
+# Discover Trees
 
 Behaviour trees published as installable node packages. Click a card to open the source repository. Once installed, run a tree via:
 

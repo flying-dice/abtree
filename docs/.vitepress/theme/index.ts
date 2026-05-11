@@ -9,6 +9,8 @@ import AbtreeContrast from "./AbtreeContrast.vue";
 import AbtreeCta from "./AbtreeCta.vue";
 import AbtreeDemo from "./AbtreeDemo.vue";
 import AbtreeDsl from "./AbtreeDsl.vue";
+import HeroInfo from "./HeroInfo.vue";
+import InstallDemo from "./InstallDemo.vue";
 import RegistryCards from "./RegistryCards.vue";
 import TreeSvg from "./TreeSvg.vue";
 
@@ -37,6 +39,9 @@ export default {
 			() => initMermaid(),
 		);
 
-		return h(DefaultTheme.Layout);
+		return h(DefaultTheme.Layout, null, {
+			"home-hero-info": () => h(HeroInfo),
+			"home-features-before": () => h(InstallDemo),
+		});
 	},
 } satisfies Theme;

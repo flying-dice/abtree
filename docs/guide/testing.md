@@ -103,5 +103,5 @@ Real reports ship inside each tree's own repository — browse the [registry](/r
 
 ## Next
 
-- [Registry](/registry) — browse the published trees, including `test-tree` itself.
+- [Discover Trees](/registry) — browse the published trees, including `test-tree` itself.
 - [Inspecting executions](/guide/inspecting-executions) — what the green/red nodes mean in the trace.

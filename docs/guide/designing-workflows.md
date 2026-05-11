@@ -492,4 +492,4 @@ When a human asks "help me design a tree for `<X>`", work in this order:
 - [Writing trees](/guide/writing-trees) — full YAML field reference.
 - [Inspecting executions](/guide/inspecting-executions) — what the runtime writes back as an execution runs.
 - [Branches and actions](/concepts/branches-and-actions) — primitive semantics in detail.
-- [Registry](/registry) — installable behaviour-tree packages that exercise these idioms in real workflows.
+- [Discover Trees](/registry) — installable behaviour-tree packages that exercise these idioms in real workflows.

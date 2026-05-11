@@ -1,19 +1,32 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 interface Step {
 	id: string;
 	num: string;
 	title: string;
 	lang?: string;
-	cmd: string;
 	caption?: string;
 	block?: boolean; // render as multi-line block instead of one-liner
+	cmd?: string; // static command — omitted when resolved dynamically
 }
 
-const installCli = `curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/install.sh | sh`;
+interface TreePm {
+	name: string;
+	cmd: string;
+}
 
-const installTree = `bun add --dev @abtree/srp-refactor`;
+const treePms: TreePm[] = [
+	{ name: "npm", cmd: "npm i --save-dev @abtree/srp-refactor" },
+	{ name: "pnpm", cmd: "pnpm add --save-dev @abtree/srp-refactor" },
+	{ name: "bun", cmd: "bun add --dev @abtree/srp-refactor" },
+	{ name: "yarn", cmd: "yarn add --dev @abtree/srp-refactor" },
+];
+
+const selectedTreePm = ref(0);
+const installTree = computed(() => treePms[selectedTreePm.value].cmd);
+
+const installCli = `curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/install.sh | sh`;
 
 const agentPrompt = `Run the @abtree/srp-refactor workflow against this repo.
 
@@ -37,9 +50,7 @@ const steps: Step[] = [
 		id: "tree",
 		num: "02",
 		title: "Add the srp-refactor tree",
-		caption:
-			"Drop the published tree into your project — any package manager works.",
-		cmd: installTree,
+		caption: "Drop the published tree into your project.",
 	},
 	{
 		id: "go",
@@ -53,6 +64,11 @@ const steps: Step[] = [
 ];
 
 const winInstall = `irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 | iex`;
+
+function cmdFor(step: Step): string {
+	if (step.id === "tree") return installTree.value;
+	return step.cmd ?? "";
+}
 
 const copied = ref<string | null>(null);
 
@@ -85,8 +101,99 @@ async function copy(id: string, text: string) {
 				<div class="step-body">
 					<div class="step-title">{{ step.title }}</div>
 					<p v-if="step.caption" class="step-caption">{{ step.caption }}</p>
+
+					<div v-if="step.id === 'tree'" class="step-pms" role="tablist">
+						<button
+							v-for="(pm, i) in treePms"
+							:key="pm.name"
+							type="button"
+							role="tab"
+							:aria-selected="i === selectedTreePm"
+							class="step-pm"
+							:class="{ active: i === selectedTreePm }"
+							@click="selectedTreePm = i"
+						>
+							<span class="step-pm-logo">
+								<svg
+									v-if="pm.name === 'npm'"
+									viewBox="0 0 27 27"
+									xmlns="http://www.w3.org/2000/svg"
+									aria-hidden="true"
+								>
+									<rect width="27" height="27" rx="2.5" fill="#CB3837" />
+									<polygon
+										fill="#fff"
+										points="5.8 21.75 13.43 21.75 13.43 9.36 17.27 9.36 17.27 21.75 21.42 21.75 21.42 5.48 5.8 5.48"
+									/>
+								</svg>
+								<svg
+									v-else-if="pm.name === 'pnpm'"
+									viewBox="0 0 200 200"
+									xmlns="http://www.w3.org/2000/svg"
+									aria-hidden="true"
+								>
+									<g fill="#F9AD00">
+										<rect x="0" y="0" width="56" height="56" />
+										<rect x="72" y="0" width="56" height="56" />
+										<rect x="144" y="0" width="56" height="56" />
+										<rect x="72" y="72" width="56" height="56" />
+										<rect x="144" y="72" width="56" height="56" />
+									</g>
+									<g fill="#7B7B7B">
+										<rect x="0" y="72" width="56" height="56" />
+										<rect x="0" y="144" width="56" height="56" />
+										<rect x="72" y="144" width="56" height="56" />
+										<rect x="144" y="144" width="56" height="56" />
+									</g>
+								</svg>
+								<svg
+									v-else-if="pm.name === 'bun'"
+									viewBox="0 0 80 70"
+									xmlns="http://www.w3.org/2000/svg"
+									aria-hidden="true"
+								>
+									<path
+										d="M40 4 C18 4 4 19 4 36 C4 53 18 66 40 66 C62 66 76 53 76 36 C76 19 62 4 40 4 Z"
+										fill="#FBF0DF"
+										stroke="#000"
+										stroke-width="2.5"
+									/>
+									<ellipse cx="30" cy="38" rx="2.5" ry="3.5" fill="#000" />
+									<ellipse cx="50" cy="38" rx="2.5" ry="3.5" fill="#000" />
+									<path
+										d="M30 47 Q40 54 50 47"
+										stroke="#000"
+										stroke-width="2.5"
+										fill="none"
+										stroke-linecap="round"
+									/>
+								</svg>
+								<svg
+									v-else
+									viewBox="0 0 30 30"
+									xmlns="http://www.w3.org/2000/svg"
+									aria-hidden="true"
+								>
+									<circle cx="15" cy="15" r="13.5" fill="#2C8EBB" />
+									<g
+										stroke="#fff"
+										stroke-width="1.2"
+										fill="none"
+										stroke-linecap="round"
+									>
+										<path d="M5 12 Q15 8 25 14" />
+										<path d="M5 18 Q15 22 25 16" />
+										<path d="M8 7 Q15 15 22 7" />
+										<path d="M8 23 Q15 15 22 23" />
+									</g>
+								</svg>
+							</span>
+							{{ pm.name }}
+						</button>
+					</div>
+
 					<div class="step-cmd" :class="{ block: step.block }">
-						<pre class="step-text"><code>{{ step.cmd }}</code></pre>
+						<pre class="step-text"><code>{{ cmdFor(step) }}</code></pre>
 						<button
 							type="button"
 							class="copy-btn"
@@ -94,7 +201,7 @@ async function copy(id: string, text: string) {
 							:aria-label="
 								copied === step.id ? 'Copied to clipboard' : 'Copy command'
 							"
-							@click="copy(step.id, step.cmd)"
+							@click="copy(step.id, cmdFor(step))"
 						>
 							<svg
 								v-if="copied !== step.id"
@@ -251,6 +358,49 @@ async function copy(id: string, text: string) {
 	font-size: 12.5px;
 	color: #8a96be;
 	line-height: 1.5;
+}
+
+.step-pms {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 10px;
+}
+.step-pm {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 5px 11px 5px 8px;
+	font: 600 11.5px/1 "Inter", system-ui, sans-serif;
+	color: #8a96be;
+	background: transparent;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 7px;
+	cursor: pointer;
+	transition:
+		color 150ms ease,
+		border-color 150ms ease,
+		background 150ms ease;
+}
+.step-pm:hover {
+	color: #f8f8f2;
+	border-color: rgba(255, 121, 198, 0.45);
+}
+.step-pm.active {
+	color: #ff79c6;
+	border-color: rgba(255, 121, 198, 0.6);
+	background: rgba(255, 121, 198, 0.09);
+}
+.step-pm-logo {
+	display: inline-flex;
+	width: 14px;
+	height: 14px;
+	flex-shrink: 0;
+}
+.step-pm-logo svg {
+	width: 100%;
+	height: 100%;
+	display: block;
 }
 
 .step-cmd {
