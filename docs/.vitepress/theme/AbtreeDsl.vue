@@ -18,7 +18,6 @@ const pms: PM[] = [
 // scope, a private scope, a GitHub ref, a git+ssh URL to a private host, a
 // raw tarball URL on a company-internal CDN.
 const sources: string[] = [
-	"@abtree/implement",
 	"@acme/implement-feature",
 	"github:acme/implement-feature",
 	"git+ssh://git@gitlab.com/acme/implement-feature.git",
@@ -27,7 +26,6 @@ const sources: string[] = [
 
 const sourceLabels: string[] = [
 	"published to the public npm registry",
-	"on a private npm scope",
 	"straight from a GitHub repo",
 	"self-hosted git over SSH",
 	"from an HTTPS tarball bundle",

@@ -64,4 +64,4 @@ Your agent drives the execution through three commands:
 
 Each call returns JSON, advances the cursor, and persists the execution to disk. The agent only ever sees the next step.
 
-[Get started in five minutes →](/getting-started)
+<AbtreeCta />

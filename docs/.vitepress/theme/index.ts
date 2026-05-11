@@ -6,6 +6,7 @@ import { createMermaidRenderer } from "vitepress-mermaid-renderer";
 import { h, nextTick, watch } from "vue";
 import "./style.css";
 import AbtreeContrast from "./AbtreeContrast.vue";
+import AbtreeCta from "./AbtreeCta.vue";
 import AbtreeDemo from "./AbtreeDemo.vue";
 import AbtreeDsl from "./AbtreeDsl.vue";
 import RegistryCards from "./RegistryCards.vue";
@@ -19,6 +20,7 @@ export default {
 		app.component("RegistryCards", RegistryCards);
 		app.component("TreeSvg", TreeSvg);
 		app.component("AbtreeDsl", AbtreeDsl);
+		app.component("AbtreeCta", AbtreeCta);
 	},
 	Layout: () => {
 		const { isDark } = useData();
