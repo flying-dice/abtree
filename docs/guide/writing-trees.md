@@ -8,17 +8,20 @@ This page walks through the YAML structure of a tree using the bundled `hello-wo
 
 ## File layout
 
-Trees live in `.abtree/trees/<slug>/TREE.yaml`. The slug (the folder name) becomes the tree name shown in `abtree tree list`. The folder gives the tree somewhere to keep its own fragments and playbooks alongside the definition.
+Trees live in `.abtree/trees/<slug>/`. The folder name is the slug you pass to `abtree execution create <slug>`. Each folder must hold a `TREE.yaml` and a `package.json` whose `main` points at it — the runtime never assumes `TREE.yaml`, so the entry has to be declared.
 
 ```
 .abtree/
   trees/
     hello-world/
       TREE.yaml
+      package.json                         # { "name": "hello-world", "main": "TREE.yaml" }
     refine-plan/
       TREE.yaml
+      package.json
     my-big-workflow/
       TREE.yaml
+      package.json
       fragments/
         auth.yaml
   executions/                              # populated as you create executions
@@ -28,12 +31,14 @@ Trees live in `.abtree/trees/<slug>/TREE.yaml`. The slug (the folder name) becom
 
 ### Project-local vs user-global
 
-`abtree tree list` searches two directories:
+Slug lookup searches two directories:
 
 1. `.abtree/trees/` in the **current working directory** — project-local, committed with the code.
 2. `~/.abtree/trees/` in your **home directory** — user-global, available in every project.
 
-The project-local copy wins if both define the same slug. Drop a tree in `~/.abtree/trees/` to make it your default everywhere; commit a same-named file under `.abtree/trees/` to override it for one project.
+The project-local copy wins if both define the same slug. Drop a tree in `~/.abtree/trees/` to make it your default everywhere; commit a same-named folder under `.abtree/trees/` to override it for one project.
+
+You don't have to use the slug convention at all — pointing `execution create` at an explicit YAML path or directory works the same way, and is the typical pattern for trees installed as node packages (`./node_modules/<pkg-name>`).
 
 Executions always go into the cwd's `.abtree/executions/` regardless of where the tree was sourced from.
 
@@ -76,7 +81,7 @@ tree:
 |---|---|
 | `name` | Slug. Must match the filename. |
 | `version` | Free-form. Bump when you change the tree. |
-| `description` | One-line description shown in `abtree tree list`. |
+| `description` | One-line description of what the tree does, surfaced in tooling and the registry. |
 | `state.local` | Initial `$LOCAL` keys. `null` is fine — they get filled in by actions. |
 | `state.global` | `$GLOBAL` values. Strings are interpreted as instructions for how to fetch them. |
 | `tree` | The root node. Always a single node — usually a `sequence`. |
@@ -231,7 +236,7 @@ Every change is reflected the next time you run `abtree execution create <your-t
 
 ## Validation
 
-abtree validates the YAML on load. If a tree is malformed, `abtree tree list` won't include it and `abtree execution create` will print the error.
+abtree validates the YAML on load. If a tree is malformed, `abtree execution create` will print the error and exit non-zero rather than starting an execution.
 
 ## Next
 

@@ -1,40 +1,21 @@
 ---
-description: Complete CLI reference for abtree — every command outputs JSON, designed to be driven by another agent. Trees, executions, state, install.
+description: Complete CLI reference for abtree — every command outputs JSON, designed to be driven by another agent. Executions, state, install.
 ---
 
 # CLI reference
 
 Every command outputs JSON. That's deliberate — abtree is meant to be driven by another agent, and JSON is its native input.
 
-## Trees
-
-### `abtree tree list`
-
-Lists every available tree as an array of slugs.
-
-Trees live one per folder, with the definition at `<slug>/TREE.yaml`. The folder gives the tree somewhere to keep its own fragments and playbooks alongside the definition. Trees are loaded from two locations:
-
-| Location | Purpose |
-|---|---|
-| `.abtree/trees/<slug>/TREE.yaml` (cwd) | Project-local trees, committed alongside the code they apply to. |
-| `~/.abtree/trees/<slug>/TREE.yaml` | User-global trees, available in every project. |
-
-Project-local wins on duplicate slugs — drop `~/.abtree/trees/refine-plan/TREE.yaml` for a default refine-plan tree, override it per-project by committing a `.abtree/trees/refine-plan/TREE.yaml` to the repo.
-
-```sh
-$ abtree tree list
-[
-  "hello-world",
-  "refine-plan",
-  "deploy"
-]
-```
-
 ## Executions
 
-### `abtree execution create <tree-slug> <summary>`
+### `abtree execution create <tree> <summary>`
 
 Create a new execution from a tree. The summary is a human label — kebab-cased, it becomes part of the execution ID.
+
+`<tree>` accepts either of:
+
+- A **slug** that resolves under `.abtree/trees/<slug>/` (project-local) or `~/.abtree/trees/<slug>/` (user-global). The directory must have a `package.json` whose `main` points at the tree YAML; project-local wins on duplicate slugs.
+- A **path** — a `.yaml`/`.yml` file, or a directory containing a `package.json` whose `main` points at one. `.` for cwd and absolute paths both work. Use this for repos where the project itself is the tree (`./TREE.yaml`) or to run an installed fragment (`./node_modules/<pkg-name>`).
 
 ```sh
 $ abtree execution create hello-world "first run"
@@ -135,7 +116,7 @@ export ABTREE_EXECUTIONS_DIR=~/.local/state/abtree-executions
 abtree execution list   # all executions across every project, in one place
 ```
 
-Trees are still loaded from `.abtree/trees/` (cwd) and `~/.abtree/trees/` (global) — only the executions directory is overridable.
+Trees are still loaded from `.abtree/trees/<slug>/` (cwd) and `~/.abtree/trees/<slug>/` (global) when you pass a slug, or from any path you point `execution create` at — only the executions directory is overridable.
 
 ## Exit codes
 

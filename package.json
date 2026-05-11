@@ -4,6 +4,9 @@
 	"module": "index.ts",
 	"type": "module",
 	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
 	"bin": {
 		"abtree": "index.ts"
 	},
@@ -11,14 +14,15 @@
 		"release": "semantic-release",
 		"schema": "bun scripts/generate-schema.ts",
 		"build": "bun scripts/build.ts",
-		"generate-examples": "bun scripts/generate-examples.ts",
-		"docs:dev": "bun run generate-examples && vitepress dev docs",
-		"docs:build": "bun run generate-examples && vitepress build docs",
+		"docs:dev": "vitepress dev docs",
+		"docs:build": "vitepress build docs",
 		"docs:preview": "vitepress preview docs"
 	},
 	"dependencies": {
 		"@apidevtools/json-schema-ref-parser": "^15.3.5",
 		"@inquirer/prompts": "^8.4.2",
+		"abtree_dsl": "workspace:*",
+		"abtree_runtime": "workspace:*",
 		"commander": "^12",
 		"zod": "^4.4.3"
 	},

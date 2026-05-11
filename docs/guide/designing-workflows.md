@@ -93,7 +93,7 @@ Every tree starts the same way:
 ```yaml
 name: <kebab-case slug, must match filename>
 version: <semver>
-description: <one-line description shown by `abtree tree list`>
+description: <one-line description of what this tree does>
 
 state:
   local:
@@ -485,11 +485,11 @@ When a human asks "help me design a tree for `<X>`", work in this order:
 7. **Identify retries.** Each "we should try this a few times before giving up" → `selector` of N attempts, each carrying notes from the previous failure.
 8. **State the input contract.** What `$LOCAL` keys must be set before the first action evaluates? Document them in `state.local`.
 9. **Sketch the tree top-down**, then walk the failure modes — what happens if action N fails? Does the parent composite handle it the way the design intended?
-10. **Save as `.abtree/trees/<slug>/TREE.yaml`** and run `abtree tree list` to validate the YAML.
+10. **Save as `.abtree/trees/<slug>/TREE.yaml`** (with a sibling `package.json` whose `main: "TREE.yaml"`) and run `abtree execution create <slug> "smoke test"` to validate the YAML loads.
 
 ## Next
 
 - [Writing trees](/guide/writing-trees) — full YAML field reference.
 - [Inspecting executions](/guide/inspecting-executions) — what the runtime writes back as an execution runs.
 - [Branches and actions](/concepts/branches-and-actions) — primitive semantics in detail.
-- [Examples](/examples) — five ready-to-use trees that exercise every idiom on this page.
+- [Registry](/registry) — installable behaviour-tree packages that exercise these idioms in real workflows.

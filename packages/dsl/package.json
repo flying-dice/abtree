@@ -1,0 +1,18 @@
+{
+	"name": "abtree_dsl",
+	"version": "0.1.0",
+	"description": "Tiny jest-style TypeScript DSL for authoring abtree behaviour trees. Renders to the canonical tree-file shape (composite/action nodes with state, evaluate, and instruct steps).",
+	"type": "module",
+	"main": "src/index.ts",
+	"files": [
+		"src",
+		"README.md"
+	],
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"dsl",
+		"typescript"
+	]
+}

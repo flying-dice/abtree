@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+# yaml-language-server: $schema=https://abtree.sh/schemas/tree.schema.json
 name: hello-world
 version: 2.0.0
 description: Greet a user based on time of day. Demonstrates sequence, selector, and action primitives.

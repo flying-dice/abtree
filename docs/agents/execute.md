@@ -85,7 +85,7 @@ Tree terminated. Report the outcome to the human.
 
 ## Available trees
 
-Run `abtree tree list` for the live set. Bundled trees include: `hello-world`, `refine-plan`, `implement`, `technical-writer`, `improve-codebase`.
+Trees ship as installable node packages — browse [the registry](/registry) and `bun add` / `pnpm add` / `npm install` the ones you need, then run them via `abtree execution create ./node_modules/<pkg-name> "<summary>"` or reference them inside another tree with `$ref: "node-modules:<pkg-name>#/tree"`. Project-local trees can also live at `.abtree/trees/<slug>/` (with a `package.json` declaring `main`) and run as `abtree execution create <slug> "<summary>"`.
 
 ## State commands
 

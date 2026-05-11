@@ -1,4 +1,14 @@
 #!/usr/bin/env bun
+import {
+	parseEvalResult,
+	parseExecutionId,
+	parseScopePath,
+	parseSubmitStatus,
+	parseSummary,
+	parseTreeSlug,
+	rebuildMermaid,
+	setMutationListener,
+} from "abtree_runtime";
 import { Command } from "commander";
 import AUTHOR_DOC from "./docs/agents/author.md" with { type: "text" };
 import EXECUTE_DOC from "./docs/agents/execute.md" with { type: "text" };
@@ -16,19 +26,8 @@ import {
 	cmdLocalWrite,
 	cmdNext,
 	cmdSubmit,
-	cmdTreeList,
 	cmdUpgrade,
 } from "./src/commands.ts";
-import { rebuildMermaid } from "./src/mermaid.ts";
-import { setMutationListener } from "./src/repos.ts";
-import {
-	parseEvalResult,
-	parseExecutionId,
-	parseScopePath,
-	parseSubmitStatus,
-	parseSummary,
-	parseTreeSlug,
-} from "./src/validate.ts";
 import { VERSION } from "./src/version.ts";
 import TREE_SCHEMA from "./tree.schema.json" with { type: "text" };
 
@@ -47,6 +46,7 @@ Documentation:
   abtree docs execute   Runtime protocol — what an agent does at each step.
   abtree docs author    YAML authoring guide for tree files.
   abtree docs schema    JSON Schema for tree YAML files.
+  abtree docs skill     The agent skill (same content 'install skill' writes).
 `,
 	);
 
@@ -71,13 +71,11 @@ docs
 	.action(() => {
 		cmdDocs(TREE_SCHEMA);
 	});
-
-const tree = program.command("tree").description("Manage behaviour trees");
-tree
-	.command("list")
-	.description("List available trees")
+docs
+	.command("skill")
+	.description("Print the agent skill (same content `install skill` writes)")
 	.action(() => {
-		cmdTreeList();
+		cmdDocs(SKILL_CONTENT);
 	});
 
 const execution = program.command("execution").description("Manage executions");

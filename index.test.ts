@@ -36,22 +36,19 @@ let tmp: string;
 beforeAll(() => {
 	tmp = mkdtempSync(join(tmpdir(), "abtree-test-"));
 	mkdirSync(join(tmp, ".abtree", "trees", "hello-world"), { recursive: true });
-	// Copy only hello-world so the tree list is deterministic.
-	copyFileSync(
-		resolve(import.meta.dir, ".abtree", "trees", "hello-world", "TREE.yaml"),
-		join(tmp, ".abtree", "trees", "hello-world", "TREE.yaml"),
-	);
+	// Copy hello-world's TREE.yaml + package.json so slug-based lookup works.
+	// The runtime requires package.json:main to resolve a slug to a YAML —
+	// there is no implicit TREE.yaml default.
+	for (const f of ["TREE.yaml", "package.json"]) {
+		copyFileSync(
+			resolve(import.meta.dir, ".abtree", "trees", "hello-world", f),
+			join(tmp, ".abtree", "trees", "hello-world", f),
+		);
+	}
 });
 
 afterAll(() => {
 	rmSync(tmp, { recursive: true, force: true });
-});
-
-test("tree list returns hello-world", () => {
-	const { stdout, exitCode } = abtree(["tree", "list"], tmp);
-	expect(exitCode).toBe(0);
-	const trees = json(stdout) as string[];
-	expect(trees).toContain("hello-world");
 });
 
 test("hello-world execution: full execution reaches done", () => {
@@ -162,6 +159,10 @@ tree:
     - instruct: do nothing
 `,
 	);
+	writeFileSync(
+		join(altDir, "package.json"),
+		JSON.stringify({ name: "snap-alt", main: "TREE.yaml" }),
+	);
 	try {
 		const base = createExecution("hello-world", "etag base");
 		const alt = createExecution("snap-alt", "etag alt");
@@ -188,6 +189,10 @@ tree:
   name: BadAction
   steps: []
 `,
+	);
+	writeFileSync(
+		join(badDir, "package.json"),
+		JSON.stringify({ name: "bad", main: "TREE.yaml" }),
 	);
 	try {
 		const r = abtree(["execution", "create", "bad", "should fail"], tmp);

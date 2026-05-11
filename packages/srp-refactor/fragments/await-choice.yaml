@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+type: action
+name: Await_Choice
+steps:
+  - evaluate: "$LOCAL.srp_report is set"
+
+  - instruct: >
+      Show the human the SRP report at $LOCAL.srp_report and ask which
+      violation they want to tackle. The human picks by writing their
+      answer to $LOCAL.chosen_violation via:
+
+        abtree local write <execution-id> chosen_violation "<file path or label>"
+
+      While waiting, submit `running` to ack-and-pause without advancing
+      the cursor. Do NOT submit success until $LOCAL.chosen_violation is
+      a non-empty string.
+
+  - evaluate: "$LOCAL.chosen_violation is a non-empty string"

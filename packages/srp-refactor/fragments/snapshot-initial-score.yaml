@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+type: action
+name: Snapshot_Initial_Score
+steps:
+  - evaluate: "$LOCAL.violations is set and $LOCAL.has_critical_violations is set and $LOCAL.srp_report is set"
+
+  - instruct: >
+      Capture the initial scoring state so the final Change_Report can show
+      before-vs-after. Each loop iteration of Score_SRP overwrites
+      $LOCAL.violations / top_violation / has_critical_violations and the
+      ./SRP_REPORT.md file, so this snapshot is the only record of where
+      the codebase started.
+
+      Do all of the following:
+        - copy $LOCAL.violations               → $LOCAL.initial_violations
+        - copy $LOCAL.top_violation            → $LOCAL.initial_top_violation
+        - copy $LOCAL.has_critical_violations  → $LOCAL.initial_has_critical_violations
+        - copy the file at $LOCAL.srp_report to ./SRP_REPORT_INITIAL.md
+          (overwriting any prior copy) and save the new path to
+          $LOCAL.initial_srp_report.
+
+  - evaluate: "$LOCAL.initial_violations is set and $LOCAL.initial_has_critical_violations is set and $LOCAL.initial_srp_report is set"

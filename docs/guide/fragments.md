@@ -61,11 +61,40 @@ children:
 The fragment slots in wherever it's referenced, as if you'd pasted it inline.
 
 
-## `$ref` accepts three forms
+## `$ref` accepts four forms
 
 - **Relative paths** (`./fragments/auth.yaml`) — resolved against the file containing the `$ref`. The common case.
 - **Absolute paths** (`/home/you/shared/retry.yaml`) — useful for machine-wide shared subtrees.
 - **URLs** (`https://example.com/shared-trees/auth.yaml`) — fetched at execution-creation time. Use sparingly: the run depends on the URL being reachable when the execution is created.
+- **Module refs** (`node-modules:@acme/bt-retry#/tree`) — resolved against the nearest `node_modules/<pkg-name>/` walking up from the referring file. See [Cross-repo refs (modules)](#cross-repo-refs-modules) below.
+
+## Cross-repo refs (modules)
+
+Sharing fragments across repositories uses the `node-modules:` `$ref` scheme. Distribution is handled entirely by your package manager — abtree neither fetches nor caches; `package.json` is the source of truth.
+
+Install a fragment package from a git tag:
+
+```bash
+# pick whichever you already use — all three are equivalent
+npm  install github:acme/bt-retry#v1.2.0
+pnpm add     github:acme/bt-retry#v1.2.0
+bun  add     github:acme/bt-retry#v1.2.0
+```
+
+The fragment lands at `node_modules/<name-from-its-package.json>/`. Reference it from any TREE.yaml:
+
+```yaml
+tree:
+  type: sequence
+  name: S
+  children:
+    - $ref: "node-modules:@acme/bt-retry#/tree"                  # inline the fragment's tree node
+    - $ref: "node-modules:@acme/bt-retry/fragments/inner.yaml"   # inline a named sub-file
+```
+
+The package name you write in the `$ref` is the `name` field from the **fragment's** `package.json`, not the GitHub repo name. Without a sub-path the resolver returns `<pkg-dir>/TREE.yaml`; with a sub-path it returns the file at that path verbatim.
+
+CI: use your manager's frozen-install verb to fail loudly if the lockfile drifts from `package.json`: `npm ci`, `pnpm install --frozen-lockfile`, or `bun install --frozen-lockfile`. Publishing a fragment package is covered in [Publishing fragments](/guide/publishing-fragments).
 
 ## Resolution happens at execution-creation
 

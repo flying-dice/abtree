@@ -1,0 +1,17 @@
+{
+	"name": "abtree_srp-refactor",
+	"scripts": {
+		"setup:skill": "abtree install skill --variant claude --scope project",
+		"test:clean-on-first-pass": "claude --model sonnet 'abtree execution create ../../../abtree_example-tree/node_modules/abtree_test-tree/TREE.yaml \"Run tests/clean-on-first-pass.yaml against ./main.yaml\"'",
+		"test:clean-on-second-pass": "claude --model sonnet 'abtree execution create ../../../abtree_example-tree/node_modules/abtree_test-tree/TREE.yaml \"Run tests/clean-on-second-pass.yaml against ./main.yaml\"'"
+	},
+	"main": "main.yaml",
+	"files": [
+		"main.yaml",
+		"fragments/",
+		"tests/"
+	],
+	"devDependencies": {
+		"abtree_test-tree": "workspace:*"
+	}
+}

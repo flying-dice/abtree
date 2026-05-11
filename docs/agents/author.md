@@ -6,7 +6,7 @@ Authoring an abtree tree means writing a YAML file that an agent can drive deter
 Run `abtree docs schema` to print the JSON Schema, or reference the published copy via the YAML language-server comment:
 
 ```yaml
-# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+# yaml-language-server: $schema=https://abtree.sh/schemas/tree.schema.json
 ```
 :::
 
@@ -76,7 +76,7 @@ The dereferenced object must itself be a valid node (composite or action). Cycli
 ## Worked example
 
 ```yaml
-# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+# yaml-language-server: $schema=https://abtree.sh/schemas/tree.schema.json
 name: my-tree
 version: 1.0.0
 description: short summary
@@ -121,5 +121,5 @@ tree:
 ## Reporting (per tree authored)
 
 ```text
-[tree-slug] ✓ valid → run `abtree tree list` to confirm it loads
+[tree-slug] ✓ valid → run `abtree execution create <slug> "smoke test"` to confirm it loads
 ```

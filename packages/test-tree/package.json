@@ -1,0 +1,16 @@
+{
+	"name": "abtree_test-tree",
+	"version": "1.2.0",
+	"description": "abtree fragment: run a BDD test spec against its target tree and write a markdown report embedding the mermaid trace.",
+	"main": "main.yml",
+	"files": [
+		"main.yml"
+	],
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"testing",
+		"bdd"
+	]
+}

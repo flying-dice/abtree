@@ -130,6 +130,41 @@ export async function runCase(specPath: string): Promise<void> {
 			}
 		}
 
+		// Slug-based execution looks up package.json:main — every staged
+		// tree gets a minimal one pointing at its TREE.yaml so tests don't
+		// each have to declare it.
+		for (const slug of new Set(
+			[...(spec.bundled ?? []), ...Object.keys(spec.files ?? {})].map(
+				(rel) => rel.split("/")[0],
+			),
+		)) {
+			if (!slug) continue;
+			const pkgPath = join(treesDir, slug, "package.json");
+			if (!existsSync(pkgPath)) {
+				await Bun.write(
+					pkgPath,
+					JSON.stringify(
+						{ name: slug, version: "1.0.0", main: "TREE.yaml" },
+						null,
+						"\t",
+					),
+				);
+			}
+		}
+		// Same for the spec's primary tree (it may have come from
+		// tests/trees/ rather than bundled/files).
+		const primaryPkg = join(treesDir, treeName, "package.json");
+		if (!existsSync(primaryPkg)) {
+			await Bun.write(
+				primaryPkg,
+				JSON.stringify(
+					{ name: treeName, version: "1.0.0", main: "TREE.yaml" },
+					null,
+					"\t",
+				),
+			);
+		}
+
 		// 1. Create execution.
 		const create = abt(tmp, ["execution", "create", treeName, "harness"]);
 		if (create.exit !== 0) {

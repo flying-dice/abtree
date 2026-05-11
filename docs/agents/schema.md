@@ -7,14 +7,14 @@ abtree publishes a [JSON Schema](https://json-schema.org/) for tree YAML files s
 - **CLI:** `abtree docs schema` prints the schema to stdout. Byte-identical to the committed file.
 - **Repo:** [`tree.schema.json`](https://github.com/flying-dice/abtree/blob/main/tree.schema.json) on `main`.
 - **Release:** every GitHub release ships `tree.schema.json` as an asset.
-- **Stable URL:** `https://abtree.dev/schemas/tree.schema.json`.
+- **Stable URL:** `https://abtree.sh/schemas/tree.schema.json`.
 
 ## Editor integration
 
 Add a YAML language-server comment at the top of every tree file:
 
 ```yaml
-# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+# yaml-language-server: $schema=https://abtree.sh/schemas/tree.schema.json
 name: my-tree
 version: 1.0.0
 tree:

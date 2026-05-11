@@ -1,54 +1,10 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitepress";
 import llmstxt from "vitepress-plugin-llms";
 
-function titleCase(s: string): string {
-	return s
-		.split(/[-_]/)
-		.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-		.join(" ");
-}
-
-function exampleSidebarItems() {
-	const dir = resolve(import.meta.dirname, "../examples");
-	const base = [{ text: "Registry", link: "/examples" }];
-	if (!existsSync(dir)) return base;
-
-	const slugs = readdirSync(dir)
-		.filter((entry) => {
-			const full = join(dir, entry);
-			return statSync(full).isDirectory() && existsSync(join(full, "index.md"));
-		})
-		.sort();
-
-	const groups = slugs.map((slug) => {
-		const slugDir = join(dir, slug);
-		const subpages = readdirSync(slugDir)
-			.filter((f) => f.endsWith(".md") && f !== "index.md")
-			.map((f) => f.replace(/\.md$/, ""));
-		const hasDefinition = subpages.includes("definition");
-		const scenarios = subpages.filter((s) => s !== "definition").sort();
-
-		return {
-			text: titleCase(slug),
-			collapsed: true,
-			items: [
-				{ text: "Overview", link: `/examples/${slug}/` },
-				...(hasDefinition
-					? [{ text: "Definition", link: `/examples/${slug}/definition` }]
-					: []),
-				...scenarios.map((s) => ({
-					text: titleCase(s),
-					link: `/examples/${slug}/${s}`,
-				})),
-			],
-		};
-	});
-
-	return [...base, ...groups];
-}
+// Registry is rendered as a single searchable cards page driven by
+// docs/registry.ts — no per-tree subpages, so no dynamic sidebar tree.
+const REGISTRY_SIDEBAR = [{ text: "Registry", link: "/registry" }] as const;
 
 function robotsTxt(siteUrl: string): Plugin {
 	return {
@@ -261,7 +217,7 @@ export default defineConfig({
 			{ text: "Concepts", link: "/concepts/" },
 			{ text: "Guide", link: "/guide/writing-trees" },
 			{ text: "Agents", link: "/agents/execute" },
-			{ text: "Examples", link: "/examples" },
+			{ text: "Registry", link: "/registry" },
 			{
 				text: "LLMs",
 				items: [
@@ -295,6 +251,10 @@ export default defineConfig({
 				items: [
 					{ text: "Writing trees", link: "/guide/writing-trees" },
 					{ text: "Fragments", link: "/guide/fragments" },
+					{
+						text: "Publishing fragments",
+						link: "/guide/publishing-fragments",
+					},
 					{ text: "Designing workflows", link: "/guide/designing-workflows" },
 					{ text: "Testing trees", link: "/guide/testing" },
 					{
@@ -313,8 +273,8 @@ export default defineConfig({
 				],
 			},
 			{
-				text: "Examples",
-				items: exampleSidebarItems(),
+				text: "Registry",
+				items: [...REGISTRY_SIDEBAR],
 			},
 		],
 

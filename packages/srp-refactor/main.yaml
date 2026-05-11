@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+name: srp-refactor
+version: 0.1.0
+description: >
+  Score the codebase for Single Responsibility violations, snapshot the
+  initial scoring, pause for the human to pick one to tackle, refactor it
+  in a bounded loop (re-scoring after every pass), do a multi-agent code
+  review, and finish with a before-vs-after change report.
+
+state:
+  local:
+    # current score (rewritten on every Score_SRP)
+    violations: null
+    top_violation: null
+    has_critical_violations: null
+    srp_report: null
+
+    # initial-scan snapshot (set once by Snapshot_Initial_Score)
+    initial_violations: null
+    initial_top_violation: null
+    initial_has_critical_violations: null
+    initial_srp_report: null
+
+    # human + refactor + review state
+    chosen_violation: null
+    refactor_complete: null
+    refactor_summary: null
+    review_report: null
+
+    # final artifact
+    change_report: null
+
+tree:
+  type: sequence
+  name: Top
+  children:
+    # 1. Initial scoring — produces SRP_REPORT.md the human reads.
+    - $ref: "./fragments/score-srp.yaml"
+
+    # 2. Snapshot the initial score so Change_Report can show before-vs-after.
+    #    Must run before any Score_SRP re-runs in the loop overwrite state.
+    - $ref: "./fragments/snapshot-initial-score.yaml"
+
+    # 3. Human-in-the-loop: pick which violation to tackle.
+    - $ref: "./fragments/await-choice.yaml"
+
+    # 4. Bounded refactor loop. retries: 3 → up to 4 passes total.
+    #    The Verify_Resolved gate fails (triggering a retry) while
+    #    critical violations remain, so [refactor → rescore] re-ticks
+    #    from clean state until the codebase is clean or the cap hits.
+    - type: sequence
+      name: Refactor_Loop
+      retries: 3
+      children:
+        - $ref: "./fragments/refactor.yaml"
+        - $ref: "./fragments/score-srp.yaml"
+        - type: action
+          name: Verify_Resolved
+          steps:
+            - evaluate: "$LOCAL.has_critical_violations is false"
+            - instruct: >
+                No critical SRP violations remain. Note this in the
+                trace and proceed to final review.
+
+    # 5. Multi-agent code review of the changes made above.
+    - $ref: "./fragments/code-review.yaml"
+
+    # 6. Before-vs-after change report — last thing the human reads.
+    - $ref: "./fragments/change-report.yaml"

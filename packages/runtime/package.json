@@ -1,0 +1,22 @@
+{
+	"name": "abtree_runtime",
+	"version": "0.1.0",
+	"description": "Engine for abtree behaviour trees. Loads YAML tree files (with node-modules: $ref resolution), persists executions, walks the tree, applies retries, and renders mermaid traces.",
+	"type": "module",
+	"main": "src/index.ts",
+	"files": [
+		"src",
+		"README.md"
+	],
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"runtime",
+		"engine"
+	],
+	"dependencies": {
+		"@apidevtools/json-schema-ref-parser": "^15.3.5",
+		"zod": "^4.4.3"
+	}
+}

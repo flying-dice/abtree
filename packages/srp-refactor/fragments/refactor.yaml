@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+type: action
+name: Refactor
+steps:
+  - evaluate: "$LOCAL.chosen_violation is a non-empty string"
+
+  - instruct: >
+      Refactor the codebase to resolve $LOCAL.chosen_violation. Split the
+      mixed responsibilities into focused units, update callers, and
+      preserve observable behaviour.
+
+      If $LOCAL.refactor_summary is already set, this is a re-attempt —
+      read the previous summary, identify what didn't fully land, and
+      improve on it rather than starting over.
+
+      When done, overwrite $LOCAL.refactor_summary with a short markdown
+      summary of what moved where (bullet list of files/symbols changed,
+      one line each). Set $LOCAL.refactor_complete to true.
+
+  - evaluate: "$LOCAL.refactor_complete is true and $LOCAL.refactor_summary is a non-empty string"

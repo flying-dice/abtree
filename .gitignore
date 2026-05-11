@@ -54,6 +54,8 @@ docs/examples.md
 
 # abtree runtime directory (local executions, snapshots)
 .abt/
+.abtree/executions/
+.abtree/snapshots/
 
 # abtree per-execution draft scratch — drafts get promoted (renamed)
 # to their final location on successful completion; aborted runs leave

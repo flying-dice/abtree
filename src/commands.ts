@@ -1,27 +1,28 @@
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { select } from "@inquirer/prompts";
-import EXECUTE_DOC from "../docs/agents/execute.md" with { type: "text" };
 import {
 	decodeCursor,
+	die,
+	type ExecutionDoc,
+	ExecutionStore,
 	encodeCursor,
-	INITIAL_CURSOR,
-	NULL_CURSOR,
-} from "./cursor.ts";
-import { ensureDir } from "./paths.ts";
-import { ExecutionStore } from "./repos.ts";
-import { SKILL_TARGETS, type SkillScope, type SkillVariant } from "./skills.ts";
-import { TreeSnapshotStore } from "./snapshots.ts";
-import {
+	ensureDir,
 	generateExecutionId,
 	getNodeAtPath,
-	listTreeSlugs,
+	INITIAL_CURSOR,
 	loadTree,
+	type NormalizedNode,
+	NULL_CURSOR,
+	out,
 	setNodeResult,
 	setStepIndex,
+	type TickResult,
+	TreeSnapshotStore,
 	tickRoot,
-} from "./tree.ts";
-import type { ExecutionDoc, NormalizedNode, TickResult } from "./types.ts";
+} from "abtree_runtime";
+import EXECUTE_DOC from "../docs/agents/execute.md" with { type: "text" };
+import { SKILL_TARGETS, type SkillScope, type SkillVariant } from "./skills.ts";
 import {
 	assetUrl,
 	compareVersions,
@@ -33,30 +34,31 @@ import {
 	realpathExec,
 	tmpPath,
 } from "./upgrade.ts";
-import { die, out } from "./utils.ts";
 import { VERSION } from "./version.ts";
-
-export function cmdTreeList() {
-	out(listTreeSlugs());
-}
 
 export function cmdDocs(content: string) {
 	process.stdout.write(content.endsWith("\n") ? content : `${content}\n`);
 }
 
-export async function cmdExecutionCreate(treeSlug: string, summary: string) {
-	const treeDef = await loadTree(treeSlug);
-	if (!treeDef) die(`Tree '${treeSlug}' not found`);
+export async function cmdExecutionCreate(treeArg: string, summary: string) {
+	let loaded: Awaited<ReturnType<typeof loadTree>>;
+	try {
+		loaded = await loadTree(treeArg);
+	} catch (err) {
+		die((err as Error).message);
+	}
+	if (!loaded) die(`Tree '${treeArg}' not found`);
 
-	const id = generateExecutionId(treeSlug, summary);
+	const { slug, parsed } = loaded;
+	const id = generateExecutionId(slug, summary);
 	const now = new Date().toISOString();
 
 	ExecutionStore.create({
 		id,
-		tree: treeSlug,
+		tree: slug,
 		summary,
 		status: "running",
-		snapshot: TreeSnapshotStore.put(treeDef),
+		snapshot: TreeSnapshotStore.put(parsed),
 		cursor: INITIAL_CURSOR,
 		phase: "idle",
 		protocol_accepted: false,
@@ -64,15 +66,15 @@ export async function cmdExecutionCreate(treeSlug: string, summary: string) {
 		updated_at: now,
 	});
 
-	ExecutionStore.replaceScope(id, "local", treeDef.local);
-	ExecutionStore.replaceScope(id, "global", treeDef.global);
+	ExecutionStore.replaceScope(id, "local", parsed.local);
+	ExecutionStore.replaceScope(id, "global", parsed.global);
 
 	out({
 		id,
-		tree: treeSlug,
+		tree: slug,
 		summary,
-		local: treeDef.local,
-		global: treeDef.global,
+		local: parsed.local,
+		global: parsed.global,
 	});
 }
 

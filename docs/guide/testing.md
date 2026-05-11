@@ -4,7 +4,7 @@ description: Testing in abtree is itself a tree — the agent walks the tree-und
 
 # Testing trees
 
-The test framework is just another tree: [`test-tree`](/examples/test-tree/). When you "run a test," the agent executes `test-tree`, which drives a fresh execution of the tree-under-test in **pretend mode** — it never actually pushes a branch, opens an MR, or hits an API. External side effects are replayed from fixtures in the spec. At the end, it compares the final `$LOCAL` and the path trodden through the tree against the spec's expectations and writes a report.
+The test framework is just another tree: [`abtree_test-tree`](/registry) (find it in the registry). When you "run a test," the agent executes `test-tree`, which drives a fresh execution of the tree-under-test in **pretend mode** — it never actually pushes a branch, opens an MR, or hits an API. External side effects are replayed from fixtures in the spec. At the end, it compares the final `$LOCAL` and the path trodden through the tree against the spec's expectations and writes a report.
 
 So a test is a contract:
 
@@ -32,7 +32,7 @@ Specs and reports live next to the tree they cover:
   REPORT__morning__20260510T224915Z.md        ← latest run
 ```
 
-Filenames are load-bearing. The docs generator parses them to publish each scenario as a sub-page under `/examples/<slug>/<scenario>`.
+Filenames are load-bearing. `test-tree` parses them when it picks a scenario to run, and the matching `REPORT__<scenario>__<timestamp>.md` lands next to the spec — so the spec, the latest run, and the tree under test are all in one directory.
 
 ## The TEST spec
 
@@ -99,14 +99,9 @@ A report captures both halves of the contract: the final state and the path trod
 - **Assertions** — Name / Expected / Actual / Pass, one row per predicate from `then`. The headline verdict is just `AND` over the Pass column.
 - **Trace** — a Mermaid diagram of the path trodden. Green nodes ran and succeeded, red ran and failed, uncoloured never ticked. (Red nodes in a PASSing report are normal — a selector branch failing on purpose is part of the expected path.)
 
-Real reports in the [Examples](/examples) collection:
-
-- [`hello-world / morning`](/examples/hello-world/morning) — clean PASS, every node green.
-- [`hello-world / localisation`](/examples/hello-world/localisation) — FAIL, with the assertions table pinpointing what didn't hold.
-- [`refine-plan / happy-path-in-session`](/examples/refine-plan/happy-path-in-session) — longer sequence with selector branches.
-- [`technical-writer / bootstrap-styleguide`](/examples/technical-writer/bootstrap-styleguide) — fixture-driven run exercising the side-effect path.
+Real reports ship inside each tree's own repository — browse the [registry](/registry) to find a tree, follow the link to its source, and look in the `tests/` (or `TEST__*.yaml` / `REPORT__*.md`) directory next to the `TREE.yaml`.
 
 ## Next
 
-- [Test Tree](/examples/test-tree/) — the runner itself, as a tree.
+- [Registry](/registry) — browse the published trees, including `test-tree` itself.
 - [Inspecting executions](/guide/inspecting-executions) — what the green/red nodes mean in the trace.

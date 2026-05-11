@@ -6,7 +6,7 @@ import { expect, test } from "bun:test";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import $RefParser from "@apidevtools/json-schema-ref-parser";
-import { TreeFileSchema } from "../src/schemas.ts";
+import { TreeFileSchema } from "abtree_runtime";
 
 const TREES_DIR = resolve(import.meta.dir, "..", ".abtree", "trees");
 

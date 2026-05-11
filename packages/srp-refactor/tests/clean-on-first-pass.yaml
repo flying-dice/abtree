@@ -1,0 +1,167 @@
+feature: srp-refactor scores SRP, pauses for choice, refactors in a loop, reviews
+tree: ./main.yaml
+
+scenario:
+  name: handleOrder is split cleanly on the first refactor pass
+  given: >
+    The fixture at tests/fixtures/handler.ts contains handleOrder — one
+    function that owns routing, validation, pricing, persistence,
+    notifications, and observability. The initial Score_SRP flags it as
+    critical; the human picks it; one Refactor pass extracts every
+    concern into its own module; the re-Score reports no critical
+    violations remain; Refactor_Loop exits without retrying.
+
+  when:
+    # ── Phase 1: Score_SRP (initial scan flags handleOrder as critical) ──
+    - instruct: Score_SRP
+      write:
+        violations:
+          - path: "tests/fixtures/handler.ts"
+            severity: "critical"
+            responsibilities:
+              - "HTTP routing"
+              - "request validation"
+              - "pricing"
+              - "persistence"
+              - "customer notifications"
+              - "observability (logging + metrics)"
+            rationale: "handleOrder mixes six unrelated concerns in one function body"
+      submit: success
+
+    - instruct: Score_SRP
+      write:
+        top_violation:
+          path: "tests/fixtures/handler.ts"
+          severity: "critical"
+        has_critical_violations: true
+      submit: success
+
+    - instruct: Score_SRP
+      write:
+        srp_report: "./SRP_REPORT.md"
+      submit: success
+
+    - evaluate: "$LOCAL.srp_report is set and $LOCAL.violations is set and $LOCAL.has_critical_violations is set"
+      result: true
+
+    # ── Phase 2: Snapshot_Initial_Score (preserve the before-state) ──
+    - evaluate: "$LOCAL.violations is set and $LOCAL.has_critical_violations is set and $LOCAL.srp_report is set"
+      result: true
+
+    - instruct: Snapshot_Initial_Score
+      write:
+        initial_violations:
+          - path: "tests/fixtures/handler.ts"
+            severity: "critical"
+            responsibilities:
+              - "HTTP routing"
+              - "request validation"
+              - "pricing"
+              - "persistence"
+              - "customer notifications"
+              - "observability (logging + metrics)"
+            rationale: "handleOrder mixes six unrelated concerns in one function body"
+        initial_top_violation:
+          path: "tests/fixtures/handler.ts"
+          severity: "critical"
+        initial_has_critical_violations: true
+        initial_srp_report: "./SRP_REPORT_INITIAL.md"
+      submit: success
+
+    - evaluate: "$LOCAL.initial_violations is set and $LOCAL.initial_has_critical_violations is set and $LOCAL.initial_srp_report is set"
+      result: true
+
+    # ── Phase 3: Await_Choice (human picks handleOrder) ──
+    - evaluate: "$LOCAL.srp_report is set"
+      result: true
+
+    - instruct: Await_Choice
+      write:
+        chosen_violation: "tests/fixtures/handler.ts: handleOrder mixes routing, validation, pricing, persistence, notifications, and observability"
+      submit: success
+
+    - evaluate: "$LOCAL.chosen_violation is a non-empty string"
+      result: true
+
+    # ── Phase 3: Refactor_Loop, pass 1 (succeeds) ──
+    # Refactor
+    - evaluate: "$LOCAL.chosen_violation is a non-empty string"
+      result: true
+
+    - instruct: Refactor
+      write:
+        refactor_complete: true
+        refactor_summary: |
+          Split tests/fixtures/handler.ts into single-responsibility modules:
+          - handler.validation.ts — input parsing + schema checks
+          - orderPricing.ts       — subtotal/tax/total
+          - orderRepo.ts          — DB reads + writes
+          - orderNotifications.ts — confirmation email
+          - orderObservability.ts — audit log + metrics
+          handleOrder now only orchestrates these in order.
+      submit: success
+
+    - evaluate: "$LOCAL.refactor_complete is true and $LOCAL.refactor_summary is a non-empty string"
+      result: true
+
+    # Score_SRP (re-score: handleOrder is now thin; nothing critical left)
+    - instruct: Score_SRP
+      write:
+        violations: []
+      submit: success
+
+    - instruct: Score_SRP
+      write:
+        top_violation: null
+        has_critical_violations: false
+      submit: success
+
+    - instruct: Score_SRP
+      write:
+        srp_report: "./SRP_REPORT.md"
+      submit: success
+
+    - evaluate: "$LOCAL.srp_report is set and $LOCAL.violations is set and $LOCAL.has_critical_violations is set"
+      result: true
+
+    # Verify_Resolved (passes → loop exits)
+    - evaluate: "$LOCAL.has_critical_violations is false"
+      result: true
+
+    - instruct: Verify_Resolved
+      submit: success
+
+    # ── Phase 4: Final_Code_Review ──
+    - evaluate: "$LOCAL.refactor_summary is a non-empty string"
+      result: true
+
+    - instruct: Final_Code_Review
+      write:
+        review_report: "No high-signal issues found in the handleOrder split."
+      submit: success
+
+    - evaluate: "$LOCAL.review_report is set"
+      result: true
+
+    # ── Phase 6: Change_Report (before-vs-after summary) ──
+    - evaluate: "$LOCAL.initial_violations is set and $LOCAL.violations is set and $LOCAL.refactor_summary is a non-empty string"
+      result: true
+
+    - instruct: Change_Report
+      write:
+        change_report: "./SRP_CHANGE_REPORT.md"
+      submit: success
+
+    - evaluate: "$LOCAL.change_report is set"
+      result: true
+
+  then:
+    status: done
+    local:
+      chosen_violation: "starts with tests/fixtures/handler.ts"
+      refactor_complete: true
+      refactor_summary: "non-empty"
+      has_critical_violations: false
+      review_report: "non-empty"
+      initial_has_critical_violations: true
+      change_report: "./SRP_CHANGE_REPORT.md"
