@@ -38,19 +38,30 @@ features:
 
 <AbtreeDemo />
 
+## See an execution
+
+Every state change refreshes an SVG of the tree. Children render in declaration order — the diagram mirrors execution flow, sequences in emerald, parallels in amber, actions in blue, and each card carries its own success or failure pip.
+
+<TreeSvg src="/example.svg" :height="520" />
+
+## Author in TypeScript
+
+- Maintain complex workflows with the TypeScript DSL.
+- Build composable trees with full type safety on locals, globals, and wiring.
+- Compile to JSON / YAML and ship through everyday tools — [npm](https://www.npmjs.com/), [GitHub](https://github.com/), or anywhere else.
+
+<AbtreeDsl />
+
 ## What is abtree?
 
-Modern LLMs follow Markdown instructions remarkably well — until workflows grow. Then two things go wrong:
+abtree is a CLI tool. It reads a JSON or YAML behaviour-tree file and — each time the agent asks to progress — returns the next instruction, one step at a time.
 
-1. **Instruction fatigue.** A long system prompt loses focus. Agents skim, skip steps, hallucinate fields.
-2. **Non-determinism.** Decisions left to the model produce different paths on every run.
-
-abtree is a CLI that solves both. You describe the workflow once as a YAML behaviour tree — the same formal structure game AI and robotics have used for decades. Your agent then drives the execution through three commands:
+Your agent drives the execution through three commands:
 
 - `abtree next` — ask the runtime what to do.
 - `abtree eval` — answer a precondition (`true` or `false`).
 - `abtree submit` — report the outcome of an instruction.
 
-Every call returns JSON, advances the cursor, and persists the execution to disk. The agent only ever sees the next step. The path stays predictable. The state survives.
+Each call returns JSON, advances the cursor, and persists the execution to disk. The agent only ever sees the next step.
 
 [Get started in five minutes →](/getting-started)

@@ -2,7 +2,7 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { buildJsonSchema } from "abtree_runtime";
+import { buildJsonSchema } from "@abtree/runtime";
 
 const repoRoot = resolve(import.meta.dir, "../../..");
 const repoPath = resolve(repoRoot, "tree.schema.json");

@@ -1,3 +1,10 @@
+// Runtime-side tree-file validation and normalisation.
+//
+// `validateTreeFile` throws plain `Error`s so embedders can catch them.
+// The CLI wraps the throw at the boundary (see `cmdExecutionCreate`); it
+// is NOT the runtime's job to terminate the process. CLI input parsers
+// live separately in `packages/cli/src/parse-args.ts`.
+
 import type { z } from "zod";
 import { TreeFileSchema } from "./schemas.ts";
 import type {
@@ -7,41 +14,6 @@ import type {
 	Step,
 	TreeFile,
 } from "./types.ts";
-import { die } from "./utils.ts";
-
-export function parseExecutionId(val: string): string {
-	if (!val || typeof val !== "string") die("Execution ID is required");
-	return val;
-}
-
-export function parseTreeSlug(val: string): string {
-	if (!val || typeof val !== "string") die("Tree slug is required");
-	return val;
-}
-
-export function parseSummary(val: string): string {
-	if (!val || typeof val !== "string") die("Summary is required");
-	return val;
-}
-
-export function parseScopePath(val: string): string {
-	if (!val || typeof val !== "string") die("Path is required");
-	return val;
-}
-
-export function parseEvalResult(val: string): boolean {
-	if (val !== "true" && val !== "false")
-		die('Result must be "true" or "false"');
-	return val === "true";
-}
-
-export function parseSubmitStatus(
-	val: string,
-): "success" | "failure" | "running" {
-	if (val !== "success" && val !== "failure" && val !== "running")
-		die('Status must be "success", "failure", or "running"');
-	return val as "success" | "failure" | "running";
-}
 
 export function validateTreeFile(raw: unknown): TreeFile {
 	const result = TreeFileSchema.safeParse(raw);
@@ -52,7 +24,7 @@ export function validateTreeFile(raw: unknown): TreeFile {
 				return `  ${path}: ${i.message}`;
 			})
 			.join("\n");
-		die(`tree file failed validation:\n${issues}`);
+		throw new Error(`tree file failed validation:\n${issues}`);
 	}
 	return result.data;
 }

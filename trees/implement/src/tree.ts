@@ -7,7 +7,7 @@ import {
 	local,
 	selector,
 	sequence,
-} from "abtree_dsl";
+} from "@abtree/dsl";
 
 const plan = local("plan", null);
 const complexityScore = local("complexity_score", null);

@@ -5,8 +5,8 @@
 import { expect, test } from "bun:test";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { TreeFileSchema } from "@abtree/runtime";
 import $RefParser from "@apidevtools/json-schema-ref-parser";
-import { TreeFileSchema } from "abtree_runtime";
 
 const TREES_DIR = resolve(import.meta.dir, "../../..", "trees");
 

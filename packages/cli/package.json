@@ -1,6 +1,7 @@
 {
-	"name": "abtree_cli",
+	"name": "@abtree/cli",
 	"version": "0.1.0",
+	"private": true,
 	"description": "Command-line interface for the abtree behaviour-tree runtime. Routes `abtree next`, `eval`, `submit`, execution / local / global state commands, and self-update.",
 	"type": "module",
 	"main": "index.ts",
@@ -22,7 +23,7 @@
 	],
 	"dependencies": {
 		"@inquirer/prompts": "^8.4.2",
-		"abtree_runtime": "workspace:*",
+		"@abtree/runtime": "workspace:*",
 		"commander": "^12"
 	}
 }

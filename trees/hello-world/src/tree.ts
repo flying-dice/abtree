@@ -7,7 +7,7 @@ import {
 	local,
 	selector,
 	sequence,
-} from "abtree_dsl";
+} from "@abtree/dsl";
 
 // Module-scope state declarations: clean, unmangled keys land in
 // `ambient`, the build script tacks them onto the emitted tree-file as

@@ -7,7 +7,7 @@ import {
 	local,
 	selector,
 	sequence,
-} from "abtree_dsl";
+} from "@abtree/dsl";
 
 const goal = local("goal", null);
 const styleguide = local("styleguide", null);

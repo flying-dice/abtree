@@ -8,7 +8,7 @@ import {
 	parallel,
 	selector,
 	sequence,
-} from "abtree_dsl";
+} from "@abtree/dsl";
 
 // Intent + baseline
 const changeRequest = local("change_request", null);

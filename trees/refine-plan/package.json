@@ -1,14 +1,25 @@
 {
-	"name": "abtree_refine-plan",
-	"version": "4.2.0",
+	"name": "@abtree/refine-plan",
+	"version": "0.1.0",
 	"description": "Refine a change request into an approved plan: analyse intent, draft to a per-execution draft file, critique it in place, promote to plans/, then take it through codeowner approval (either in-session or via an assigned MR).",
 	"main": "main.json",
+	"homepage": "https://github.com/flying-dice/abtree/tree/main/trees/refine-plan",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/flying-dice/abtree.git",
+		"directory": "trees/refine-plan"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"files": [
 		"main.json",
+		"tree.svg",
 		"tests"
 	],
 	"scripts": {
-		"build": "bun scripts/build.ts"
+		"build": "bun scripts/build.ts",
+		"prepublishOnly": "bun run build"
 	},
 	"keywords": [
 		"abtree",
@@ -17,7 +28,7 @@
 		"planning"
 	],
 	"devDependencies": {
-		"abtree_dsl": "workspace:*",
-		"abtree_runtime": "workspace:*"
+		"@abtree/dsl": "workspace:*",
+		"@abtree/runtime": "workspace:*"
 	}
 }

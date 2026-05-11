@@ -249,12 +249,9 @@ export default defineConfig({
 			{
 				text: "Guide",
 				items: [
+					{ text: "Using a tree", link: "/guide/using-trees" },
 					{ text: "Writing trees", link: "/guide/writing-trees" },
 					{ text: "Fragments", link: "/guide/fragments" },
-					{
-						text: "Publishing fragments",
-						link: "/guide/publishing-fragments",
-					},
 					{ text: "Designing workflows", link: "/guide/designing-workflows" },
 					{ text: "Testing trees", link: "/guide/testing" },
 					{

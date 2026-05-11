@@ -3,7 +3,7 @@
 // been dropped from the schema and that pre-existing trees without one
 // still validate.
 import { describe, expect, test } from "bun:test";
-import { buildJsonSchema, TreeFileSchema } from "abtree_runtime";
+import { buildJsonSchema, TreeFileSchema } from "@abtree/runtime";
 
 const validTreeBase = {
 	name: "consumer",

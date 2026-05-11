@@ -1,7 +1,6 @@
 // Input types (Step, ActionNode, CompositeNode, RefNode, AbtNode, TreeFile) live in
 // ./schemas.ts where they are derived from the zod schemas — single source of truth.
 
-export type { NodeModulesRef } from "./deps/types.ts";
 export type {
 	AbtNode,
 	ActionNode,

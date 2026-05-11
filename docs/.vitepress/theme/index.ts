@@ -7,7 +7,9 @@ import { h, nextTick, watch } from "vue";
 import "./style.css";
 import AbtreeContrast from "./AbtreeContrast.vue";
 import AbtreeDemo from "./AbtreeDemo.vue";
+import AbtreeDsl from "./AbtreeDsl.vue";
 import RegistryCards from "./RegistryCards.vue";
+import TreeSvg from "./TreeSvg.vue";
 
 export default {
 	extends: DefaultTheme,
@@ -15,6 +17,8 @@ export default {
 		app.component("AbtreeDemo", AbtreeDemo);
 		app.component("AbtreeContrast", AbtreeContrast);
 		app.component("RegistryCards", RegistryCards);
+		app.component("TreeSvg", TreeSvg);
+		app.component("AbtreeDsl", AbtreeDsl);
 	},
 	Layout: () => {
 		const { isDark } = useData();

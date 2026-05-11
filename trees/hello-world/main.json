@@ -1,7 +1,7 @@
 {
 	"$schema": "https://abtree.sh/schemas/tree.schema.json",
-	"name": "abtree_hello-world",
-	"version": "2.0.0",
+	"name": "@abtree/hello-world",
+	"version": "0.1.0",
 	"tree": {
 		"type": "sequence",
 		"name": "Hello_World",

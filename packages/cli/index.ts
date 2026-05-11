@@ -1,14 +1,9 @@
 #!/usr/bin/env bun
 import {
-	parseEvalResult,
-	parseExecutionId,
-	parseScopePath,
-	parseSubmitStatus,
-	parseSummary,
-	parseTreeSlug,
 	rebuildMermaid,
+	rebuildSvg,
 	setMutationListener,
-} from "abtree_runtime";
+} from "@abtree/runtime";
 import { Command } from "commander";
 import AUTHOR_DOC from "../../docs/agents/author.md" with { type: "text" };
 import EXECUTE_DOC from "../../docs/agents/execute.md" with { type: "text" };
@@ -26,12 +21,24 @@ import {
 	cmdLocalRead,
 	cmdLocalWrite,
 	cmdNext,
+	cmdRender,
 	cmdSubmit,
 	cmdUpgrade,
 } from "./src/commands.ts";
+import {
+	parseEvalResult,
+	parseExecutionId,
+	parseScopePath,
+	parseSubmitStatus,
+	parseSummary,
+	parseTreeSlug,
+} from "./src/parse-args.ts";
 import { VERSION } from "./src/version.ts";
 
-setMutationListener(rebuildMermaid);
+setMutationListener((id) => {
+	rebuildMermaid(id);
+	rebuildSvg(id);
+});
 
 const program = new Command()
 	.name("abtree")
@@ -140,6 +147,21 @@ program
 	.action((executionId: string, status: string) => {
 		cmdSubmit(parseExecutionId(executionId), parseSubmitStatus(status));
 	});
+
+program
+	.command("render")
+	.description("Render a tree to SVG (stdout by default; -o to write a file)")
+	.argument("<tree>", "Tree slug or path (e.g. './my-tree', './main.json')")
+	.option("-o, --output <path>", "Write SVG to this file instead of stdout")
+	.option(
+		"-t, --title <title>",
+		"Override the title (defaults to root node name)",
+	)
+	.action(
+		async (treeArg: string, opts: { output?: string; title?: string }) => {
+			await cmdRender(parseTreeSlug(treeArg), opts);
+		},
+	);
 
 const local = program.command("local").description("Manage $LOCAL scope");
 

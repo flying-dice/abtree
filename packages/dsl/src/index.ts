@@ -169,19 +169,14 @@ declare const globalRefBrand: unique symbol;
  * At runtime this is a plain string (so template-literal interpolation
  * just works). At the type level it carries:
  *
- * - **`K`** — the literal key name the author declared (e.g.
- *   `"time_of_day"`).
- * - **`T`** — the value type the container holds.
+ * - the **scope brand** (so a `LocalRef` cannot be assigned to a
+ *   {@link GlobalRef} and vice-versa), and
+ * - **`T`** — the value type stored at the reference.
  *
- * A `LocalRef` is **not** assignable to a {@link GlobalRef}, so APIs that
- * accept one scope can statically reject the other.
- *
- * @typeParam K - The literal key name the author passed to {@link local}.
  * @typeParam T - The value type stored at the reference.
  */
-export type LocalRef<K extends string = string, T = unknown> = string & {
-	readonly [localRefBrand]: K;
-	readonly __type?: T;
+export type LocalRef<T = unknown> = string & {
+	readonly [localRefBrand]: T;
 };
 
 /**
@@ -190,31 +185,23 @@ export type LocalRef<K extends string = string, T = unknown> = string & {
  * At runtime this is a plain string (so template-literal interpolation
  * just works). At the type level it carries:
  *
- * - **`K`** — the literal key name the author declared (e.g.
- *   `"current_user"`).
+ * - the **scope brand** (so a `GlobalRef` cannot be assigned to a
+ *   {@link LocalRef} and vice-versa), and
  * - **`T`** — the value type substituted into instructions at runtime.
  *
- * A `GlobalRef` is **not** assignable to a {@link LocalRef}, so APIs that
- * accept one scope can statically reject the other.
- *
- * @typeParam K - The literal key name the author passed to {@link global}.
  * @typeParam T - The value type stored at the reference.
  */
-export type GlobalRef<K extends string = string, T = unknown> = string & {
-	readonly [globalRefBrand]: K;
-	readonly __type?: T;
+export type GlobalRef<T = unknown> = string & {
+	readonly [globalRefBrand]: T;
 };
 
 /**
  * Either a {@link LocalRef} or {@link GlobalRef}. Useful for APIs that
  * accept a reference from either scope.
  *
- * @typeParam K - The literal key name the author passed to {@link local} or {@link global}.
  * @typeParam T - The value type stored at the reference.
  */
-export type Ref<K extends string = string, T = unknown> =
-	| LocalRef<K, T>
-	| GlobalRef<K, T>;
+export type Ref<T = unknown> = LocalRef<T> | GlobalRef<T>;
 
 // In-body declarations mangle the key with the enclosing node's name so
 // independent components can declare overlapping key names without
@@ -261,7 +248,6 @@ function attach(
  * // → "write the result to $LOCAL.<NodeName>__greeting"
  * ```
  *
- * @typeParam K - The literal key string (captured at the type level).
  * @typeParam T - The value type the container holds.
  *
  * @param key - Identifier for the container. Mangled with the enclosing
@@ -273,12 +259,9 @@ function attach(
  * @returns A branded path string `$LOCAL.<mangled-key>`, typed as
  *   {@link LocalRef}.
  */
-export function local<K extends string, T>(
-	key: K,
-	defaultValue: T,
-): LocalRef<K, T> {
+export function local<T>(key: string, defaultValue: T): LocalRef<T> {
 	const mangled = attach("local", key, defaultValue);
-	return `$LOCAL.${mangled}` as LocalRef<K, T>;
+	return `$LOCAL.${mangled}` as LocalRef<T>;
 }
 
 /**
@@ -304,7 +287,6 @@ export function local<K extends string, T>(
  * // → 'Write "Hello, $GLOBAL.<NodeName>__current_user".'
  * ```
  *
- * @typeParam K - The literal key string (captured at the type level).
  * @typeParam T - The value type stored at the reference.
  *
  * @param key - Identifier for the variable. Mangled with the enclosing
@@ -316,9 +298,9 @@ export function local<K extends string, T>(
  * @returns A branded path string `$GLOBAL.<mangled-key>`, typed as
  *   {@link GlobalRef}.
  */
-export function global<K extends string, T>(key: K, value: T): GlobalRef<K, T> {
+export function global<T>(key: string, value: T): GlobalRef<T> {
 	const mangled = attach("global", key, value);
-	return `$GLOBAL.${mangled}` as GlobalRef<K, T>;
+	return `$GLOBAL.${mangled}` as GlobalRef<T>;
 }
 
 // ─── implicit-frame stack ────────────────────────────────────────────────

@@ -1,7 +1,8 @@
 {
-	"name": "abtree_runtime",
+	"name": "@abtree/runtime",
 	"version": "0.1.0",
-	"description": "Engine for abtree behaviour trees. Loads YAML tree files (with node-modules: $ref resolution), persists executions, walks the tree, applies retries, and renders mermaid traces.",
+	"private": true,
+	"description": "Engine for abtree behaviour trees. Loads YAML/JSON tree files, persists executions, walks the tree, applies retries, and renders mermaid traces.",
 	"type": "module",
 	"main": "src/index.ts",
 	"files": [

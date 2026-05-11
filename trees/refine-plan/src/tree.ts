@@ -6,7 +6,7 @@ import {
 	local,
 	selector,
 	sequence,
-} from "abtree_dsl";
+} from "@abtree/dsl";
 
 const changeRequest = local("change_request", null);
 const intentAnalysis = local("intent_analysis", null);

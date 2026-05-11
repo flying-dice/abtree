@@ -64,3 +64,8 @@ plans/drafts/
 
 # playwright MCP screenshot / log scratch dir
 .playwright-mcp
+
+# local-only bootstrap script — runs once from a developer machine to
+# claim each @abtree/* package on npm before CI takes over. Not part of
+# the shipped repo.
+scripts/initial-publish.sh

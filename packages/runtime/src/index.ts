@@ -1,19 +1,14 @@
 // Barrel: the public surface of the abtree runtime engine.
 //
 // Internal modules import each other via relative paths (`./paths.ts`,
-// `./deps/resolve.ts`, etc.); external consumers (the CLI, tests) reach in
+// `./tree-arg.ts`, etc.); external consumers (the CLI, tests) reach in
 // through this file.
 
 export * from "./cursor.ts";
-export { parseNodeModulesRef } from "./deps/parse.ts";
-export {
-	type EntryResolution,
-	findNodeModulesPkg,
-	makeNodeModulesResolver,
-	resolveEntryYaml,
-} from "./deps/resolve.ts";
-export type { NodeModulesRef } from "./deps/types.ts";
+export { generateExecutionId } from "./execution-id.ts";
+export { type LoadedTree, loadTree } from "./loader.ts";
 export { rebuildMermaid } from "./mermaid.ts";
+export { getNodeAtPath, getPathForNode } from "./node-path.ts";
 export {
 	ABTREE_DIR,
 	EXECUTIONS_DIR,
@@ -28,18 +23,18 @@ export { ExecutionStore, setMutationListener } from "./repos.ts";
 export { RuntimeStore } from "./runtime-store.ts";
 export { buildJsonSchema, TreeFileSchema } from "./schemas.ts";
 export { TreeSnapshotStore } from "./snapshots.ts";
+export { rebuildSvg, renderTreeSvg } from "./svg.ts";
 export {
-	generateExecutionId,
-	getNodeAtPath,
 	getNodeResult,
-	getPathForNode,
-	type LoadedTree,
-	loadTree,
 	setNodeResult,
 	setStepIndex,
 	tickNode,
 	tickRoot,
 } from "./tree.ts";
+export {
+	type EntryResolution,
+	resolveEntryYaml,
+} from "./tree-arg.ts";
 export type {
 	AbtNode,
 	ActionNode,
@@ -60,14 +55,4 @@ export type {
 	TreeFile,
 } from "./types.ts";
 export { die, out } from "./utils.ts";
-export {
-	normalizeNode,
-	normalizeStep,
-	parseEvalResult,
-	parseExecutionId,
-	parseScopePath,
-	parseSubmitStatus,
-	parseSummary,
-	parseTreeSlug,
-	validateTreeFile,
-} from "./validate.ts";
+export { normalizeNode, normalizeStep, validateTreeFile } from "./validate.ts";

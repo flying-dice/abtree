@@ -1,13 +1,13 @@
-# abtree_dsl
+# @abtree/dsl
 
 A tiny jest-style TypeScript DSL for authoring [abtree](https://abtree.sh) behaviour trees. Author trees in `.ts` files; the runtime consumes the canonical tree-file shape (composite/action nodes, evaluate/instruct steps, flat `state.local` + `state.global`).
 
 ## Install
 
 ```bash
-bun  add abtree_dsl
-pnpm add abtree_dsl
-npm  install abtree_dsl
+bun  add @abtree/dsl
+pnpm add @abtree/dsl
+npm  install @abtree/dsl
 ```
 
 ## Usage
@@ -21,7 +21,7 @@ import {
   local,
   selector,
   sequence,
-} from "abtree_dsl";
+} from "@abtree/dsl";
 
 const program = sequence("Hello_World", (n) => {
   n.description = "Greet a user based on the time of day.";
@@ -57,6 +57,6 @@ const program = sequence("Hello_World", (n) => {
 - **Locals** — read/write containers the tree fills in as it runs. `null` defaults are fine.
 - **Globals** — values substituted into instructions at runtime. Defaults should be concrete.
 - **In-body declarations** — calling `local()` / `global()` inside a composite/action body attaches state to that node (with the key mangled as `<NodeName>__<key>` to avoid cross-component collisions). Module-scope declarations register into a tree-wide `ambient` bucket instead. The runtime flattens everything at execution-create.
-- **Branded refs** — `local()` returns `LocalRef<K, T>` and `global()` returns `GlobalRef<K, T>`. At runtime they're plain strings (so template-literal interpolation just works); at the type level they carry the scope, the literal key name, and the value type — so a `LocalRef` can't be silently passed where a `GlobalRef` is expected.
+- **Branded refs** — `local()` returns `LocalRef<T>` and `global()` returns `GlobalRef<T>`. At runtime they're plain strings (so template-literal interpolation just works); at the type level they carry the scope and the value type — so a `LocalRef` can't be silently passed where a `GlobalRef` is expected.
 
 See the inline TSDoc on every export for full reference.

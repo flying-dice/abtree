@@ -4,7 +4,7 @@ description: Testing in abtree is itself a tree — the agent walks the tree-und
 
 # Testing trees
 
-The test framework is just another tree: [`abtree_test-tree`](/registry) (find it in the registry). When you "run a test," the agent executes `test-tree`, which drives a fresh execution of the tree-under-test in **pretend mode** — it never actually pushes a branch, opens an MR, or hits an API. External side effects are replayed from fixtures in the spec. At the end, it compares the final `$LOCAL` and the path trodden through the tree against the spec's expectations and writes a report.
+The test framework is just another tree: [`@abtree/test-tree`](/registry) (find it in the registry). When you "run a test," the agent executes `test-tree`, which drives a fresh execution of the tree-under-test in **pretend mode** — it never actually pushes a branch, opens an MR, or hits an API. External side effects are replayed from fixtures in the spec. At the end, it compares the final `$LOCAL` and the path trodden through the tree against the spec's expectations and writes a report.
 
 So a test is a contract:
 

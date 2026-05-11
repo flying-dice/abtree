@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import { loadTree } from "abtree_runtime";
+import { loadTree } from "@abtree/runtime";
 
 // TREE_SOURCES in src/paths.ts is computed at module import time from
 // process.cwd(). These unit tests can't change cwd to redirect that, so they

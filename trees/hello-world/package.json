@@ -1,14 +1,25 @@
 {
-	"name": "abtree_hello-world",
-	"version": "2.0.0",
+	"name": "@abtree/hello-world",
+	"version": "0.1.0",
 	"description": "Greet a user based on time of day. Demonstrates sequence, selector, and action primitives.",
 	"main": "main.json",
+	"homepage": "https://github.com/flying-dice/abtree/tree/main/trees/hello-world",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/flying-dice/abtree.git",
+		"directory": "trees/hello-world"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"files": [
 		"main.json",
+		"tree.svg",
 		"tests"
 	],
 	"scripts": {
-		"build": "bun scripts/build.ts"
+		"build": "bun scripts/build.ts",
+		"prepublishOnly": "bun run build"
 	},
 	"keywords": [
 		"abtree",
@@ -18,7 +29,7 @@
 		"example"
 	],
 	"devDependencies": {
-		"abtree_dsl": "workspace:*",
-		"abtree_runtime": "workspace:*"
+		"@abtree/dsl": "workspace:*",
+		"@abtree/runtime": "workspace:*"
 	}
 }

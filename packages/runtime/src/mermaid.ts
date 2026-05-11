@@ -1,9 +1,10 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { getPathForNode } from "./node-path.ts";
 import { EXECUTIONS_DIR, ensureDir } from "./paths.ts";
 import { ExecutionStore } from "./repos.ts";
 import { TreeSnapshotStore } from "./snapshots.ts";
-import { getNodeResult, getPathForNode } from "./tree.ts";
+import { getNodeResult } from "./tree.ts";
 import type { NodeStatus, NormalizedNode } from "./types.ts";
 
 export interface RenderTreeMermaidOptions {

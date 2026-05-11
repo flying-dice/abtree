@@ -1,6 +1,5 @@
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { select } from "@inquirer/prompts";
 import {
 	decodeCursor,
 	die,
@@ -15,12 +14,14 @@ import {
 	type NormalizedNode,
 	NULL_CURSOR,
 	out,
+	renderTreeSvg,
 	setNodeResult,
 	setStepIndex,
 	type TickResult,
 	TreeSnapshotStore,
 	tickRoot,
-} from "abtree_runtime";
+} from "@abtree/runtime";
+import { select } from "@inquirer/prompts";
 import EXECUTE_DOC from "../../../docs/agents/execute.md" with { type: "text" };
 import { SKILL_TARGETS, type SkillScope, type SkillVariant } from "./skills.ts";
 import {
@@ -547,4 +548,29 @@ export async function cmdUpgrade(
 	}
 
 	process.stdout.write(`abtree upgraded to ${latest}\n`);
+}
+
+export async function cmdRender(
+	treeArg: string,
+	opts: { output?: string; title?: string },
+) {
+	let loaded: Awaited<ReturnType<typeof loadTree>>;
+	try {
+		loaded = await loadTree(treeArg);
+	} catch (err) {
+		die((err as Error).message);
+	}
+	if (!loaded) die(`Tree '${treeArg}' not found`);
+
+	const root = loaded.parsed.root;
+	const fallbackTitle =
+		root.type !== "ref" ? root.name.replace(/_/g, " ") : loaded.slug;
+	const svg = renderTreeSvg(root, { title: opts.title ?? fallbackTitle });
+
+	if (opts.output) {
+		writeFileSync(opts.output, svg);
+		process.stdout.write(`wrote ${opts.output}\n`);
+	} else {
+		process.stdout.write(svg);
+	}
 }

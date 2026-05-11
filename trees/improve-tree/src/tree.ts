@@ -7,7 +7,7 @@ import {
 	local,
 	parallel,
 	sequence,
-} from "abtree_dsl";
+} from "@abtree/dsl";
 
 const sessionRef = local("session_ref", null);
 const treeSlug = local("tree_slug", null);
