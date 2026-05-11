@@ -1,0 +1,33 @@
+{
+  "id": "test-afternoon-clock-reads-14-15-expect-__hello-world__1",
+  "tree": "hello-world",
+  "summary": "TEST__afternoon: clock reads 14:15, expect Good afternoon, John Doe",
+  "status": "complete",
+  "snapshot": "4e32e7d619687864a8bd1015526cc9d68ee15afd2d1dc65e7b401033edde53e9",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T22:31:54.304Z",
+  "updated_at": "2026-05-10T22:32:25.963Z",
+  "local": {
+    "time_of_day": "afternoon",
+    "greeting": "Good afternoon, John Doe — hope the day is treating you well!"
+  },
+  "global": {
+    "user_name": "retrieve by running the shell command \"whoami\"",
+    "tone": "friendly",
+    "language": "english"
+  },
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "1.0": "failure",
+      "1.1": "success"
+    },
+    "step_index": {
+      "1.1": 1
+    },
+    "retry_count": {}
+  }
+}

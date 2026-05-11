@@ -1,0 +1,152 @@
+{
+  "id": "runner-technical-writer-test-happy-path-__test-tree__1",
+  "tree": "test-tree",
+  "summary": "runner: technical-writer TEST__happy-path-styleguide-exists",
+  "status": "complete",
+  "snapshot": "16c65e120b9844e205c9be0a7c6f6b7e910c688fe6b1adaa848f0366db7a3bec",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T23:21:40.023Z",
+  "updated_at": "2026-05-10T23:23:34.171Z",
+  "local": {
+    "test_path": ".abtree/trees/technical-writer/TEST__happy-path-styleguide-exists.yaml",
+    "test_spec": {
+      "tree": "technical-writer",
+      "scenario": {
+        "name": "Styleguide present, home present, first review approves",
+        "then": {
+          "local": {
+            "review_notes": "approved",
+            "styleguide_approved": null,
+            "final_path": "equals fixtures.side_effects.docs_home_lookup.placement"
+          },
+          "runtime": {
+            "retry_count": {
+              "Write_And_Review": 0
+            }
+          },
+          "status": "done"
+        }
+      }
+    },
+    "target_execution_id": "test-tree-run-document-abtree-cli-execut__technical-writer__1",
+    "final_local": {
+      "goal": "Document the abtree CLI execution list subcommand: flags, output format, when to use it.",
+      "styleguide": "# Styleguide\n- Voice: second person, active.\n- Tone: terse.\n- Code fences: triple-backtick, language tag required.\n- Headings: sentence case.\n- Files: kebab-case.",
+      "styleguide_approved": null,
+      "intent": "type: reference; scope: one page; audience: integrator using the abtree CLI.",
+      "docs_survey": {
+        "placement": "docs/guide/cli/execution-list.md",
+        "adjacency": [
+          "docs/guide/cli/execution-create.md",
+          "docs/guide/cli/execution-get.md"
+        ],
+        "sidebar_entry": {
+          "section": "CLI",
+          "after": "execution-create"
+        }
+      },
+      "placement": "docs/guide/cli/execution-list.md",
+      "draft": "# execution list\n\n(fixture-served body — 1820 bytes simulated)",
+      "review_notes": "approved",
+      "final_path": "docs/guide/cli/execution-list.md"
+    },
+    "final_status": "done",
+    "mermaid_diagram": "---\ntitle: \"test-tree run: document abtree CLI execution list subcommand (complete)\"\n---\nflowchart TD\n    Technical_Writer_Workflow{{\"Technical Writer Workflow\\n[sequence]\"}}\n    0_Resolve_Styleguide{{\"Resolve Styleguide\\n[selector]\"}}\n    Technical_Writer_Workflow --> 0_Resolve_Styleguide\n    style 0_Resolve_Styleguide fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_0_Load_Styleguide[\"Load Styleguide\\n[action]\"]\n    0_Resolve_Styleguide --> 0_0_Load_Styleguide\n    style 0_0_Load_Styleguide fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_0_Bootstrap_Styleguide{{\"Bootstrap Styleguide\\n[sequence]\"}}\n    0_Resolve_Styleguide --> 0_0_Bootstrap_Styleguide\n    0_0_1_Draft_Styleguide[\"Draft Styleguide\\n[action]\"]\n    0_0_Bootstrap_Styleguide --> 0_0_1_Draft_Styleguide\n    0_0_1_Human_Approval_Gate[\"Human Approval Gate\\n[action]\"]\n    0_0_Bootstrap_Styleguide --> 0_0_1_Human_Approval_Gate\n    0_Assess_Intent[\"Assess Intent\\n[action]\"]\n    Technical_Writer_Workflow --> 0_Assess_Intent\n    style 0_Assess_Intent fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Survey_Existing_Docs{{\"Survey Existing Docs\\n[selector]\"}}\n    Technical_Writer_Workflow --> 0_Survey_Existing_Docs\n    style 0_Survey_Existing_Docs fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_2_Map_Placement[\"Map Placement\\n[action]\"]\n    0_Survey_Existing_Docs --> 0_2_Map_Placement\n    style 0_2_Map_Placement fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_2_Resolve_Structure[\"Resolve Structure\\n[action]\"]\n    0_Survey_Existing_Docs --> 0_2_Resolve_Structure\n    0_Write_And_Review{{\"Write And Review\\n[sequence]\"}}\n    Technical_Writer_Workflow --> 0_Write_And_Review\n    style 0_Write_And_Review fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_3_Write_Documentation[\"Write Documentation\\n[action]\"]\n    0_Write_And_Review --> 0_3_Write_Documentation\n    style 0_3_Write_Documentation fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_3_Review_Gate[\"Review Gate\\n[action]\"]\n    0_Write_And_Review --> 0_3_Review_Gate\n    style 0_3_Review_Gate fill:#4ade80,stroke:#16a34a,color:#052e16\n",
+    "assertions": [
+      {
+        "name": "status",
+        "expected": "done",
+        "actual": "done",
+        "pass": true
+      },
+      {
+        "name": "local.goal",
+        "expected": "non-empty",
+        "actual": "non-empty",
+        "pass": true
+      },
+      {
+        "name": "local.styleguide",
+        "expected": "non-empty",
+        "actual": "(fixture) styleguide_load.contents",
+        "pass": true
+      },
+      {
+        "name": "local.styleguide_approved",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.intent",
+        "expected": "non-empty",
+        "actual": "non-empty",
+        "pass": true
+      },
+      {
+        "name": "local.docs_survey",
+        "expected": "non-empty",
+        "actual": "non-empty",
+        "pass": true
+      },
+      {
+        "name": "local.placement",
+        "expected": "equals fixtures.side_effects.docs_home_lookup.placement",
+        "actual": "(fixture) docs/guide/cli/execution-list.md",
+        "pass": true
+      },
+      {
+        "name": "local.draft",
+        "expected": "non-empty",
+        "actual": "non-empty",
+        "pass": true
+      },
+      {
+        "name": "local.review_notes",
+        "expected": "approved",
+        "actual": "approved",
+        "pass": true
+      },
+      {
+        "name": "local.final_path",
+        "expected": "equals fixtures.side_effects.docs_home_lookup.placement",
+        "actual": "docs/guide/cli/execution-list.md",
+        "pass": true
+      },
+      {
+        "name": "files.placement",
+        "expected": "exists at fixtures.side_effects.docs_write.file_written",
+        "actual": "(fixture) docs/guide/cli/execution-list.md — file write fixture-served",
+        "pass": true
+      },
+      {
+        "name": "runtime.retry_count.Write_And_Review",
+        "expected": 0,
+        "actual": 0,
+        "pass": true
+      }
+    ],
+    "overall_result": "pass",
+    "report_path": ".abtree/trees/technical-writer/REPORT__happy-path-styleguide-exists__20260510T232312Z.md"
+  },
+  "global": {},
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "success",
+      "4": "success"
+    },
+    "step_index": {
+      "0": 1,
+      "1": 1,
+      "2": 2,
+      "3": 2,
+      "4": 3
+    },
+    "retry_count": {}
+  }
+}

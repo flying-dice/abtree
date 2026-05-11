@@ -1,0 +1,32 @@
+{
+  "id": "test-morning-clock-reads-08-30-expect-go__hello-world__1",
+  "tree": "hello-world",
+  "summary": "TEST__morning: clock reads 08:30, expect Good morning, John Doe",
+  "status": "complete",
+  "snapshot": "4e32e7d619687864a8bd1015526cc9d68ee15afd2d1dc65e7b401033edde53e9",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T22:30:40.815Z",
+  "updated_at": "2026-05-10T22:31:43.764Z",
+  "local": {
+    "time_of_day": "morning",
+    "greeting": "Good morning, John Doe! Hope your day is off to a bright start."
+  },
+  "global": {
+    "user_name": "retrieve by running the shell command \"whoami\"",
+    "tone": "friendly",
+    "language": "english"
+  },
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "1.0": "success"
+    },
+    "step_index": {
+      "1.0": 1
+    },
+    "retry_count": {}
+  }
+}

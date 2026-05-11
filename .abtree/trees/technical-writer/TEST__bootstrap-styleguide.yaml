@@ -1,0 +1,74 @@
+feature: Technical_Writer grounds a docs goal in a styleguide, places it, writes, and review-gates
+tree: technical-writer
+description: |
+  Bootstrap path — no STYLEGUIDE.md at the repo root. Load_Styleguide
+  evaluate fails, the Resolve_Styleguide selector falls through to
+  Bootstrap_Styleguide. The runner drafts a styleguide, the human
+  approves it, it's written to disk, and the rest of the workflow runs
+  through the happy path.
+
+background:
+  initial:
+    local:
+      goal: "Write a getting-started guide for a brand-new project that has no documentation yet."
+
+fixtures:
+  side_effects:
+    styleguide_load:
+      exists: false   # forces Load_Styleguide's evaluate to fail
+    styleguide_write:
+      file_written: STYLEGUIDE.md
+      bytes: 612
+    human_approval_styleguide:
+      approved: true
+      latency_ms: 0   # the runner simulates the human signing off immediately
+    docs_home_lookup:
+      home_exists: true
+      placement: docs/getting-started.md
+      adjacency: []
+      sidebar_entry: { section: Top, position: first }
+    docs_write:
+      file_written: docs/getting-started.md
+      bytes: 2104
+    review_outcomes:
+      - attempt: 1
+        verdict: approved
+        notes: approved
+
+scenario:
+  name: No STYLEGUIDE.md; bootstrap drafts one, human approves, workflow continues
+  given:
+    - $LOCAL.goal is set
+    - no STYLEGUIDE.md exists at the repo root
+    - the runner is authorised to simulate the human approval via fixture
+  when:
+    - Load_Styleguide evaluate → false (STYLEGUIDE.md does not exist)
+    - Draft_Styleguide evaluate → true ($LOCAL.goal is set)
+    - Draft_Styleguide writes a minimal styleguide draft to $LOCAL.styleguide
+    - Human_Approval_Gate evaluate → true ($LOCAL.styleguide is set)
+    - Human_Approval_Gate presents the draft; per fixtures.side_effects.human_approval_styleguide the human approves
+    - $LOCAL.styleguide_approved is written to true (fixture-served)
+    - Human_Approval_Gate evaluate → true ($LOCAL.styleguide_approved is true)
+    - Human_Approval_Gate writes $LOCAL.styleguide to STYLEGUIDE.md (fixture-served write)
+    - Assess_Intent / Map_Placement / Write_Documentation / Review_Gate run as in the happy path
+  then:
+    local:
+      styleguide: non-empty
+      styleguide_approved: true
+      intent: non-empty
+      docs_survey: non-empty
+      placement: equals fixtures.side_effects.docs_home_lookup.placement
+      draft: non-empty
+      review_notes: approved
+      final_path: equals fixtures.side_effects.docs_home_lookup.placement
+    files:
+      STYLEGUIDE.md:
+        exists: true
+        bytes: equals fixtures.side_effects.styleguide_write.bytes
+      placement:
+        exists: true
+        path: equals fixtures.side_effects.docs_write.file_written
+    runtime:
+      retry_count:
+        Write_And_Review: 0
+    status: done

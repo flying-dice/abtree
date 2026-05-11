@@ -1,0 +1,37 @@
+---
+title: "test-tree run: document abtree CLI execution list subcommand (complete)"
+---
+flowchart TD
+    Technical_Writer_Workflow{{"Technical Writer Workflow\n[sequence]"}}
+    0_Resolve_Styleguide{{"Resolve Styleguide\n[selector]"}}
+    Technical_Writer_Workflow --> 0_Resolve_Styleguide
+    style 0_Resolve_Styleguide fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_0_Load_Styleguide["Load Styleguide\n[action]"]
+    0_Resolve_Styleguide --> 0_0_Load_Styleguide
+    style 0_0_Load_Styleguide fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_0_Bootstrap_Styleguide{{"Bootstrap Styleguide\n[sequence]"}}
+    0_Resolve_Styleguide --> 0_0_Bootstrap_Styleguide
+    0_0_1_Draft_Styleguide["Draft Styleguide\n[action]"]
+    0_0_Bootstrap_Styleguide --> 0_0_1_Draft_Styleguide
+    0_0_1_Human_Approval_Gate["Human Approval Gate\n[action]"]
+    0_0_Bootstrap_Styleguide --> 0_0_1_Human_Approval_Gate
+    0_Assess_Intent["Assess Intent\n[action]"]
+    Technical_Writer_Workflow --> 0_Assess_Intent
+    style 0_Assess_Intent fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Survey_Existing_Docs{{"Survey Existing Docs\n[selector]"}}
+    Technical_Writer_Workflow --> 0_Survey_Existing_Docs
+    style 0_Survey_Existing_Docs fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_2_Map_Placement["Map Placement\n[action]"]
+    0_Survey_Existing_Docs --> 0_2_Map_Placement
+    style 0_2_Map_Placement fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_2_Resolve_Structure["Resolve Structure\n[action]"]
+    0_Survey_Existing_Docs --> 0_2_Resolve_Structure
+    0_Write_And_Review{{"Write And Review\n[sequence]"}}
+    Technical_Writer_Workflow --> 0_Write_And_Review
+    style 0_Write_And_Review fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_3_Write_Documentation["Write Documentation\n[action]"]
+    0_Write_And_Review --> 0_3_Write_Documentation
+    style 0_3_Write_Documentation fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_3_Review_Gate["Review Gate\n[action]"]
+    0_Write_And_Review --> 0_3_Review_Gate
+    style 0_3_Review_Gate fill:#4ade80,stroke:#16a34a,color:#052e16

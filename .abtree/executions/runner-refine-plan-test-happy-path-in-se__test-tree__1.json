@@ -1,0 +1,122 @@
+{
+  "id": "runner-refine-plan-test-happy-path-in-se__test-tree__1",
+  "tree": "test-tree",
+  "summary": "runner: refine-plan TEST__happy-path-in-session (re-run under v4.2.0)",
+  "status": "complete",
+  "snapshot": "680fd3db9c8d54b4c6d6b3fb2c8bee0ca6b7ae82fe56bf5302dbdad7d95ee089",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T22:57:07.124Z",
+  "updated_at": "2026-05-10T22:59:51.156Z",
+  "local": {
+    "test_path": ".abtree/trees/refine-plan/TEST__happy-path-in-session.yaml",
+    "test_spec": {
+      "tree": "refine-plan",
+      "scenario": {
+        "name": "Codeowner approves the refined plan inside the session",
+        "then": {
+          "local": {
+            "draft_path": null,
+            "codeowner_approved": true,
+            "mr_url": null
+          },
+          "status": "done"
+        }
+      }
+    },
+    "target_execution_id": "test-tree-run-structured-logging-happy-p__refine-plan__1",
+    "final_local": {
+      "change_request": "Add structured logging to the ingestion service so we can correlate request traces in Grafana.",
+      "intent_analysis": "Ask: feature — structured (JSON) logging across the ingestion service.\nSystems/files: request/handler layer, logging utility, Grafana datasource config.\nConstraints: preserve log levels; trace_id must propagate; no PII.\nCodeowners: no CODEOWNERS file in repo.\nAcceptance: every ingestion log line emits JSON with trace_id; Grafana filter by trace_id; tests pass.",
+      "draft_path": null,
+      "plan_path": "plans/structured-logging-for-the-ingestion-service.md",
+      "codeowner_approved": true,
+      "mr_url": null
+    },
+    "final_status": "done",
+    "mermaid_diagram": "---\ntitle: \"test-tree run: structured logging happy path under v4.2.0 (complete)\"\n---\nflowchart TD\n    Refine_Plan_Workflow{{\"Refine Plan Workflow\\n[sequence]\"}}\n    0_Understand_Intent[\"Understand Intent\\n[action]\"]\n    Refine_Plan_Workflow --> 0_Understand_Intent\n    style 0_Understand_Intent fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Write_Draft[\"Write Draft\\n[action]\"]\n    Refine_Plan_Workflow --> 0_Write_Draft\n    style 0_Write_Draft fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Critique_Draft[\"Critique Draft\\n[action]\"]\n    Refine_Plan_Workflow --> 0_Critique_Draft\n    style 0_Critique_Draft fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Save_Plan[\"Save Plan\\n[action]\"]\n    Refine_Plan_Workflow --> 0_Save_Plan\n    style 0_Save_Plan fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Codeowner_Approval{{\"Codeowner Approval\\n[selector]\"}}\n    Refine_Plan_Workflow --> 0_Codeowner_Approval\n    style 0_Codeowner_Approval fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_4_Approve_In_Session[\"Approve In Session\\n[action]\"]\n    0_Codeowner_Approval --> 0_4_Approve_In_Session\n    style 0_4_Approve_In_Session fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_4_Open_MR_For_Codeowner[\"Open MR For Codeowner\\n[action]\"]\n    0_Codeowner_Approval --> 0_4_Open_MR_For_Codeowner\n",
+    "assertions": [
+      {
+        "name": "status",
+        "expected": "done",
+        "actual": "done",
+        "pass": true
+      },
+      {
+        "name": "local.change_request",
+        "expected": "non-empty",
+        "actual": "non-empty (94 chars)",
+        "pass": true
+      },
+      {
+        "name": "local.intent_analysis",
+        "expected": "non-empty terse bullets",
+        "actual": "non-empty (5 bullets)",
+        "pass": true
+      },
+      {
+        "name": "local.draft_path",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.plan_path",
+        "expected": "matches plans/.+\\.md",
+        "actual": "plans/structured-logging-for-the-ingestion-service.md",
+        "pass": true
+      },
+      {
+        "name": "local.codeowner_approved",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      },
+      {
+        "name": "local.mr_url",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "files.plan_path.exists",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      },
+      {
+        "name": "files.plan_path.frontmatter.status",
+        "expected": "refined",
+        "actual": "refined",
+        "pass": true
+      },
+      {
+        "name": "files.plan_path.frontmatter.reviewed_by",
+        "expected": "non-empty (CODEOWNERS id)",
+        "actual": "Jonathan Turnock",
+        "pass": true
+      }
+    ],
+    "overall_result": "pass",
+    "report_path": ".abtree/trees/refine-plan/REPORT__happy-path-in-session__20260510T225933Z.md"
+  },
+  "global": {},
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "success",
+      "4": "success"
+    },
+    "step_index": {
+      "0": 1,
+      "1": 1,
+      "2": 2,
+      "3": 2,
+      "4": 3
+    },
+    "retry_count": {}
+  }
+}

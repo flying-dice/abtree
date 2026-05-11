@@ -1,0 +1,116 @@
+{
+  "id": "runner-refine-plan-test-mr-fallback-head__test-tree__1",
+  "tree": "test-tree",
+  "summary": "runner: refine-plan TEST__mr-fallback-headless",
+  "status": "complete",
+  "snapshot": "680fd3db9c8d54b4c6d6b3fb2c8bee0ca6b7ae82fe56bf5302dbdad7d95ee089",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T22:59:58.504Z",
+  "updated_at": "2026-05-10T23:02:55.015Z",
+  "local": {
+    "test_path": ".abtree/trees/refine-plan/TEST__mr-fallback-headless.yaml",
+    "test_spec": {
+      "tree": "refine-plan",
+      "scenario": {
+        "name": "Headless run falls through to Open_MR_For_Codeowner",
+        "then": {
+          "local": {
+            "plan_path": "matches plans/.+\\.md",
+            "codeowner_approved": null,
+            "mr_url": "matches MR URL"
+          },
+          "status": "done"
+        }
+      }
+    },
+    "target_execution_id": "test-tree-run-rate-limit-redis-migration__refine-plan__1",
+    "final_local": {
+      "change_request": "Migrate the rate-limit store from in-memory to Redis.",
+      "intent_analysis": "Ask: migration — replace in-memory rate-limit store with Redis.\nSystems/files: rate-limit middleware, deployment config (REDIS_URL), tests around limits.\nConstraints: per-key TTL semantics must match current behavior; failure-open on Redis outage; latency budget +5ms p99 max.\nCodeowners: no CODEOWNERS file in repo.\nAcceptance: Redis-backed limiter passes existing tests; soak test holds rate under burst; metrics show consistent allow/deny.",
+      "draft_path": null,
+      "plan_path": "plans/rate-limit-store-migration-from-in-memory-to-redis.md",
+      "codeowner_approved": null,
+      "mr_url": "https://gitlab.example/flying-dice/abtree/-/merge_requests/SIMULATED__no_real_push"
+    },
+    "final_status": "done",
+    "mermaid_diagram": "---\ntitle: \"test-tree run: rate-limit Redis migration, headless run (complete)\"\n---\nflowchart TD\n    Refine_Plan_Workflow{{\"Refine Plan Workflow\\n[sequence]\"}}\n    0_Understand_Intent[\"Understand Intent\\n[action]\"]\n    Refine_Plan_Workflow --> 0_Understand_Intent\n    style 0_Understand_Intent fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Write_Draft[\"Write Draft\\n[action]\"]\n    Refine_Plan_Workflow --> 0_Write_Draft\n    style 0_Write_Draft fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Critique_Draft[\"Critique Draft\\n[action]\"]\n    Refine_Plan_Workflow --> 0_Critique_Draft\n    style 0_Critique_Draft fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Save_Plan[\"Save Plan\\n[action]\"]\n    Refine_Plan_Workflow --> 0_Save_Plan\n    style 0_Save_Plan fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Codeowner_Approval{{\"Codeowner Approval\\n[selector]\"}}\n    Refine_Plan_Workflow --> 0_Codeowner_Approval\n    style 0_Codeowner_Approval fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_4_Approve_In_Session[\"Approve In Session\\n[action]\"]\n    0_Codeowner_Approval --> 0_4_Approve_In_Session\n    style 0_4_Approve_In_Session fill:#f87171,stroke:#dc2626,color:#450a0a\n    0_4_Open_MR_For_Codeowner[\"Open MR For Codeowner\\n[action]\"]\n    0_Codeowner_Approval --> 0_4_Open_MR_For_Codeowner\n    style 0_4_Open_MR_For_Codeowner fill:#4ade80,stroke:#16a34a,color:#052e16\n",
+    "assertions": [
+      {
+        "name": "status",
+        "expected": "done",
+        "actual": "done",
+        "pass": true
+      },
+      {
+        "name": "local.plan_path",
+        "expected": "matches plans/.+\\.md",
+        "actual": "plans/rate-limit-store-migration-from-in-memory-to-redis.md",
+        "pass": true
+      },
+      {
+        "name": "local.codeowner_approved",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.mr_url",
+        "expected": "matches MR URL ^https?://.+/(merge_requests|pull)/[0-9]+",
+        "actual": "https://gitlab.example/flying-dice/abtree/-/merge_requests/SIMULATED__no_real_push (SIMULATED — no real push performed)",
+        "pass": false
+      },
+      {
+        "name": "files.plan_path.exists",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      },
+      {
+        "name": "files.plan_path.frontmatter.status",
+        "expected": "refined",
+        "actual": "refined",
+        "pass": true
+      },
+      {
+        "name": "files.plan_path.frontmatter.reviewed_by",
+        "expected": "a codeowner identifier from CODEOWNERS",
+        "actual": "Jonathan Turnock",
+        "pass": true
+      },
+      {
+        "name": "git.branch matches plan/.+",
+        "expected": "plan/<plan-id>",
+        "actual": "not captured (no real push performed)",
+        "pass": false
+      },
+      {
+        "name": "git.mr_assignee == plan.frontmatter.reviewed_by",
+        "expected": "Jonathan Turnock",
+        "actual": "not captured (no real MR opened)",
+        "pass": false
+      }
+    ],
+    "overall_result": "fail",
+    "report_path": ".abtree/trees/refine-plan/REPORT__mr-fallback-headless__20260510T230235Z.md"
+  },
+  "global": {},
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "success",
+      "4": "success"
+    },
+    "step_index": {
+      "0": 1,
+      "1": 1,
+      "2": 2,
+      "3": 2,
+      "4": 3
+    },
+    "retry_count": {}
+  }
+}

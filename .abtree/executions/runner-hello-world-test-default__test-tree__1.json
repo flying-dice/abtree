@@ -1,0 +1,77 @@
+{
+  "id": "runner-hello-world-test-default__test-tree__1",
+  "tree": "test-tree",
+  "summary": "runner: hello-world TEST__default",
+  "status": "complete",
+  "snapshot": "e2ef0973640e5aaa9b16d7817f6e964d3c21f258ea54057147bb961d7ede4d57",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T22:51:26.563Z",
+  "updated_at": "2026-05-10T22:52:07.518Z",
+  "local": {
+    "test_path": ".abtree/trees/hello-world/TEST__default.yaml",
+    "test_spec": {
+      "tree": "hello-world",
+      "scenario": {
+        "name": "Default — unclassifiable time falls through to Default_Greeting",
+        "then": {
+          "local": {
+            "time_of_day": null,
+            "greeting": "non-empty neutral greeting addressing $GLOBAL.user_name"
+          },
+          "status": "done"
+        }
+      }
+    },
+    "target_execution_id": "test-tree-run-default-unclassifiable-tim__hello-world__1",
+    "final_local": {
+      "time_of_day": null,
+      "greeting": "Hello, John Doe."
+    },
+    "final_status": "done",
+    "mermaid_diagram": "---\ntitle: \"test-tree run: Default — unclassifiable time (complete)\"\n---\nflowchart TD\n    Hello_World{{\"Hello World\\n[sequence]\"}}\n    0_Determine_Time[\"Determine Time\\n[action]\"]\n    Hello_World --> 0_Determine_Time\n    style 0_Determine_Time fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_Choose_Greeting{{\"Choose Greeting\\n[selector]\"}}\n    Hello_World --> 0_Choose_Greeting\n    style 0_Choose_Greeting fill:#4ade80,stroke:#16a34a,color:#052e16\n    0_1_Morning_Greeting[\"Morning Greeting\\n[action]\"]\n    0_Choose_Greeting --> 0_1_Morning_Greeting\n    style 0_1_Morning_Greeting fill:#f87171,stroke:#dc2626,color:#450a0a\n    0_1_Afternoon_Greeting[\"Afternoon Greeting\\n[action]\"]\n    0_Choose_Greeting --> 0_1_Afternoon_Greeting\n    style 0_1_Afternoon_Greeting fill:#f87171,stroke:#dc2626,color:#450a0a\n    0_1_Evening_Greeting[\"Evening Greeting\\n[action]\"]\n    0_Choose_Greeting --> 0_1_Evening_Greeting\n    style 0_1_Evening_Greeting fill:#f87171,stroke:#dc2626,color:#450a0a\n    0_1_Default_Greeting[\"Default Greeting\\n[action]\"]\n    0_Choose_Greeting --> 0_1_Default_Greeting\n    style 0_1_Default_Greeting fill:#4ade80,stroke:#16a34a,color:#052e16\n",
+    "assertions": [
+      {
+        "name": "status",
+        "expected": "done",
+        "actual": "done",
+        "pass": true
+      },
+      {
+        "name": "local.time_of_day",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.greeting",
+        "expected": "non-empty neutral greeting addressing $GLOBAL.user_name",
+        "actual": "Hello, John Doe.",
+        "pass": true
+      }
+    ],
+    "overall_result": "pass",
+    "report_path": ".abtree/test-reports/TEST__default__20260510T225154Z.md"
+  },
+  "global": {
+    "reports_dir": ".abtree/test-reports"
+  },
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "success",
+      "4": "success"
+    },
+    "step_index": {
+      "0": 1,
+      "1": 1,
+      "2": 2,
+      "3": 2,
+      "4": 3
+    },
+    "retry_count": {}
+  }
+}

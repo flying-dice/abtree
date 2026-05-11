@@ -1,0 +1,59 @@
+feature: Refine_Plan refines a change request into an approved plan
+tree: refine-plan
+description: |
+  MR fallback — the agent is running headless (no human to approve
+  in-session). Approve_In_Session's "is interactive" evaluate fails, the
+  selector falls through to Open_MR_For_Codeowner, and the workflow
+  completes by assigning the MR rather than locking on a human.
+
+background:
+  initial:
+    local:
+      change_request: "Migrate the rate-limit store from in-memory to Redis."
+  environment:
+    interactive: false
+    codeowner_in_session: false
+
+# VCR-style fixtures — when the target tree triggers an external side
+# effect, the runner returns the value cemented here instead of
+# performing or improvising it. Absence of a fixture means the runner
+# must perform the side effect for real (with explicit authorisation)
+# or submit failure; it must NEVER invent a stand-in.
+fixtures:
+  side_effects:
+    mr_open:
+      url: https://gitlab.example/flying-dice/abtree/-/merge_requests/142
+      assignee: Jonathan Turnock
+      branch: plan/20260511T000100Z-rate-limit-redis-migrate
+
+scenario:
+  name: Headless run falls through to Open_MR_For_Codeowner
+  given:
+    - $LOCAL.change_request is set
+    - the agent is running non-interactively (no human-in-the-loop available)
+  when:
+    - Understand_Intent evaluate → true; writes $LOCAL.intent_analysis
+    - Write_Draft evaluate → true; writes draft and stores $LOCAL.draft_path
+    - Critique_Draft evaluate → true; edits draft in place
+    - Save_Plan evaluate → true; moves draft to plans/<kebab>.md, sets $LOCAL.plan_path, status → "refined"
+    - Save_Plan evaluate → true ($LOCAL.plan_path set and status "refined")
+    - Approve_In_Session evaluate → true ($LOCAL.plan_path is set)
+    - Approve_In_Session evaluate → false (session is NOT interactive)
+    - Open_MR_For_Codeowner evaluate → true ($LOCAL.plan_path is set)
+    - Open_MR_For_Codeowner identifies the codeowner from CODEOWNERS, sets reviewed_by, commits on plan/<plan-id> branch, opens MR, stores $LOCAL.mr_url
+    - Open_MR_For_Codeowner evaluate → true ($LOCAL.mr_url is set)
+  then:
+    local:
+      plan_path: matches "plans/.+\\.md"
+      codeowner_approved: null    # never set; we routed via MR
+      mr_url: equals fixtures.side_effects.mr_open.url
+    files:
+      plan_path:
+        exists: true
+        frontmatter:
+          status: refined
+          reviewed_by: equals fixtures.side_effects.mr_open.assignee
+    git:
+      branch: equals fixtures.side_effects.mr_open.branch
+      mr_assignee: equals fixtures.side_effects.mr_open.assignee
+    status: done

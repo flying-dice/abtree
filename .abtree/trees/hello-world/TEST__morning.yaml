@@ -1,0 +1,24 @@
+feature: Hello_World greets the current user based on time of day
+tree: hello-world
+description: |
+  Morning branch — before noon picks Morning_Greeting.
+
+background:
+  global:
+    user_name: John Doe
+    tone: friendly
+    language: english
+
+scenario:
+  name: Morning — before noon picks Morning_Greeting
+  given:
+    - the system clock reads "08:30"
+  when:
+    - Determine_Time writes $LOCAL.time_of_day = "morning"
+    - Choose_Greeting evaluates Morning_Greeting → true
+    - Morning_Greeting writes a cheerful morning greeting to $LOCAL.greeting
+  then:
+    local:
+      time_of_day: morning
+      greeting: starts with "Good morning"
+    status: done

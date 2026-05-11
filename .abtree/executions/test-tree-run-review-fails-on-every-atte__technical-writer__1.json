@@ -1,0 +1,51 @@
+{
+  "id": "test-tree-run-review-fails-on-every-atte__technical-writer__1",
+  "tree": "technical-writer",
+  "summary": "test-tree run: review fails on every attempt — exhaust budget",
+  "status": "failed",
+  "snapshot": "ccec879b768f216f372d33b2f0b7f073a686cf079f1ceb6bd431eed87e9fb006",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T23:28:43.402Z",
+  "updated_at": "2026-05-10T23:29:26.695Z",
+  "local": {
+    "goal": "Document something the writer keeps getting wrong (test fixture exhausts the review gate on purpose).",
+    "styleguide": "# Styleguide\n- Sentence case.\n",
+    "styleguide_approved": null,
+    "intent": "type: reference; scope: one page; audience: test fixture.",
+    "docs_survey": {
+      "placement": "docs/test-fixture-exhaust-retries.md",
+      "adjacency": []
+    },
+    "placement": "docs/test-fixture-exhaust-retries.md",
+    "draft": "attempt 2 draft",
+    "review_notes": "Structure (1) — failed. Headings don't match the adjacent pages' depth.",
+    "final_path": null
+  },
+  "global": {
+    "repo_root": "the cwd of the project being documented"
+  },
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "failure",
+      "0.0": "success",
+      "2.0": "success",
+      "3.0": "success",
+      "3.1": "failure"
+    },
+    "step_index": {
+      "1": 1,
+      "0.0": 1,
+      "2.0": 1,
+      "3.0": 1,
+      "3.1": 2
+    },
+    "retry_count": {
+      "3": 1
+    }
+  }
+}

@@ -1,0 +1,26 @@
+feature: Hello_World greets the current user based on time of day
+tree: hello-world
+description: |
+  Evening branch — after 17:00 falls through Morning and Afternoon and lands on Evening_Greeting.
+
+background:
+  global:
+    user_name: John Doe
+    tone: friendly
+    language: english
+
+scenario:
+  name: Evening — after 17:00 falls through to Evening_Greeting
+  given:
+    - the system clock reads "20:42"
+  when:
+    - Determine_Time writes $LOCAL.time_of_day = "evening"
+    - Choose_Greeting evaluates Morning_Greeting → false
+    - Choose_Greeting evaluates Afternoon_Greeting → false
+    - Choose_Greeting evaluates Evening_Greeting → true
+    - Evening_Greeting writes a relaxed evening greeting to $LOCAL.greeting
+  then:
+    local:
+      time_of_day: evening
+      greeting: starts with "Good evening" or "Evening"
+    status: done

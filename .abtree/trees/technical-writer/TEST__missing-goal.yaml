@@ -1,0 +1,42 @@
+feature: Technical_Writer grounds a docs goal in a styleguide, places it, writes, and review-gates
+tree: technical-writer
+description: |
+  Guard — the execution is created without seeding $LOCAL.goal. Both
+  Resolve_Styleguide branches gate on the goal:
+    - Load_Styleguide evaluates "$LOCAL.goal is set AND STYLEGUIDE.md exists"
+    - Draft_Styleguide (inside Bootstrap_Styleguide) evaluates "$LOCAL.goal is set"
+  With goal=null, both fail; Resolve_Styleguide has no more branches; the
+  parent sequence aborts as failure before any styleguide / draft / write
+  occurs.
+
+background:
+  initial:
+    local: {}   # goal deliberately NOT seeded
+
+scenario:
+  name: No goal seeded → Resolve_Styleguide selector exhausts both branches and the workflow fails
+  given:
+    - $LOCAL.goal is null
+  when:
+    - Load_Styleguide evaluate → false ($LOCAL.goal is null, even though STYLEGUIDE.md may exist)
+    - Draft_Styleguide evaluate → false ($LOCAL.goal is null)
+    - Resolve_Styleguide selector exhausts both children → fails
+    - parent sequence Technical_Writer_Workflow aborts on the first failing child
+  then:
+    local:
+      goal: null
+      styleguide: null
+      styleguide_approved: null
+      intent: null
+      docs_survey: null
+      placement: null
+      draft: null
+      review_notes: null
+      final_path: null
+    files:
+      STYLEGUIDE.md:
+        modified_during_run: false   # bootstrap never wrote anything
+    runtime:
+      retry_count:
+        Write_And_Review: 0
+    status: failure

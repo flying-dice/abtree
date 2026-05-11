@@ -1,0 +1,32 @@
+feature: Refine_Plan refines a change request into an approved plan
+tree: refine-plan
+description: |
+  Guard — Understand_Intent's first step is `evaluate: $LOCAL.change_request is set`.
+  When the execution is created without seeding $LOCAL.change_request, the
+  evaluate must fail and the parent sequence must terminate as failure
+  before any draft is written.
+
+background:
+  initial:
+    local: {}    # change_request deliberately NOT seeded
+
+scenario:
+  name: No change_request seeded → workflow fails at the Understand_Intent gate
+  given:
+    - $LOCAL.change_request is null (the execution was created without seeding it)
+  when:
+    - Understand_Intent evaluate → false ($LOCAL.change_request is not set)
+    - Understand_Intent submits failure (no instruct ever fires)
+    - the parent sequence (Refine_Plan_Workflow) aborts on the first failing child
+  then:
+    local:
+      change_request: null
+      intent_analysis: null
+      draft_path: null
+      plan_path: null
+      codeowner_approved: null
+      mr_url: null
+    files:
+      plans_drafts_dir:
+        contains_files_for_this_execution: false   # we never reached Write_Draft
+    status: failure

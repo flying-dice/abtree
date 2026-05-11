@@ -1,0 +1,61 @@
+feature: Technical_Writer grounds a docs goal in a styleguide, places it, writes, and review-gates
+tree: technical-writer
+description: |
+  Retry exhaustion — every write/review pass fails. The Write_And_Review
+  sequence has retries: 2 (3 attempts total). After the third attempt's
+  review verdict is "failed", the runtime stops retrying and the parent
+  Technical_Writer_Workflow fails. After this run,
+  runtime.retry_count.Write_And_Review should be 2 and execution status
+  should be "failure".
+
+background:
+  initial:
+    local:
+      goal: "Document something the writer keeps getting wrong (test fixture exhausts the review gate on purpose)."
+
+fixtures:
+  side_effects:
+    styleguide_load:
+      exists: true
+      contents: "# Styleguide\n- Sentence case.\n"
+    docs_home_lookup:
+      home_exists: true
+      placement: docs/test-fixture-exhaust-retries.md
+      adjacency: []
+    docs_write:
+      file_written: docs/test-fixture-exhaust-retries.md
+    review_outcomes:
+      - attempt: 1
+        verdict: failed
+        notes: "Flow (2) — failed. Sections jump topic mid-paragraph."
+      - attempt: 2
+        verdict: failed
+        notes: "Structure (1) — failed. Headings don't match the adjacent pages' depth."
+      - attempt: 3
+        verdict: failed
+        notes: "Atomicity (3) — failed. Still bundling two concepts."
+
+scenario:
+  name: Three review failures exhaust the retry budget; workflow fails
+  given:
+    - $LOCAL.goal is set
+    - STYLEGUIDE.md exists at the repo root
+    - a docs home for the content exists
+    - every write/review attempt is fixture-rigged to fail
+  when:
+    - Resolve_Styleguide / Assess_Intent / Map_Placement run through to placement
+    - Write_Documentation (attempt 1) writes; Review_Gate verdict "failed" (flow)
+    - Write_And_Review retries (retry_count: 0 → 1)
+    - Write_Documentation (attempt 2) revises; Review_Gate verdict "failed" (structure)
+    - Write_And_Review retries (retry_count: 1 → 2)
+    - Write_Documentation (attempt 3) revises; Review_Gate verdict "failed" (atomicity)
+    - retry budget exhausted; Write_And_Review remains failed
+    - parent sequence Technical_Writer_Workflow fails
+  then:
+    local:
+      review_notes: starts with "Atomicity (3) — failed"   # the last attempt's notes survive
+      final_path: null
+    runtime:
+      retry_count:
+        Write_And_Review: 2
+    status: failure

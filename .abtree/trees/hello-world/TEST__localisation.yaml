@@ -1,0 +1,26 @@
+feature: Hello_World greets the current user based on time of day
+tree: hello-world
+description: |
+  Localisation — Morning branch with $GLOBAL overrides for language and tone.
+
+background:
+  global:
+    user_name: John Doe
+    tone: formal
+    language: french
+
+scenario:
+  name: Localisation — global profile overrides language and tone
+  given:
+    - the system clock reads "09:00"
+    - $GLOBAL.language = "french"
+    - $GLOBAL.tone = "formal"
+  when:
+    - Determine_Time writes $LOCAL.time_of_day = "morning"
+    - Choose_Greeting evaluates Morning_Greeting → true
+    - Morning_Greeting writes a formal French morning greeting to $LOCAL.greeting
+  then:
+    local:
+      time_of_day: morning
+      greeting: starts with "Bonjour" and addresses John Doe formally
+    status: done

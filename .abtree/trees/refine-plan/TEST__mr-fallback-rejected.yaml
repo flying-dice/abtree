@@ -1,0 +1,56 @@
+feature: Refine_Plan refines a change request into an approved plan
+tree: refine-plan
+description: |
+  MR fallback — the agent is interactive but the codeowner declines to
+  approve in-session (e.g. they want async review on a branch). The
+  Approve_In_Session action submits failure, the selector falls through
+  to Open_MR_For_Codeowner, and the workflow completes by assigning the MR.
+
+background:
+  initial:
+    local:
+      change_request: "Rotate the JWT signing key and shorten the access-token TTL from 1h to 15m."
+  environment:
+    interactive: true
+    codeowner_in_session: true
+    codeowner_response: reject  # prefers MR review
+
+# VCR-style fixtures — see TEST__mr-fallback-headless.yaml for the contract.
+fixtures:
+  side_effects:
+    mr_open:
+      url: https://gitlab.example/flying-dice/abtree/-/merge_requests/143
+      assignee: Jonathan Turnock
+      branch: plan/20260511T000300Z-jwt-rotate-key-shorten-ttl
+
+scenario:
+  name: User rejects in-session approval; selector routes to MR path
+  given:
+    - $LOCAL.change_request is set
+    - the agent is running interactively
+    - the codeowner prefers async review over in-session sign-off
+  when:
+    - Understand_Intent / Write_Draft / Critique_Draft / Save_Plan complete as in the happy path
+    - $LOCAL.plan_path is set and the plan frontmatter status is "refined"
+    - Approve_In_Session evaluate → true ($LOCAL.plan_path is set)
+    - Approve_In_Session evaluate → true (session is interactive)
+    - Approve_In_Session asks the codeowner; they decline / request MR review
+    - Approve_In_Session submits failure (per the instruction's rejection contract)
+    - Open_MR_For_Codeowner evaluate → true ($LOCAL.plan_path is set)
+    - Open_MR_For_Codeowner sets reviewed_by, commits on plan/<plan-id>, pushes, opens MR, stores $LOCAL.mr_url
+    - Open_MR_For_Codeowner evaluate → true ($LOCAL.mr_url is set)
+  then:
+    local:
+      plan_path: matches "plans/.+\\.md"
+      codeowner_approved: null    # rejection did not set this to false; left untouched
+      mr_url: equals fixtures.side_effects.mr_open.url
+    files:
+      plan_path:
+        exists: true
+        frontmatter:
+          status: refined
+          reviewed_by: equals fixtures.side_effects.mr_open.assignee
+    git:
+      branch: equals fixtures.side_effects.mr_open.branch
+      mr_assignee: equals fixtures.side_effects.mr_open.assignee
+    status: done

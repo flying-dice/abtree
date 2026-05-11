@@ -1,5 +1,5 @@
 name: refine-plan
-version: 4.1.0
+version: 4.2.0
 description: |
   Refine a change request into an approved plan: analyse intent, draft to a per-execution draft file, 
   critique it in place, promote to plans/, then take it through codeowner approval (either in-session or via an assigned MR).
@@ -134,9 +134,9 @@ tree:
             Read the title from the frontmatter of the file at
             $LOCAL.draft_path. Move (not copy) the file to
             plans/[kebab-case-title].md. Store the new path at
-            $LOCAL.plan_path.
-            After this step $LOCAL.draft_path is no longer valid — the
-            draft has been promoted, not duplicated.
+            $LOCAL.plan_path, then write null to $LOCAL.draft_path
+            (the draft was promoted, not duplicated, so the stale
+            path must not be carried forward).
         - instruct: >
             The file at $LOCAL.plan_path is now the final plan. Update the status to
             "refined" in the frontmatter.

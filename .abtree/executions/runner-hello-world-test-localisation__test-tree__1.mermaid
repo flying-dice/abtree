@@ -1,0 +1,20 @@
+---
+title: "runner: hello-world TEST__localisation (complete)"
+---
+flowchart TD
+    Test_Runner{{"Test Runner\n[sequence]"}}
+    0_Load_Spec["Load Spec\n[action]"]
+    Test_Runner --> 0_Load_Spec
+    style 0_Load_Spec fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Drive_Workflow["Drive Workflow\n[action]"]
+    Test_Runner --> 0_Drive_Workflow
+    style 0_Drive_Workflow fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Capture_Trace["Capture Trace\n[action]"]
+    Test_Runner --> 0_Capture_Trace
+    style 0_Capture_Trace fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Compare_Assertions["Compare Assertions\n[action]"]
+    Test_Runner --> 0_Compare_Assertions
+    style 0_Compare_Assertions fill:#4ade80,stroke:#16a34a,color:#052e16
+    0_Write_Report["Write Report\n[action]"]
+    Test_Runner --> 0_Write_Report
+    style 0_Write_Report fill:#4ade80,stroke:#16a34a,color:#052e16

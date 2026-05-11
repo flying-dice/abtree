@@ -1,0 +1,67 @@
+feature: Technical_Writer grounds a docs goal in a styleguide, places it, writes, and review-gates
+tree: technical-writer
+description: |
+  Retry path — first write fails the atomicity check; the runtime retries
+  Write_And_Review and the second pass clears the gate. Tests the bounded
+  retry behaviour of the Write_And_Review sequence (retries: 2 in the
+  tree). After this run, runtime.retry_count.Write_And_Review should be 1.
+
+background:
+  initial:
+    local:
+      goal: "Document trace inspection — the .mermaid file format, how to read node colours, and how to debug a stuck execution from the trace alone."
+
+fixtures:
+  side_effects:
+    styleguide_load:
+      exists: true
+      contents: "# Styleguide\n- Sentence case headings.\n- Code fences with language tag.\n"
+    docs_home_lookup:
+      home_exists: true
+      placement: docs/guide/inspecting-executions.md
+      adjacency:
+        - docs/guide/getting-started.md
+        - docs/guide/runtime-protocol.md
+    docs_write:
+      file_written: docs/guide/inspecting-executions.md
+    review_outcomes:
+      # First attempt fails atomicity — the writer bundled two concepts (mermaid format AND debugging) into one page.
+      - attempt: 1
+        verdict: failed
+        notes: |
+          Atomicity (3) — failed. The draft bundles two distinct concepts: the .mermaid file format,
+          and debugging a stuck execution from a trace. Split: the file format belongs in this page;
+          stuck-execution debugging belongs in a separate "Debugging executions" page.
+      # Second attempt addresses the feedback: scope narrowed to the file format only.
+      - attempt: 2
+        verdict: approved
+        notes: approved
+
+scenario:
+  name: First review fails on atomicity; retry passes after narrowing scope
+  given:
+    - $LOCAL.goal is set
+    - STYLEGUIDE.md exists at the repo root
+    - a docs home for the content exists
+  when:
+    - Resolve_Styleguide / Assess_Intent / Map_Placement run through to placement
+    - Write_Documentation (attempt 1) writes a draft that bundles two concepts
+    - Review_Gate (attempt 1) runs three checks; per fixtures.side_effects.review_outcomes[0] verdict is "failed"
+    - Review_Gate (attempt 1) writes the atomicity-failure note to $LOCAL.review_notes
+    - Review_Gate (attempt 1) evaluate → false ($LOCAL.review_notes is not "approved") → action fails
+    - Write_And_Review parent sequence fails → runtime retries (retry_count: 0 → 1)
+    - Write_Documentation (attempt 2) reads $LOCAL.review_notes as prior feedback, narrows scope to mermaid file format only
+    - Review_Gate (attempt 2) verdict "approved" per fixtures.side_effects.review_outcomes[1]
+    - Review_Gate (attempt 2) sets $LOCAL.review_notes = "approved", confirms final_path
+  then:
+    local:
+      review_notes: approved
+      final_path: equals fixtures.side_effects.docs_home_lookup.placement
+    files:
+      placement:
+        exists: true
+        path: equals fixtures.side_effects.docs_write.file_written
+    runtime:
+      retry_count:
+        Write_And_Review: 1
+    status: done

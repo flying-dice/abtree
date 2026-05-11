@@ -1,0 +1,148 @@
+{
+  "id": "runner-technical-writer-test-missing-goa__test-tree__1",
+  "tree": "test-tree",
+  "summary": "runner: technical-writer TEST__missing-goal",
+  "status": "complete",
+  "snapshot": "16c65e120b9844e205c9be0a7c6f6b7e910c688fe6b1adaa848f0366db7a3bec",
+  "cursor": "null",
+  "phase": "idle",
+  "protocol_accepted": true,
+  "created_at": "2026-05-10T23:30:39.514Z",
+  "updated_at": "2026-05-10T23:32:04.656Z",
+  "local": {
+    "test_path": ".abtree/trees/technical-writer/TEST__missing-goal.yaml",
+    "test_spec": {
+      "tree": "technical-writer",
+      "scenario": {
+        "name": "No goal seeded → Resolve_Styleguide selector exhausts both branches and the workflow fails",
+        "then": {
+          "local": {
+            "goal": null,
+            "styleguide": null,
+            "styleguide_approved": null,
+            "intent": null,
+            "docs_survey": null,
+            "placement": null,
+            "draft": null,
+            "review_notes": null,
+            "final_path": null
+          },
+          "runtime": {
+            "retry_count": {
+              "Write_And_Review": 0
+            }
+          },
+          "status": "failure"
+        }
+      }
+    },
+    "target_execution_id": "test-tree-run-missing-goal-both-resolve-__technical-writer__1",
+    "final_local": {
+      "goal": null,
+      "styleguide": null,
+      "styleguide_approved": null,
+      "intent": null,
+      "docs_survey": null,
+      "placement": null,
+      "draft": null,
+      "review_notes": null,
+      "final_path": null
+    },
+    "final_status": "failure",
+    "mermaid_diagram": "---\ntitle: \"test-tree run: missing goal — both Resolve_Styleguide branches gate-fail (failed)\"\n---\nflowchart TD\n    Technical_Writer_Workflow{{\"Technical Writer Workflow\\n[sequence]\"}}\n    0_Resolve_Styleguide{{\"Resolve Styleguide\\n[selector]\"}}\n    Technical_Writer_Workflow --> 0_Resolve_Styleguide\n    style 0_Resolve_Styleguide fill:#f87171,stroke:#dc2626,color:#450a0a\n    0_0_Load_Styleguide[\"Load Styleguide\\n[action]\"]\n    0_Resolve_Styleguide --> 0_0_Load_Styleguide\n    style 0_0_Load_Styleguide fill:#f87171,stroke:#dc2626,color:#450a0a\n    0_0_Bootstrap_Styleguide{{\"Bootstrap Styleguide\\n[sequence]\"}}\n    0_Resolve_Styleguide --> 0_0_Bootstrap_Styleguide\n    style 0_0_Bootstrap_Styleguide fill:#f87171,stroke:#dc2626,color:#450a0a\n    0_0_1_Draft_Styleguide[\"Draft Styleguide\\n[action]\"]\n    0_0_Bootstrap_Styleguide --> 0_0_1_Draft_Styleguide\n    style 0_0_1_Draft_Styleguide fill:#f87171,stroke:#dc2626,color:#450a0a\n    0_0_1_Human_Approval_Gate[\"Human Approval Gate\\n[action]\"]\n    0_0_Bootstrap_Styleguide --> 0_0_1_Human_Approval_Gate\n    0_Assess_Intent[\"Assess Intent\\n[action]\"]\n    Technical_Writer_Workflow --> 0_Assess_Intent\n    0_Survey_Existing_Docs{{\"Survey Existing Docs\\n[selector]\"}}\n    Technical_Writer_Workflow --> 0_Survey_Existing_Docs\n    0_2_Map_Placement[\"Map Placement\\n[action]\"]\n    0_Survey_Existing_Docs --> 0_2_Map_Placement\n    0_2_Resolve_Structure[\"Resolve Structure\\n[action]\"]\n    0_Survey_Existing_Docs --> 0_2_Resolve_Structure\n    0_Write_And_Review{{\"Write And Review\\n[sequence]\"}}\n    Technical_Writer_Workflow --> 0_Write_And_Review\n    0_3_Write_Documentation[\"Write Documentation\\n[action]\"]\n    0_Write_And_Review --> 0_3_Write_Documentation\n    0_3_Review_Gate[\"Review Gate\\n[action]\"]\n    0_Write_And_Review --> 0_3_Review_Gate\n",
+    "assertions": [
+      {
+        "name": "status",
+        "expected": "failure",
+        "actual": "failure",
+        "pass": true
+      },
+      {
+        "name": "local.goal",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.styleguide",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.styleguide_approved",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.intent",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.docs_survey",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.placement",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.draft",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.review_notes",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "local.final_path",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "files.STYLEGUIDE.md.modified_during_run",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "name": "runtime.retry_count.Write_And_Review",
+        "expected": 0,
+        "actual": 0,
+        "pass": true
+      }
+    ],
+    "overall_result": "pass",
+    "report_path": ".abtree/trees/technical-writer/REPORT__missing-goal__20260510T233127Z.md"
+  },
+  "global": {},
+  "runtime": {
+    "node_status": {
+      "0": "success",
+      "1": "success",
+      "2": "success",
+      "3": "success",
+      "4": "success"
+    },
+    "step_index": {
+      "0": 1,
+      "1": 1,
+      "2": 2,
+      "3": 2,
+      "4": 3
+    },
+    "retry_count": {}
+  }
+}

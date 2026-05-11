@@ -1,0 +1,26 @@
+feature: Hello_World greets the current user based on time of day
+tree: hello-world
+description: |
+  Default branch — when Determine_Time can't classify the hour, all evaluates fail
+  and Default_Greeting handles the catch-all.
+
+background:
+  global:
+    user_name: John Doe
+    tone: friendly
+    language: english
+
+scenario:
+  name: Default — unclassifiable time falls through to Default_Greeting
+  given:
+    - Determine_Time cannot classify the hour and leaves $LOCAL.time_of_day = null
+  when:
+    - Choose_Greeting evaluates Morning_Greeting → false
+    - Choose_Greeting evaluates Afternoon_Greeting → false
+    - Choose_Greeting evaluates Evening_Greeting → false
+    - Default_Greeting writes a neutral greeting to $LOCAL.greeting
+  then:
+    local:
+      time_of_day: null
+      greeting: non-empty neutral greeting addressing $GLOBAL.user_name
+    status: done

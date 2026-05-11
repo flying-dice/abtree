@@ -1,0 +1,50 @@
+feature: Refine_Plan refines a change request into an approved plan
+tree: refine-plan
+description: |
+  Happy path — the agent is interactive, a codeowner is present in the
+  session, and they approve the refined plan in-place. The MR fallback
+  branch is never reached.
+
+background:
+  initial:
+    local:
+      change_request: "Add structured logging to the ingestion service so we can correlate request traces in Grafana."
+  environment:
+    interactive: true
+    codeowner_in_session: true
+
+scenario:
+  name: Codeowner approves the refined plan inside the session
+  given:
+    - $LOCAL.change_request is set to a non-empty request string
+    - the agent is running interactively with a codeowner available
+  when:
+    - Understand_Intent evaluate → true ($LOCAL.change_request is set)
+    - Understand_Intent writes a terse bullet analysis to $LOCAL.intent_analysis
+    - Write_Draft evaluate → true ($LOCAL.intent_analysis is set)
+    - Write_Draft creates plans/drafts/<execution-id>.md and stores its path at $LOCAL.draft_path
+    - Critique_Draft evaluate → true ($LOCAL.draft_path is set)
+    - Critique_Draft edits the draft file in place — no new state keys, $LOCAL.draft_path unchanged
+    - Save_Plan evaluate → true ($LOCAL.draft_path is set)
+    - Save_Plan moves the draft to plans/<kebab-case-title>.md and stores the new path at $LOCAL.plan_path
+    - Save_Plan updates the plan frontmatter status to "refined"
+    - Save_Plan evaluate → true ($LOCAL.plan_path is set and status is "refined")
+    - Approve_In_Session evaluate → true ($LOCAL.plan_path is set)
+    - Approve_In_Session evaluate → true (session is interactive)
+    - Approve_In_Session asks the codeowner; they edit reviewed_by and run `abtree local write … codeowner_approved true`
+    - Approve_In_Session evaluate → true ($LOCAL.codeowner_approved is true)
+  then:
+    local:
+      change_request: non-empty
+      intent_analysis: non-empty terse bullets
+      draft_path: null    # draft was moved by Save_Plan and is no longer valid
+      plan_path: matches "plans/.+\\.md"
+      codeowner_approved: true
+      mr_url: null
+    files:
+      plan_path:
+        exists: true
+        frontmatter:
+          status: refined
+          reviewed_by: non-empty (matches a CODEOWNERS identifier)
+    status: done

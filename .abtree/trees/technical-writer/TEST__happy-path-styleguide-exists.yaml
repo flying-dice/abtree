@@ -1,0 +1,81 @@
+feature: Technical_Writer grounds a docs goal in a styleguide, places it, writes, and review-gates
+tree: technical-writer
+description: |
+  Happy path — STYLEGUIDE.md already exists at the repo root, a home for
+  the new content already exists in the docs tree, and the first
+  write/review pass clears all three gates. No retries, no bootstrap.
+
+background:
+  initial:
+    local:
+      goal: "Document the abtree CLI's `execution list` subcommand: flags, output format, when to use it."
+
+# VCR-style fixtures — see test-tree TREE.yaml for the contract.
+# Absence of a fixture means the runner must perform the side effect
+# live (with explicit authorisation) or submit failure; it must never
+# invent a stand-in.
+fixtures:
+  side_effects:
+    styleguide_load:
+      exists: true
+      contents: |
+        # Styleguide
+        - Voice: second person ("you"), active.
+        - Tone: terse, no hedging.
+        - Code fences: triple-backtick, language tag required.
+        - Headings: sentence case.
+        - Files: kebab-case.
+    docs_home_lookup:
+      home_exists: true
+      placement: docs/guide/cli/execution-list.md
+      adjacency:
+        - docs/guide/cli/execution-create.md
+        - docs/guide/cli/execution-get.md
+      sidebar_entry: { section: CLI, after: execution-create }
+    docs_write:
+      file_written: docs/guide/cli/execution-list.md
+      bytes: 1820
+    review_outcomes:
+      - attempt: 1
+        verdict: approved
+        notes: approved
+
+scenario:
+  name: Styleguide present, home present, first review approves
+  given:
+    - $LOCAL.goal is set
+    - STYLEGUIDE.md exists at the repo root
+    - the docs tree has a CLI section the new page slots into
+  when:
+    - Load_Styleguide evaluate → true (goal set, STYLEGUIDE.md exists)
+    - Load_Styleguide writes $LOCAL.styleguide from fixtures.side_effects.styleguide_load.contents
+    - Assess_Intent evaluate → true ($LOCAL.styleguide is set)
+    - Assess_Intent writes intent (type=reference, scope=one page, audience=integrator) to $LOCAL.intent
+    - Map_Placement evaluate → true (intent set; home exists per fixtures.side_effects.docs_home_lookup)
+    - Map_Placement writes $LOCAL.docs_survey and $LOCAL.placement from the lookup fixture
+    - Write_Documentation evaluate → true (intent, docs_survey, placement all set)
+    - Write_Documentation writes the page (fixtures.side_effects.docs_write) and stores $LOCAL.draft
+    - Review_Gate evaluate → true ($LOCAL.draft is set)
+    - Review_Gate runs three checks; per fixtures.side_effects.review_outcomes[0] the verdict is "approved"
+    - Review_Gate sets $LOCAL.review_notes = "approved"
+    - Review_Gate evaluate → true ($LOCAL.review_notes is "approved")
+    - Review_Gate confirms the file and stores $LOCAL.final_path
+  then:
+    local:
+      goal: non-empty
+      styleguide: non-empty
+      styleguide_approved: null    # never reached the bootstrap gate
+      intent: non-empty
+      docs_survey: non-empty
+      placement: equals fixtures.side_effects.docs_home_lookup.placement
+      draft: non-empty
+      review_notes: approved
+      final_path: equals fixtures.side_effects.docs_home_lookup.placement
+    files:
+      placement:
+        exists: true
+        path: equals fixtures.side_effects.docs_write.file_written
+    runtime:
+      retry_count:
+        Write_And_Review: 0
+    status: done

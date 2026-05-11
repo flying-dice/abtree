@@ -1,0 +1,74 @@
+feature: Technical_Writer grounds a docs goal in a styleguide, places it, writes, and review-gates
+tree: technical-writer
+description: |
+  Survey path — STYLEGUIDE.md exists, but no home exists for the new
+  content in the current docs tree. Map_Placement's evaluate fails;
+  Resolve_Structure runs, creates a new section / sidebar entry, then
+  the write/review pass clears.
+
+background:
+  initial:
+    local:
+      goal: "Document the brand-new behaviour-tree-fixtures concept. There's no section for fixtures yet."
+
+fixtures:
+  side_effects:
+    styleguide_load:
+      exists: true
+      contents: |
+        # Styleguide
+        - Voice: second person, active.
+        - Headings: sentence case.
+    docs_home_lookup:
+      home_exists: false   # forces Map_Placement evaluate → false
+    docs_structural_change:
+      kind: new_section
+      created:
+        directory: docs/concepts/fixtures
+        index_page: docs/concepts/fixtures/index.md
+        sidebar_patch:
+          file: docs/.vitepress/config.ts
+          section: Concepts
+          new_entry: { text: Fixtures, link: /concepts/fixtures/ }
+      placement: docs/concepts/fixtures/index.md
+    docs_write:
+      file_written: docs/concepts/fixtures/index.md
+      bytes: 1640
+    review_outcomes:
+      - attempt: 1
+        verdict: approved
+        notes: approved
+
+scenario:
+  name: No home in docs tree; Resolve_Structure creates a new section first
+  given:
+    - $LOCAL.goal is set
+    - STYLEGUIDE.md exists at the repo root
+    - the docs tree has no existing section for the new content
+  when:
+    - Load_Styleguide evaluate → true; writes $LOCAL.styleguide
+    - Assess_Intent evaluate → true; writes $LOCAL.intent (type=conceptual explainer, scope=one section, audience=integrator)
+    - Map_Placement evaluate → false (no home exists per fixtures.side_effects.docs_home_lookup)
+    - Resolve_Structure evaluate → true ($LOCAL.intent is set)
+    - Resolve_Structure performs the structural change from fixtures.side_effects.docs_structural_change (new section dir + sidebar patch)
+    - Resolve_Structure writes $LOCAL.docs_survey and $LOCAL.placement
+    - Write_Documentation evaluate → true; writes the page (fixture-served) and stores $LOCAL.draft
+    - Review_Gate evaluate → true; review verdict "approved" per fixtures.side_effects.review_outcomes[0]
+    - Review_Gate sets $LOCAL.review_notes = "approved", confirms final_path
+  then:
+    local:
+      placement: equals fixtures.side_effects.docs_structural_change.placement
+      draft: non-empty
+      review_notes: approved
+      final_path: equals fixtures.side_effects.docs_structural_change.placement
+    files:
+      placement:
+        exists: true
+        path: equals fixtures.side_effects.docs_write.file_written
+      sidebar:
+        path: equals fixtures.side_effects.docs_structural_change.created.sidebar_patch.file
+        contains_entry: equals fixtures.side_effects.docs_structural_change.created.sidebar_patch.new_entry
+    runtime:
+      retry_count:
+        Write_And_Review: 0
+    status: done

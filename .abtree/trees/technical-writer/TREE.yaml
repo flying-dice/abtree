@@ -1,5 +1,5 @@
 name: technical-writer
-version: 1.2.0
+version: 1.2.1
 description: Take a documentation goal, ground it in the repo's styleguide, find or build a home in the docs tree, write to it, and gate-check structure / flow / atomicity. Up to three write/review passes (one initial + two retries) before surfacing failure to the human.
 
 state:
@@ -59,7 +59,10 @@ tree:
                     `abtree local write <flow-id> styleguide_approved true`.
                     While waiting, you may submit `running`. Do NOT submit
                     success until they confirm. If they reject, submit
-                    failure so the bootstrap re-runs.
+                    failure. The workflow will terminate — the human will
+                    then author STYLEGUIDE.md themselves and re-run; the
+                    next run takes the Load_Styleguide branch and skips
+                    the bootstrap entirely.
                 - evaluate: $LOCAL.styleguide_approved is true
                 - instruct: >
                     Write $LOCAL.styleguide to STYLEGUIDE.md at the repo root.
