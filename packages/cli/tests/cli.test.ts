@@ -39,7 +39,7 @@ beforeAll(() => {
 	// Copy hello-world's built main.json + package.json so slug-based lookup
 	// works. The runtime requires package.json:main to resolve a slug to a
 	// tree file — there is no implicit TREE.yaml default.
-	const pkgDir = resolve(import.meta.dir, "../../hello-world");
+	const pkgDir = resolve(import.meta.dir, "../../../trees/hello-world");
 	for (const f of ["main.json", "package.json"]) {
 		copyFileSync(
 			resolve(pkgDir, f),

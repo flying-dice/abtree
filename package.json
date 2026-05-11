@@ -4,7 +4,8 @@
 	"type": "module",
 	"private": true,
 	"workspaces": [
-		"packages/*"
+		"packages/*",
+		"trees/*"
 	],
 	"scripts": {
 		"release": "semantic-release",

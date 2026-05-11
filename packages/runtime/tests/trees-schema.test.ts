@@ -8,10 +8,10 @@ import { join, resolve } from "node:path";
 import $RefParser from "@apidevtools/json-schema-ref-parser";
 import { TreeFileSchema } from "abtree_runtime";
 
-const PACKAGES_DIR = resolve(import.meta.dir, "../../..", "packages");
+const TREES_DIR = resolve(import.meta.dir, "../../..", "trees");
 
-for (const pkgName of readdirSync(PACKAGES_DIR).sort()) {
-	const pkgDir = join(PACKAGES_DIR, pkgName);
+for (const pkgName of readdirSync(TREES_DIR).sort()) {
+	const pkgDir = join(TREES_DIR, pkgName);
 	const pkgPath = join(pkgDir, "package.json");
 	if (!statSync(pkgDir).isDirectory()) continue;
 	if (!existsSync(pkgPath)) continue;
