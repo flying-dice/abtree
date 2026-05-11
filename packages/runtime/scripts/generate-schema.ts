@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { buildJsonSchema } from "abtree_runtime";
 
-const repoRoot = resolve(import.meta.dir, "..");
+const repoRoot = resolve(import.meta.dir, "../../..");
 const repoPath = resolve(repoRoot, "tree.schema.json");
 // Also publish to the docs site's public/ tree so vitepress serves the
 // schema at https://abtree.sh/schemas/tree.schema.json — the canonical URL
