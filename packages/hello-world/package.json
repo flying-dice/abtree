@@ -1,0 +1,15 @@
+{
+	"name": "abtree_hello-world",
+	"version": "2.0.0",
+	"description": "Greet a user based on time of day. Demonstrates sequence, selector, and action primitives.",
+	"main": "main.json",
+	"files": ["main.json", "tests"],
+	"scripts": {
+		"build": "bun scripts/build.ts"
+	},
+	"keywords": ["abtree", "behaviour-tree", "bt", "hello-world", "example"],
+	"devDependencies": {
+		"abtree_dsl": "workspace:*",
+		"abtree_runtime": "workspace:*"
+	}
+}

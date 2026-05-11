@@ -36,19 +36,13 @@ let tmp: string;
 beforeAll(() => {
 	tmp = mkdtempSync(join(tmpdir(), "abtree-test-"));
 	mkdirSync(join(tmp, ".abtree", "trees", "hello-world"), { recursive: true });
-	// Copy hello-world's TREE.yaml + package.json so slug-based lookup works.
-	// The runtime requires package.json:main to resolve a slug to a YAML —
-	// there is no implicit TREE.yaml default.
-	for (const f of ["TREE.yaml", "package.json"]) {
+	// Copy hello-world's built main.json + package.json so slug-based lookup
+	// works. The runtime requires package.json:main to resolve a slug to a
+	// tree file — there is no implicit TREE.yaml default.
+	const pkgDir = resolve(import.meta.dir, "../../hello-world");
+	for (const f of ["main.json", "package.json"]) {
 		copyFileSync(
-			resolve(
-				import.meta.dir,
-				"../../..",
-				".abtree",
-				"trees",
-				"hello-world",
-				f,
-			),
+			resolve(pkgDir, f),
 			join(tmp, ".abtree", "trees", "hello-world", f),
 		);
 	}

@@ -1,21 +1,31 @@
-// One bun:test per bundled tree under .abtree/trees/<slug>/TREE.yaml.
-// Each tree is dereferenced via json-schema-ref-parser and parsed through
-// TreeFileSchema, mirroring the load path in src/tree.ts. Catches drift
-// between the bundled trees and the zod schema before release.
+// One bun:test per bundled tree package — load each package's main file
+// (whatever main points at: .json, .yaml, or .yml), dereference via
+// json-schema-ref-parser, and parse through TreeFileSchema. Catches drift
+// between published trees and the zod schema before release.
 import { expect, test } from "bun:test";
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import $RefParser from "@apidevtools/json-schema-ref-parser";
 import { TreeFileSchema } from "abtree_runtime";
 
-const TREES_DIR = resolve(import.meta.dir, "../../..", ".abtree", "trees");
+const PACKAGES_DIR = resolve(import.meta.dir, "../../..", "packages");
 
-for (const slug of readdirSync(TREES_DIR).sort()) {
-	const treePath = join(TREES_DIR, slug, "TREE.yaml");
-	if (!statSync(join(TREES_DIR, slug)).isDirectory()) continue;
-	if (!existsSync(treePath)) continue;
-	test(`schema: ${slug}`, async () => {
-		const raw = await $RefParser.dereference(treePath, {
+for (const pkgName of readdirSync(PACKAGES_DIR).sort()) {
+	const pkgDir = join(PACKAGES_DIR, pkgName);
+	const pkgPath = join(pkgDir, "package.json");
+	if (!statSync(pkgDir).isDirectory()) continue;
+	if (!existsSync(pkgPath)) continue;
+
+	const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as {
+		main?: string;
+	};
+	if (!pkg.main) continue;
+	const main = join(pkgDir, pkg.main);
+	if (!/\.(json|ya?ml)$/i.test(main)) continue;
+	if (!existsSync(main)) continue;
+
+	test(`schema: ${pkgName}`, async () => {
+		const raw = await $RefParser.dereference(main, {
 			dereference: { circular: "ignore" },
 		});
 		const result = TreeFileSchema.safeParse(raw);
@@ -26,7 +36,7 @@ for (const slug of readdirSync(TREES_DIR).sort()) {
 					return `  ${p}: ${i.message}`;
 				})
 				.join("\n");
-			throw new Error(`${slug} failed schema validation:\n${issues}`);
+			throw new Error(`${pkgName} failed schema validation:\n${issues}`);
 		}
 		expect(result.success).toBe(true);
 	});
