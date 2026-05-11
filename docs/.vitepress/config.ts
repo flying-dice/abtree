@@ -1,5 +1,5 @@
-import { existsSync, readdirSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitepress";
 import llmstxt from "vitepress-plugin-llms";
@@ -15,17 +15,41 @@ function exampleSidebarItems() {
 	const dir = resolve(import.meta.dirname, "../examples");
 	const base = [{ text: "Registry", link: "/examples" }];
 	if (!existsSync(dir)) return base;
+
 	const slugs = readdirSync(dir)
-		.filter((f) => f.endsWith(".md"))
-		.map((f) => f.replace(/\.md$/, ""))
+		.filter((entry) => {
+			const full = join(dir, entry);
+			return statSync(full).isDirectory() && existsSync(join(full, "index.md"));
+		})
 		.sort();
-	return [
-		...base,
-		...slugs.map((slug) => ({
+
+	const groups = slugs.map((slug) => {
+		const slugDir = join(dir, slug);
+		const subpages = readdirSync(slugDir)
+			.filter((f) => f.endsWith(".md") && f !== "index.md")
+			.map((f) => f.replace(/\.md$/, ""));
+		const hasDefinition = subpages.includes("definition");
+		const scenarios = subpages
+			.filter((s) => s !== "definition")
+			.sort();
+
+		return {
 			text: titleCase(slug),
-			link: `/examples/${slug}`,
-		})),
-	];
+			collapsed: true,
+			items: [
+				{ text: "Overview", link: `/examples/${slug}/` },
+				...(hasDefinition
+					? [{ text: "Definition", link: `/examples/${slug}/definition` }]
+					: []),
+				...scenarios.map((s) => ({
+					text: titleCase(s),
+					link: `/examples/${slug}/${s}`,
+				})),
+			],
+		};
+	});
+
+	return [...base, ...groups];
 }
 
 function robotsTxt(siteUrl: string): Plugin {
@@ -272,7 +296,9 @@ export default defineConfig({
 				text: "Guide",
 				items: [
 					{ text: "Writing trees", link: "/guide/writing-trees" },
+					{ text: "Fragments", link: "/guide/fragments" },
 					{ text: "Designing workflows", link: "/guide/designing-workflows" },
+					{ text: "Testing trees", link: "/guide/testing" },
 					{
 						text: "Inspecting executions",
 						link: "/guide/inspecting-executions",

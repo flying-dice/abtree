@@ -39,44 +39,18 @@ Executions always go into the cwd's `.abtree/executions/` regardless of where th
 
 ### Splitting a tree across files
 
-Large trees can be split using JSON-Schema-style `$ref` references.
-abtree resolves them at execution-creation time via
-[`@apidevtools/json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser),
-so the rest of the runtime sees one fully-resolved snapshot.
+Large trees can be split across files using JSON-Schema `$ref`:
 
 ```yaml
-# .abtree/trees/big-workflow/TREE.yaml
-name: big-workflow
-version: 1.0.0
-description: Composed of separately-authored fragments.
-
 tree:
   type: sequence
   name: Big_Workflow
   children:
     - $ref: "./fragments/auth.yaml"
     - $ref: "./fragments/work.yaml"
-    - $ref: "./fragments/cleanup.yaml"
 ```
 
-```yaml
-# .abtree/trees/big-workflow/fragments/auth.yaml
-type: sequence
-name: Auth_Sequence
-children:
-  - { type: action, name: Login, steps: [...] }
-  - { type: action, name: Verify, steps: [...] }
-```
-
-`$ref` accepts:
-
-- **Relative paths** (`./fragments/auth.yaml`) — resolved against the file containing the `$ref`.
-- **Absolute paths** (`/home/.../shared/tree.yaml`).
-- **URLs** (`https://example.com/shared-trees/auth.yaml`).
-
-A fragment file is just a node — it does NOT carry the top-level `name`, `version`, `description`, `state` keys. Those live on the root tree only. Each fragment is the value for the position it's referenced from (a single composite or action node).
-
-The merged tree is written into the execution's `snapshot` field at execution-creation time, so editing fragments after creation does not affect existing executions — only new executions pick up the change.
+abtree dereferences every ref at execution-creation time, so the runtime sees a single merged snapshot. See [Fragments](/guide/fragments) for layout, the three `$ref` forms (relative, absolute, URL), snapshot semantics, and how fragments interact with the test suite during refactors.
 
 ## Top-level structure
 
