@@ -11,8 +11,9 @@
 		"release": "semantic-release",
 		"schema": "bun packages/runtime/scripts/generate-schema.ts",
 		"build": "bun packages/cli/scripts/build.ts",
-		"docs:dev": "vitepress dev docs --host",
-		"docs:build": "vitepress build docs",
+		"docs:registry": "bun scripts/generate-registry-md.ts",
+		"docs:dev": "bun run docs:registry && vitepress dev docs --host",
+		"docs:build": "bun run docs:registry && vitepress build docs",
 		"docs:preview": "vitepress preview docs"
 	},
 	"dependencies": {
