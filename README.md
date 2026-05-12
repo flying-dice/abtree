@@ -33,7 +33,9 @@ irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 |
 
 ## What it is
 
-abtree is a CLI that turns a YAML tree into a deterministic, durable agent workflow. Your agent drives execution through three commands — `next`, `eval`, `submit` — and only ever sees the next step. State persists as JSON; every state change regenerates a Mermaid trace so you can see exactly what ran, what passed, and what was bypassed.
+abtree is a runtime for agent workflows. Your agent drives execution through three commands — `next`, `eval`, `submit` — and only ever sees the next step. State persists between calls; every state change regenerates a visual trace so you can see exactly what ran, what passed, and what was bypassed.
+
+Workflows are plain JSON or YAML files. Author them by hand or compile them from the [TypeScript DSL](https://abtree.sh/guide/writing-trees). Ship them through npm, a GitHub ref, a private git server, or any transport you already use — abtree never sees the distribution; it only reads the file at the path you point it at.
 
 ![example.png](example.png)
 
