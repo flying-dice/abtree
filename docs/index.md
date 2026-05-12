@@ -72,12 +72,14 @@ Each call advances the cursor, and persists the execution state to disk. The age
 
 ## Roadmap
 
-- **Core engine** — the backbone of the execution.
-- **DSL** — build workflows that compose and share.
-- **CLI tool** — the framework and commands that drive a workflow end-to-end.
-- **STDIO MCP server** — improve the agent experience.
-- **HTTP MCP server** — host central workflows any fleet of agents can use.
+Where abtree is going. Each tier builds on the same behaviour-tree model; MCP is the [Model Context Protocol](https://modelcontextprotocol.io/) agents already speak.
 
-The goal is a flexible workflow engine that scales from a single-developer setup to headless behaviour controllers running across a fleet, using the same behaviour-tree model at every tier.
+- ✓ **Core engine** — Deterministic execution, one step at a time. Resumable and replayable.
+- ✓ **DSL** — Author workflows in YAML, JSON, or TypeScript that compile to one tree shape.
+- ✓ **CLI tool** — Drive a workflow from any shell or agent with `next`, `eval`, and `submit`.
+- → **STDIO MCP server** — Native protocol for local agents; skip the CLI plumbing.
+- … **HTTP MCP server** — Host central workflows any fleet of agents can reach.
+
+One behaviour-tree model. From a developer at a laptop to a fleet running unattended, the engine, DSL, and protocol stay the same.
 
 <AbtreeCta />
