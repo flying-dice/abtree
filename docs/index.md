@@ -82,4 +82,4 @@ Where abtree is going. Each tier builds on the same behaviour-tree model; MCP is
 
 One behaviour-tree model. From a developer at a laptop to a fleet running unattended, the engine, DSL, and protocol stay the same.
 
-<AbtreeCta />
+<InstallDemo />

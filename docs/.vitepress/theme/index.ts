@@ -23,6 +23,7 @@ export default {
 		app.component("TreeSvg", TreeSvg);
 		app.component("AbtreeDsl", AbtreeDsl);
 		app.component("AbtreeCta", AbtreeCta);
+		app.component("InstallDemo", InstallDemo);
 	},
 	Layout: () => {
 		const { isDark } = useData();
@@ -41,7 +42,7 @@ export default {
 
 		return h(DefaultTheme.Layout, null, {
 			"home-hero-info": () => h(HeroInfo),
-			"home-features-before": () => h(InstallDemo),
+			"home-features-before": () => h(AbtreeCta),
 		});
 	},
 } satisfies Theme;
