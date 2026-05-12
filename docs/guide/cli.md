@@ -93,8 +93,8 @@ Return the next step. The response is one of four shapes:
 
 | Response | Shape | Meaning |
 |---|---|---|
-| `evaluate` | `{ "type": "evaluate", "name": "...", "expression": "..." }` | A precondition to judge. Reply with `abtree eval <id> true|false`. |
-| `instruct` | `{ "type": "instruct", "name": "...", "instruction": "..." }` | Work to perform. Reply with `abtree submit <id> success|failure|running`. |
+| `evaluate` | `{ "type": "evaluate", "name": "...", "expression": "..." }` | A precondition to judge. Reply with `abtree eval <id> true\|false`. |
+| `instruct` | `{ "type": "instruct", "name": "...", "instruction": "..." }` | Work to perform. Reply with `abtree submit <id> success\|failure\|running`. |
 | `done` | `{ "status": "done" }` | The tree completed successfully. |
 | `failure` | `{ "status": "failure" }` | The tree terminated with a failure. |
 
@@ -191,8 +191,8 @@ With no flags, the command prompts for the platform and the scope. Pass `--varia
 
 | Flag | Values | Default | Meaning |
 |---|---|---|---|
-| `--variant <variant>` | `claude` | `agents` | (prompt) | Target agent platform. `claude` installs under `.claude/skills/abtree/`; `agents` installs under `.agents/skills/abtree/`. |
-| `--scope <scope>` | `project` | `user` | (prompt) | `project` installs into the cwd; `user` installs into the home directory. |
+| `--variant <variant>` | `claude` \| `agents` | (prompt) | Target agent platform. `claude` installs under `.claude/skills/abtree/`; `agents` installs under `.agents/skills/abtree/`. |
+| `--scope <scope>` | `project` \| `user` | (prompt) | `project` installs into the cwd; `user` installs into the home directory. |
 
 ```sh
 abtree install skill --variant claude --scope project
