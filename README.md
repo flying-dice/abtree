@@ -17,6 +17,14 @@
 
 ---
 
+## What it does
+
+abtree is a runtime for agent workflows. Author a tree as JSON, YAML, or compile it from the TypeScript DSL. Ship it through any transport your team already uses — abtree never sees the distribution; it only reads the file at the path you point it at. Your agent drives execution through three commands (`next`, `eval`, `submit`) and only ever sees the next step.
+
+![A behaviour tree walking the SRP refactor loop — one failed pass, one clean retry](docs/public/example.svg)
+
+The trace above is a `Refactor_Loop` sequence with three actions. Green nodes ran and succeeded, red ran and failed, the pink ring marks the cursor. The runtime regenerates the diagram after every state change, so what the agent did and what it skipped is on disk by the time it finishes.
+
 ## Install
 
 **macOS / Linux**
@@ -30,12 +38,6 @@ curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/instal
 ```powershell
 irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 | iex
 ```
-
-![A behaviour tree walking the SRP refactor loop end-to-end](docs/public/example.svg)
-
-## What it does
-
-abtree is a runtime for agent workflows. Author a tree as JSON, YAML, or compile it from the TypeScript DSL. Ship it through any transport your team already uses — abtree never sees the distribution; it only reads the file at the path you point it at. Your agent drives execution through three commands (`next`, `eval`, `submit`) and only ever sees the next step.
 
 ## Read the docs
 
