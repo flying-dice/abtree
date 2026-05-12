@@ -76,26 +76,26 @@ for (const entry of registry) {
 	// page.
 	body = body.replace(/^#\s+[^\n]+\n+/, "");
 
+	// Frontmatter carries the registry description for SEO and link
+	// previews; the on-page heading comes from the README body itself.
+	// `entry.name` starts with @ (a YAML reserved indicator) and
+	// descriptions can contain colons — quote both.
 	const frontmatter = [
 		"---",
-		// Quote both values — entry.name starts with @ (a YAML reserved
-		// indicator) and descriptions can contain colons.
 		`title: ${JSON.stringify(yamlString(entry.name))}`,
 		`description: ${JSON.stringify(yamlString(entry.description))}`,
 		"---",
 		"",
 		`# ${entry.name}`,
 		"",
-		entry.description,
-		"",
-		`[View on GitHub →](${entry.link})`,
-		"",
-		"---",
-		"",
 	].join("\n");
 
+	// Append a GitHub-source footer so the source repository is one
+	// click away without duplicating the description paragraph above.
+	const footer = `\n\n---\n\n[View on GitHub →](${entry.link})\n`;
+
 	const outPath = resolve(DOCS_TREES, `${slug}.md`);
-	writeFileSync(outPath, frontmatter + body);
+	writeFileSync(outPath, frontmatter + body.trimEnd() + footer);
 	pagesWritten++;
 
 	if (existsSync(svgSrc)) {
