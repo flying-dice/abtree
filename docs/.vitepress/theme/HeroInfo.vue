@@ -42,6 +42,12 @@ const { frontmatter } = useData();
 .heading {
 	display: flex;
 	flex-direction: column;
+	align-items: center;
+}
+@media (min-width: 960px) {
+	.heading {
+		align-items: flex-start;
+	}
 }
 .name,
 .text {
@@ -81,10 +87,20 @@ const { frontmatter } = useData();
 .tagline {
 	padding-top: 8px;
 	max-width: 392px;
+	margin-left: auto;
+	margin-right: auto;
 	line-height: 28px;
 	font-size: 18px;
 	font-weight: 500;
+	text-align: center;
 	color: var(--vp-c-text-2);
+}
+@media (min-width: 960px) {
+	.tagline {
+		margin-left: 0;
+		margin-right: 0;
+		text-align: left;
+	}
 }
 @media (min-width: 640px) {
 	.tagline {
