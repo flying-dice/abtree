@@ -87,7 +87,7 @@ test("hello-world execution: full execution reaches done", () => {
 	let step = next();
 	expect(step.type).toBe("instruct");
 	expect(step.name).toBe("Acknowledge_Protocol");
-	expect(step.instruction).toContain("Execution Protocol");
+	expect(step.instruction).toContain("Execution protocol");
 	submit("success");
 
 	// Step 1: Determine_Time (instruct)
