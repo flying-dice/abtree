@@ -1,0 +1,38 @@
+{
+	"name": "@abtree/docs-maintainer",
+	"version": "0.1.0",
+	"description": "Sweep a docs site, classify every page into the MDN orientation / education / reference tiers, score each on clarity, impact, and single responsibility, and gather everything into a private documentation-sitemap.md. A senior-writer critique drives a bounded refactor loop that applies suggestions and amends the sitemap inline. Each cycle ends with a CLI completeness gate and a multi-agent review; cycles repeat until the site is clear, consistent, fully covers the CLI, and the review is clean.",
+	"main": "main.json",
+	"homepage": "https://github.com/flying-dice/abtree/tree/main/trees/docs-maintainer",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/flying-dice/abtree.git",
+		"directory": "trees/docs-maintainer"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"main.json",
+		"tree.svg",
+		"fragments/style-principles.md",
+		"fragments/docs-review.md",
+		"tests/"
+	],
+	"scripts": {
+		"build": "bun scripts/build.ts",
+		"prepublishOnly": "bun run build"
+	},
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"documentation",
+		"mdn",
+		"technical-writing"
+	],
+	"devDependencies": {
+		"@abtree/dsl": "workspace:*",
+		"@abtree/runtime": "workspace:*"
+	}
+}

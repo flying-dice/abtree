@@ -50,9 +50,17 @@
         "zod": "^4.4.3",
       },
     },
+    "trees/docs-maintainer": {
+      "name": "@abtree/docs-maintainer",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@abtree/dsl": "workspace:*",
+        "@abtree/runtime": "workspace:*",
+      },
+    },
     "trees/hello-world": {
       "name": "@abtree/hello-world",
-      "version": "2.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@abtree/dsl": "workspace:*",
         "@abtree/runtime": "workspace:*",
@@ -60,7 +68,7 @@
     },
     "trees/implement": {
       "name": "@abtree/implement",
-      "version": "3.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@abtree/dsl": "workspace:*",
         "@abtree/runtime": "workspace:*",
@@ -68,7 +76,7 @@
     },
     "trees/improve-codebase": {
       "name": "@abtree/improve-codebase",
-      "version": "1.1.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@abtree/dsl": "workspace:*",
         "@abtree/runtime": "workspace:*",
@@ -76,7 +84,7 @@
     },
     "trees/improve-tree": {
       "name": "@abtree/improve-tree",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@abtree/dsl": "workspace:*",
         "@abtree/runtime": "workspace:*",
@@ -84,7 +92,7 @@
     },
     "trees/refine-plan": {
       "name": "@abtree/refine-plan",
-      "version": "4.2.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@abtree/dsl": "workspace:*",
         "@abtree/runtime": "workspace:*",
@@ -101,7 +109,7 @@
     },
     "trees/technical-writer": {
       "name": "@abtree/technical-writer",
-      "version": "1.2.1",
+      "version": "0.1.0",
       "devDependencies": {
         "@abtree/dsl": "workspace:*",
         "@abtree/runtime": "workspace:*",
@@ -109,7 +117,7 @@
     },
     "trees/test-tree": {
       "name": "@abtree/test-tree",
-      "version": "1.2.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@abtree/dsl": "workspace:*",
         "@abtree/runtime": "workspace:*",
@@ -118,6 +126,8 @@
   },
   "packages": {
     "@abtree/cli": ["@abtree/cli@workspace:packages/cli"],
+
+    "@abtree/docs-maintainer": ["@abtree/docs-maintainer@workspace:trees/docs-maintainer"],
 
     "@abtree/dsl": ["@abtree/dsl@workspace:packages/dsl"],
 
