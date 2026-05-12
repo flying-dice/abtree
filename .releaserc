@@ -22,6 +22,8 @@
     [
       "@semantic-release/github",
       {
+        "successComment": false,
+        "failComment": false,
         "assets": [
           { "path": "abtree-linux-x64",      "label": "abtree-linux-x64" },
           { "path": "abtree-linux-arm64",     "label": "abtree-linux-arm64" },

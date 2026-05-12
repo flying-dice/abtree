@@ -75,12 +75,6 @@ release:
   before_script:
     - apt-get update -qq && apt-get install -y -qq git ca-certificates
     - git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/flying-dice/abtree.git"
-    # Wipe any local tags from the gitlab clone, then force-fetch tags from
-    # origin (=github). semantic-release's own `git fetch --tags` does not
-    # use --force, so any pre-existing local tag pointing at a different
-    # object than github's would clobber-fail the fetch.
-    - git tag -l | xargs -r git tag -d
-    - git fetch --tags --force origin
     - bun install --frozen-lockfile
     # `bun publish` reads the token from .npmrc. NPM_TOKEN is set as a
     # protected + masked CI/CD variable; it must be an "Automation" token
