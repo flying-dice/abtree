@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+type Lang = "ts" | "yaml";
+
 interface Tile {
 	num: string;
 	title: string;
 	file: string;
+	lang: Lang;
 	code: string;
 }
 
 const tiles: Tile[] = [
 	{
 		num: "01",
-		title: "Compose",
+		title: "TypeScript",
 		file: "tree.ts",
+		lang: "ts",
 		code: `import {
   sequence, selector, action,
   evaluate, instruct,
@@ -39,79 +43,35 @@ const tree = sequence("Greeting", () => {
 	},
 	{
 		num: "02",
-		title: "State",
-		file: "state.ts",
-		code: `// local<T>() — declares a $LOCAL slot, returns a reference to it.
-const timeOfDay = local<string | null>("time_of_day", null);
-//    ^ "$LOCAL.time_of_day"  : LocalRef<string | null>
+		title: "YAML",
+		file: "TREE.yaml",
+		lang: "yaml",
+		code: `name: greeting
+version: 1.0.0
 
-const greeting  = local<string | null>("greeting", null);
-//    ^ "$LOCAL.greeting"
+tree:
+  type: sequence
+  name: Greeting
+  children:
+    # Action: an evaluate (precondition) + an instruct.
+    - type: action
+      name: Detect_Time
+      steps:
+        - instruct: Detect the time of day.
 
-// global<T>() — declares a $GLOBAL value, returns a reference.
-// The default is the instruction the agent resolves at runtime.
-const user = global<string>("current_user", 'obtain via "whoami"');
-//    ^ "$GLOBAL.current_user"  : GlobalRef<string>
-
-action("Morning", () => {
-  // Refs interpolate as their path strings, never as the value.
-  evaluate(\`\${timeOfDay} equals morning\`);
-  //  → "$LOCAL.time_of_day equals morning"
-  instruct(\`Write "Good morning, \${user}" to \${greeting}.\`);
-});`,
-	},
-	{
-		num: "03",
-		title: "Type safe",
-		file: "type-safe.ts",
-		code: `import { type LocalRef, type GlobalRef } from "@abtree/dsl";
-
-// Factory: declares the slot types this tree needs.
-function greet(refs: {
-  user: GlobalRef<string>;
-  out:  LocalRef<string | null>;
-}) {
-  return action("Greet", () => {
-    instruct(\`Write "Hello, \${refs.user}" to \${refs.out}.\`);
-  });
-}
-
-// Caller wires its own state in:
-const user  = global<string>("current_user", 'obtain via "whoami"');
-const count = local<number>("count", 0);
-
-greet({ user, out: count });
-//                    ^^^^^
-//   ❌ LocalRef<number> not assignable
-//      to LocalRef<string | null>`,
-	},
-	{
-		num: "04",
-		title: "Reuse",
-		file: "import.ts",
-		code: `// Pull a published tree from npm — its factory ships its slot types.
-import { greet } from "@me/greeting-tree";
-import {
-  sequence, action, instruct,
-  local, global,
-} from "@abtree/dsl";
-
-const user  = global<string>("current_user", 'obtain via "whoami"');
-const intro = local<string | null>("intro", null);
-const brief = local<string | null>("brief", null);
-
-// Open every daily brief with the published greeter.
-sequence("Daily_Brief", () => {
-  greet({ user, out: intro });
-
-  action("Compose_Brief", () => {
-    instruct(\`Draft today's brief for \${user}. Store at \${brief}.\`);
-  });
-
-  action("Send", () => {
-    instruct(\`Send "\${intro} \\n\\n \${brief}" to \${user}.\`);
-  });
-});`,
+    # sequence / selector / parallel — three composites.
+    - type: selector
+      name: Choose_Greeting
+      children:
+        - type: action
+          name: Morning
+          steps:
+            - evaluate: time is morning
+            - instruct: 'Say "Good morning".'
+        - type: action
+          name: Default
+          steps:
+            - instruct: 'Say "Hello".'`,
 	},
 ];
 
@@ -142,6 +102,21 @@ const TS_FNS = new Set([
 	"writeLocal",
 	"writeGlobal",
 ]);
+
+const YAML_KEYS = new Set([
+	"name",
+	"version",
+	"description",
+	"state",
+	"local",
+	"global",
+	"tree",
+	"type",
+	"children",
+	"steps",
+	"retries",
+]);
+const YAML_STEP_KEYS = new Set(["evaluate", "instruct"]);
 
 function esc(s: string): string {
 	return s
@@ -252,8 +227,88 @@ function interpolate(literal: string): string {
 	return out;
 }
 
+function highlightYaml(src: string): string {
+	return src
+		.split("\n")
+		.map((line) => highlightYamlLine(line) || "&nbsp;")
+		.join("\n");
+}
+
+function highlightYamlLine(line: string): string {
+	// Comment trailing the line (we only support # outside of strings).
+	const cmt = line.indexOf("#");
+	let body = line;
+	let tail = "";
+	if (cmt !== -1 && !isInsideYamlString(line, cmt)) {
+		body = line.slice(0, cmt);
+		tail = `<span class="t-com">${esc(line.slice(cmt))}</span>`;
+	}
+
+	// key + colon + (optional) value, with optional leading list dash.
+	const kv = body.match(/^(\s*(?:-\s+)?)([a-zA-Z_][\w-]*)(\s*:)(\s*)(.*)$/);
+	if (kv) {
+		const [, indent, key, colon, space, rest] = kv;
+		const cls = YAML_STEP_KEYS.has(key)
+			? "t-fn"
+			: YAML_KEYS.has(key)
+				? "t-kw"
+				: "t-fn";
+		return (
+			esc(indent) +
+			`<span class="${cls}">${esc(key)}</span>` +
+			`<span class="t-pun">${esc(colon)}</span>` +
+			esc(space) +
+			yamlValue(rest) +
+			tail
+		);
+	}
+
+	// Bare list item — `- value`.
+	const item = body.match(/^(\s*-\s+)(.*)$/);
+	if (item) {
+		const [, dash, value] = item;
+		return esc(dash) + yamlValue(value) + tail;
+	}
+
+	return esc(body) + tail;
+}
+
+function yamlValue(value: string): string {
+	if (!value) return "";
+	const trimmed = value.trim();
+	if (!trimmed) return esc(value);
+	if (/^["'].*["']$/.test(trimmed)) {
+		return `<span class="t-str">${esc(value)}</span>`;
+	}
+	if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+		return `<span class="t-num">${esc(value)}</span>`;
+	}
+	if (/^(true|false|null)$/.test(trimmed)) {
+		return `<span class="t-kw">${esc(value)}</span>`;
+	}
+	return `<span class="t-str">${esc(value)}</span>`;
+}
+
+function isInsideYamlString(line: string, idx: number): boolean {
+	let inStr = false;
+	let quote = "";
+	for (let i = 0; i < idx; i++) {
+		const c = line[i];
+		if (inStr) {
+			if (c === quote) inStr = false;
+		} else if (c === '"' || c === "'") {
+			inStr = true;
+			quote = c;
+		}
+	}
+	return inStr;
+}
+
 const renderedTiles = computed(() =>
-	tiles.map((t) => ({ ...t, html: highlight(t.code) })),
+	tiles.map((t) => ({
+		...t,
+		html: t.lang === "yaml" ? highlightYaml(t.code) : highlight(t.code),
+	})),
 );
 </script>
 
@@ -261,7 +316,7 @@ const renderedTiles = computed(() =>
 	<section class="dsl-wrap">
 		<div class="dsl-label">
 			<span class="dsl-eyebrow">Authoring</span>
-			<span>TypeScript DSL → behaviour tree → npm</span>
+			<span>Same tree. Different surface.</span>
 		</div>
 
 		<div class="dsl-grid">
@@ -409,5 +464,8 @@ const renderedTiles = computed(() =>
 :deep(.t-com) {
 	color: #8a96be;
 	font-style: italic;
+}
+:deep(.t-pun) {
+	color: rgba(248, 248, 242, 0.55);
 }
 </style>

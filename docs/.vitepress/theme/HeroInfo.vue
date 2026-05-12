@@ -25,13 +25,8 @@ const { frontmatter } = useData();
 		/>
 	</h1>
 	<p class="tagline">
-		Define agent workflows as
-		<span class="hero-word">YAML</span>,
-		<span class="hero-word">JSON</span>, or
-		<span class="hero-word">TypeScript</span>.
-		<br />
-		The runtime hands the agent one step at a time and persists the
-		cursor — so workflows stay reproducible no matter how big they get.
+		Replace the skill file you hope your agent reads with a tree the
+		runtime walks, <b>one step at a time</b>.
 	</p>
 </template>
 
@@ -61,6 +56,20 @@ const { frontmatter } = useData();
 }
 .name {
 	color: var(--vp-home-hero-name-color);
+}
+/* The hero text is injected via v-html, so its children skip Vue's
+ * scoped-CSS data attribute. Use :deep() to reach them. The struck-out
+ * "Hoping." steps back to a muted text colour; "Behaving." carries the
+ * brand pink. */
+.text :deep(s) {
+	color: var(--vp-c-text-3);
+	font-weight: 500;
+	text-decoration-line: line-through;
+	text-decoration-thickness: 0.06em;
+}
+.text :deep(.accent) {
+	color: #ff79c6;
+	-webkit-text-fill-color: #ff79c6;
 }
 .clip {
 	background: var(--vp-home-hero-name-background);

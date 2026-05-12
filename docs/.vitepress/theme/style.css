@@ -286,3 +286,183 @@
 		display: none !important;
 	}
 }
+
+/* ─── Home-page fold typography ──────────────────────────────────────────
+ * Each h2 in the home body is the headline for a single fold. Override
+ * the default vp-doc h2 styling — strip the divider rule, increase
+ * the font size, add generous top margin, and centre on mobile. The
+ * paragraph that follows is the fold's body copy: constrained width,
+ * larger leading, centre-aligned on mobile to match the headline.
+ *
+ * Selector scoped to `.VPHome` so non-home pages are untouched.
+ */
+.VPHome .vp-doc h2 {
+	margin-top: 96px;
+	padding-top: 0;
+	border-top: none;
+	font-size: 32px;
+	line-height: 1.1;
+	letter-spacing: -0.5px;
+	font-weight: 700;
+	text-align: center;
+}
+.VPHome .vp-doc h2 .header-anchor {
+	display: none;
+}
+.VPHome .vp-doc h2 + p {
+	max-width: 720px;
+	margin: 24px auto 0;
+	font-size: 17px;
+	line-height: 1.6;
+	text-align: center;
+	color: var(--vp-c-text-2);
+}
+
+@media (min-width: 640px) {
+	.VPHome .vp-doc h2 {
+		font-size: 44px;
+		margin-top: 128px;
+	}
+	.VPHome .vp-doc h2 + p {
+		font-size: 19px;
+	}
+}
+
+@media (min-width: 960px) {
+	.VPHome .vp-doc h2 {
+		font-size: 56px;
+		margin-top: 160px;
+		text-align: left;
+	}
+	.VPHome .vp-doc h2 + p {
+		margin-left: 0;
+		margin-right: 0;
+		text-align: left;
+		font-size: 20px;
+	}
+}
+
+/* First fold's headline does not need the full top margin — it follows
+ * AbtreeContrast directly. */
+.VPHome .vp-doc > h2:first-of-type {
+	margin-top: 64px;
+}
+@media (min-width: 960px) {
+	.VPHome .vp-doc > h2:first-of-type {
+		margin-top: 96px;
+	}
+}
+
+/* Closing fold: terser. The headline and the three text-link CTAs sit
+ * centred regardless of breakpoint — the page-spanning desktop
+ * left-alignment is overridden here. */
+.VPHome .vp-doc h2:last-of-type {
+	text-align: center;
+}
+.VPHome .vp-doc h2:last-of-type + p {
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	font-size: 18px;
+}
+
+/* ─── Home-page attention-split widget ───────────────────────────────────
+ * The "New attention, not new prompts." fold needs a single visual that
+ * lands the context-window inversion. Left panel: a blurred wall of
+ * skill-file text the old contract handed the agent in one go. Right
+ * panel: the single instruction the runtime hands the agent now. */
+.attention-split {
+	display: flex;
+	gap: 18px;
+	align-items: stretch;
+	margin: 40px auto 0;
+	max-width: 960px;
+	font-family: "IBM Plex Mono", "Fira Mono", monospace;
+}
+.attention-panel {
+	flex: 1;
+	min-width: 0;
+	background: #0e0e14;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 12px;
+	padding: 16px 18px;
+	overflow: hidden;
+	position: relative;
+}
+.attention-tag {
+	font: 700 10px/1 "IBM Plex Mono", monospace;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: #6272a4;
+	margin-bottom: 12px;
+}
+.attention-panel pre {
+	margin: 0;
+	font: 500 12px/1.55 "IBM Plex Mono", "Fira Mono", monospace;
+	white-space: pre;
+	overflow: hidden;
+	color: #f8f8f2;
+}
+.attention-before {
+	max-height: 240px;
+}
+.attention-before .attention-tag {
+	color: rgba(98, 114, 164, 0.7);
+}
+.attention-before pre {
+	color: rgba(248, 248, 242, 0.32);
+	filter: blur(0.5px);
+	mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+	-webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+}
+.attention-after {
+	border-color: rgba(255, 121, 198, 0.32);
+	box-shadow: 0 10px 32px -16px rgba(255, 121, 198, 0.45);
+}
+.attention-after .attention-tag {
+	color: #ff79c6;
+}
+.attention-kind {
+	display: inline-block;
+	padding: 2px 7px;
+	margin-bottom: 8px;
+	font: 700 10px/1 "IBM Plex Mono", monospace;
+	letter-spacing: 1.4px;
+	text-transform: uppercase;
+	color: #0e0e14;
+	background: #ff79c6;
+	border-radius: 4px;
+}
+.attention-action {
+	display: block;
+	font-weight: 700;
+	color: #f1fa8c;
+	font-size: 14px;
+	margin-bottom: 12px;
+}
+.attention-var {
+	color: #ff79c6;
+}
+
+.attention-arrow {
+	flex-shrink: 0;
+	align-self: center;
+	font-size: 28px;
+	font-weight: 700;
+	color: #ff79c6;
+	user-select: none;
+}
+
+@media (max-width: 720px) {
+	.attention-split {
+		flex-direction: column;
+		gap: 12px;
+		margin-top: 32px;
+	}
+	.attention-arrow {
+		transform: rotate(90deg);
+	}
+	.attention-before {
+		max-height: 180px;
+	}
+}
