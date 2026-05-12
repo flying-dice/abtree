@@ -69,3 +69,8 @@ plans/drafts/
 # claim each @abtree/* package on npm before CI takes over. Not part of
 # the shipped repo.
 scripts/initial-publish.sh
+
+# Per-tree pages and SVGs generated from docs/registry.ts
+# by scripts/generate-registry-md.ts (runs on docs:build).
+docs/trees/
+docs/public/trees/

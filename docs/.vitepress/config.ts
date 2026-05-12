@@ -1,12 +1,26 @@
 import type { Plugin } from "vite";
 import { defineConfig } from "vitepress";
 import llmstxt from "vitepress-plugin-llms";
+import { registry } from "../registry";
 
-// Registry is rendered as a single searchable cards page driven by
-// docs/registry.ts — no per-tree subpages, so no dynamic sidebar tree.
+// Derive the tree slug from a registry entry's GitHub link. The link
+// pattern is `…/trees/main/trees/<slug>`; the slug is the last path
+// segment. Mirrors the same derivation in
+// scripts/generate-registry-md.ts and theme/RegistryCards.vue.
+function slugFor(link: string): string {
+	const parts = link.split("/").filter(Boolean);
+	return parts[parts.length - 1] ?? "";
+}
+
+// "Discover trees" landing page followed by each per-tree page,
+// generated from docs/registry.ts by scripts/generate-registry-md.ts.
 const REGISTRY_SIDEBAR = [
 	{ text: "Discover trees", link: "/registry" },
-] as const;
+	...registry.map((entry) => ({
+		text: entry.name,
+		link: `/trees/${slugFor(entry.link)}`,
+	})),
+];
 
 function robotsTxt(siteUrl: string): Plugin {
 	return {

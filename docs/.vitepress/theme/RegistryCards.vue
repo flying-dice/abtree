@@ -2,6 +2,14 @@
 import { computed, ref } from "vue";
 import { type RegistryEntry, registry } from "../../registry.ts";
 
+// Derive `/trees/<slug>` from the entry's GitHub link.
+// The link pattern is `…/trees/main/trees/<slug>`; the slug is the last
+// non-empty path segment.
+function pageFor(entry: RegistryEntry): string {
+	const slug = entry.link.split("/").filter(Boolean).pop() ?? entry.name;
+	return `/trees/${slug}`;
+}
+
 const query = ref("");
 
 // biome-ignore lint/correctness/noUnusedVariables: bound via <template>; biome can't see Vue SFC template references.
@@ -32,15 +40,10 @@ const filtered = computed<RegistryEntry[]>(() => {
 
 		<ul v-else class="registry-grid">
 			<li v-for="entry in filtered" :key="entry.name" class="registry-card">
-				<a
-					:href="entry.link"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="registry-card-link"
-				>
+				<a :href="pageFor(entry)" class="registry-card-link">
 					<h3 class="registry-card-name">{{ entry.name }}</h3>
 					<p class="registry-card-desc">{{ entry.description }}</p>
-					<span class="registry-card-cta">Open repository →</span>
+					<span class="registry-card-cta">Read more →</span>
 				</a>
 			</li>
 		</ul>
