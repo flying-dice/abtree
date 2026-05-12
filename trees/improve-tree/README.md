@@ -14,9 +14,6 @@ Install and drive the @abtree/improve-tree workflow against this repo:
   npm i --save-dev @abtree/improve-tree
   abtree --help
   abtree execution create ./node_modules/@abtree/improve-tree "Improve this tree using evidence from .abtree/executions/<execution-id>.json"
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 ## Install and run

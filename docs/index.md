@@ -97,9 +97,6 @@ First read the runtime protocol:
 Then create an execution and drive it:
   abtree execution create ./node_modules/@abtree/srp-refactor \
     "Refactor the worst SRP violation in src/"
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 For the long-form walkthrough — install the CLI, add a tree, drive it from your agent — see [Get started](/getting-started).

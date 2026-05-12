@@ -14,9 +14,6 @@ Install and drive the @abtree/srp-refactor workflow against this repo:
   npm i --save-dev @abtree/srp-refactor
   abtree --help
   abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 ## Install and run

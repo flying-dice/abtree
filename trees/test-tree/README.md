@@ -19,9 +19,6 @@ The runner reads $LOCAL.test_path from the execution. Seed it before
 the first `abtree next`:
 
   abtree local write <execution-id> test_path ./tests/<scenario>.yaml
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 ## Install and run

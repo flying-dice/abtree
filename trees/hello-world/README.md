@@ -14,9 +14,6 @@ Install and drive the @abtree/hello-world workflow:
   npm i --save-dev @abtree/hello-world
   abtree --help
   abtree execution create ./node_modules/@abtree/hello-world "Greet me based on the current time"
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 ## Install and run

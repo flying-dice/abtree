@@ -14,9 +14,6 @@ Install and drive the @abtree/improve-codebase workflow against this repo:
   npm i --save-dev @abtree/improve-codebase
   abtree --help
   abtree execution create ./node_modules/@abtree/improve-codebase "Run an improvement cycle on src/"
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 ## Install and run

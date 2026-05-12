@@ -34,9 +34,7 @@ First read the runtime protocol:
   abtree --help
 
 Then create an execution and drive it:
-  abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
-
-Step through every prompt with abtree next / eval / submit until status: done.`;
+  abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"`;
 
 const steps: Step[] = [
 	{

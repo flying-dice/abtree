@@ -14,9 +14,6 @@ Install and drive the @abtree/technical-writer workflow against this repo:
   npm i --save-dev @abtree/technical-writer
   abtree --help
   abtree execution create ./node_modules/@abtree/technical-writer "Document <documentation goal> in docs/"
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 ## Install and run

@@ -14,9 +14,6 @@ Install and drive the @abtree/implement workflow:
   npm i --save-dev @abtree/implement
   abtree --help
   abtree execution create ./node_modules/@abtree/implement "Implement plans/<plan-name>.md"
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 ## Install and run

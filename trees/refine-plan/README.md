@@ -14,9 +14,6 @@ Install and drive the @abtree/refine-plan workflow against this repo:
   npm i --save-dev @abtree/refine-plan
   abtree --help
   abtree execution create ./node_modules/@abtree/refine-plan "Refine change request: <change request>"
-
-Step through every prompt with `abtree next`, `abtree eval`, and
-`abtree submit` until status: done.
 ```
 
 ## Install and run
