@@ -1,193 +1,86 @@
 ---
-description: Walkthrough of the abtree YAML schema — name, version, state, and tree — using the bundled hello-world example as the reference.
+title: Writing trees
+description: Build the bundled hello-world tree from scratch — folder layout, YAML structure, state, primitives, retries. End-to-end tutorial that points at the reference for field-by-field detail.
 ---
 
-# Writing your own tree
+# Writing trees
 
-This page walks through the YAML structure of a tree using the bundled `hello-world` example as the reference.
+This page walks you through writing a tree by re-creating the bundled `hello-world`. By the end you have a working tree you can drive with `abtree execution create`. For the full YAML field reference, see [Authoring trees](/agents/author).
 
-## File layout
+## What you build
 
-Trees live in `.abtree/trees/<slug>/`. The folder name is the slug you pass to `abtree execution create <slug>`. Each folder must hold a `TREE.yaml` and a `package.json` whose `main` points at it — the runtime never assumes `TREE.yaml`, so the entry has to be declared.
-
-```
-.abtree/
-  trees/
-    hello-world/
-      TREE.yaml
-      package.json                         # { "name": "hello-world", "main": "TREE.yaml" }
-    refine-plan/
-      TREE.yaml
-      package.json
-    my-big-workflow/
-      TREE.yaml
-      package.json
-      fragments/
-        auth.yaml
-  executions/                              # populated as you create executions
-    first-run__hello-world__1.json
-    first-run__hello-world__1.mermaid
+```text
+.abtree/trees/hello-world/
+├── TREE.yaml
+└── package.json
 ```
 
-### Project-local vs user-global
+`TREE.yaml` defines the workflow. `package.json` declares the entry file so the CLI knows where to load the tree from. The folder name is the **slug** you pass to `abtree execution create`.
 
-Slug lookup searches two directories:
+## 1. Create the folder
 
-1. `.abtree/trees/` in the **current working directory** — project-local, committed with the code.
-2. `~/.abtree/trees/` in your **home directory** — user-global, available in every project.
+```sh
+mkdir -p .abtree/trees/hello-world
+cd .abtree/trees/hello-world
+```
 
-The project-local copy wins if both define the same slug. Drop a tree in `~/.abtree/trees/` to make it your default everywhere; commit a same-named folder under `.abtree/trees/` to override it for one project.
+Project-local trees live under `.abtree/trees/<slug>/` in the current working directory. User-global trees live under `~/.abtree/trees/<slug>/`. Project-local wins on slug collision.
 
-You don't have to use the slug convention at all — pointing `execution create` at an explicit YAML path or directory works the same way, and is the typical pattern for trees installed as node packages (`./node_modules/<pkg-name>`).
+## 2. Declare the entry file
 
-Executions always go into the cwd's `.abtree/executions/` regardless of where the tree was sourced from.
+```json
+{ "name": "hello-world", "main": "TREE.yaml" }
+```
 
-### Splitting a tree across files
+Save as `package.json`. The runtime never assumes `TREE.yaml` — `main` has to declare the entry.
 
-Large trees can be split across files using JSON-Schema `$ref`:
+## 3. Write the top-level fields
+
+Create `TREE.yaml` with the four required scalars and the `state` block:
 
 ```yaml
-tree:
-  type: sequence
-  name: Big_Workflow
-  children:
-    - $ref: "./fragments/auth.yaml"
-    - $ref: "./fragments/work.yaml"
-```
+# yaml-language-server: $schema=https://abtree.sh/schemas/tree.schema.json
 
-abtree dereferences every ref at execution-creation time, so the runtime sees a single merged snapshot. See [Fragments](/guide/fragments) for layout, the three `$ref` forms (relative, absolute, URL), snapshot semantics, and how fragments interact with the test suite during refactors.
-
-## Top-level structure
-
-```yaml
 name: hello-world
 version: 1.0.0
 description: Greet a user based on time of day.
 
 state:
   local:
-    time_of_day: null
-    greeting: null
-  global:
-    user_name: retrieve by running the shell command "whoami"
-
-tree:
-  type: sequence
-  name: Hello_World
-  children: [...]
-```
-
-| Field | Purpose |
-|---|---|
-| `name` | Slug. Must match the filename. |
-| `version` | Free-form. Bump when you change the tree. |
-| `description` | One-line description of what the tree does, surfaced in tooling and the registry. |
-| `state.local` | Initial `$LOCAL` keys. `null` is fine — they get filled in by actions. |
-| `state.global` | `$GLOBAL` values. Strings are interpreted as instructions for how to fetch them. |
-| `tree` | The root node. Always a single node — usually a `sequence`. |
-
-## State
-
-The `state.local` block defines the *shape* of `$LOCAL` at execution creation. Use `null` for slots that get populated by actions during the run. Use literal values for defaults.
-
-```yaml
-state:
-  local:
-    time_of_day: null      # filled in by Determine_Time
-    greeting: null         # filled in by Choose_Greeting branch
+    time_of_day: null     # filled in by Determine_Time
+    greeting: null        # filled in by the winning Choose_Greeting branch
   global:
     user_name: retrieve by running the shell command "whoami"
     tone: friendly
     language: english
 ```
 
-`$GLOBAL` values that look like sentences ("retrieve by running...") are interpreted by the agent at runtime — they're prompts, not data. Literal strings and numbers are constants the agent reads as-is.
+`state.local` declares the `$LOCAL` keys actions read and write during the run. `null` defaults are common — the actions populate them. `state.global` declares the `$GLOBAL` keys the tree reads. Sentence-shaped values are **directives**: when an action reads `$GLOBAL.user_name`, the agent runs `whoami` and returns the result.
 
-## Tree
+For the full field list (and the schema constraints on each field), see [File shape](/agents/author#file-shape).
 
-The `tree:` block is the root. It's a single node. In practice you'll almost always start with a `sequence` so steps run in order.
-
-### Composite nodes
-
-`sequence`, `selector`, and `parallel` all share the same shape:
+## 4. Add the root sequence
 
 ```yaml
-type: sequence | selector | parallel
-name: Friendly_Name              # used in mermaid diagrams
-children:
-  - { ... node 1 ... }
-  - { ... node 2 ... }
-```
-
-### Action nodes
-
-```yaml
-type: action
-name: Friendly_Name
-steps:
-  - evaluate: <expression>
-  - instruct: <prose>
-  - evaluate: <another expression>
-  - instruct: <more prose>
-```
-
-You can have any number of steps in any order. They run sequentially within the action — the agent finishes step 1 before step 2 appears.
-
-### Retries (any node)
-
-Any node — action or composite — can carry a `retries: N` config. When the runtime sees that node fail, it wipes the node's internal bookkeeping (status, step index, descendants), bumps an internal retry counter, and re-ticks the node from a clean slate. After N retries are exhausted, the failure propagates normally.
-
-```yaml
-type: sequence
-name: Write_And_Review
-retries: 2          # one initial attempt + 2 retries = 3 total attempts
-children:
-  - { type: action, name: Write,  steps: [...] }
-  - { type: action, name: Review, steps: [...] }
-```
-
-User state in `$LOCAL` (drafts, counters, review notes) **persists across retries** — that's the whole feedback channel. Internal state (which actions have run, where the cursor is) is wiped between attempts.
-
-This is the canonical replacement for the older "selector of N hand-written passes" shape — one retry config, one fragment, instead of N near-identical siblings.
-
-## Naming
-
-Use **PascalCase with underscores** for node names: `Choose_Greeting`, `Determine_Time`. Mermaid diagrams render `_` as spaces, so `Choose_Greeting` becomes "Choose Greeting" in the rendered output.
-
-Tree slugs (the folder name) are **kebab-case**: `hello-world`, `improve-codebase`.
-
-## Worked example
-
-The full hello-world tree, annotated:
-
-```yaml
-name: hello-world
-version: 2.0.0
-description: Greet a user based on time of day.
-
-state:
-  local:
-    time_of_day: null     # filled by Determine_Time
-    greeting: null        # filled by the Choose_Greeting branch that wins
-  global:
-    user_name: retrieve by running the shell command "whoami"
-    tone: friendly
-    language: english
-
 tree:
   type: sequence
   name: Hello_World
   children:
-
-    # 1. Single action with one instruct step.
     - type: action
       name: Determine_Time
       steps:
         - instruct: >
             Check the system clock. Classify as "morning", "afternoon",
             or "evening". Store at $LOCAL.time_of_day.
+```
 
-    # 2. Selector — only one branch wins, the rest are skipped.
+`tree:` is the root node. It is a single node — in practice almost always a `sequence`, so steps run in order. `Determine_Time` is the first child: one `action` with one `instruct` step.
+
+Node names use **PascalCase with underscores** (`Determine_Time`). Mermaid diagrams render `_` as a space, so `Choose_Greeting` becomes "Choose Greeting" in the trace.
+
+## 5. Add the selector
+
+```yaml
     - type: selector
       name: Choose_Greeting
       children:
@@ -212,7 +105,20 @@ tree:
             - instruct: Compose a neutral greeting...    # no evaluate = always passes
 ```
 
-`hello-world` covers `sequence`, `selector`, and `action`. The fourth primitive — `parallel` — runs all children at once and succeeds only if every child succeeds. Drop one in when you have two independent reads that don't depend on each other:
+The `selector` runs children in order until one succeeds. Each branch is gated by an `evaluate` precondition. The final child has no `evaluate`, so it always passes — that is the fallback for "none of the above matched". A selector with no winning child fails the whole branch.
+
+## 6. Validate it loads
+
+```sh
+cd /path/to/your/repo/root
+abtree execution create hello-world "first run"
+```
+
+If the YAML is well-formed, the CLI prints the new execution document and the slug becomes available to `abtree next`. If it is not, the CLI prints a path-prefixed validation error and exits non-zero.
+
+## What you skipped
+
+`hello-world` covers three of the four primitives. The fourth — `parallel` — runs all children concurrently and succeeds only if every child succeeds. Drop one in when you have two reads that do not depend on each other:
 
 ```yaml
 - type: parallel
@@ -222,22 +128,17 @@ tree:
     - { type: action, name: Read_Conventions, steps: [...] }
 ```
 
-`improve-codebase` ships a real-world parallel — four metric scorers running concurrently against the same codebase.
+The bundled `improve-codebase` tree ships a real-world parallel: four metric scorers running concurrently against the same codebase.
 
-## Editing your own
+## Where to go next
 
-Copy a bundled tree to a new file and tweak. Try:
-
-- Add a new `evening_off_hours` branch to `Choose_Greeting` with an evaluate that fires after 22:00.
-- Wrap the selector's chosen greeting and a follow-up `Compose_Closing` action in a final `sequence`, so the closing always runs after the greeting is set.
-- Add a `parallel` after `Choose_Greeting` to fan out two enrichment actions before the tree finishes.
-
-Every change is reflected the next time you run `abtree execution create <your-tree>`.
-
-## Validation
-
-abtree validates the YAML on load. If a tree is malformed, `abtree execution create` will print the error and exit non-zero rather than starting an execution.
+- **Refactor it into fragments.** See [Fragments](/guide/fragments) for the `$ref` workflow and snapshot semantics.
+- **Add a retries config.** Any node can carry `retries: N`. See [Authoring trees](/agents/author#retries) for the reference behaviour.
+- **Pick the right shape for a new workflow.** See [Design a new tree](/guide/design-process) for the ten-step process and [Idioms](/guide/idioms) for the catalogue of reusable shapes.
+- **Test it.** See [Testing trees](/guide/testing) for the `@abtree/test-tree` workflow.
 
 ## Next
 
+- [Fragments](/guide/fragments) — split a large tree across files using `$ref`.
+- [Authoring trees](/agents/author) — full YAML field reference.
 - [CLI reference](/guide/cli) — every command, every flag.

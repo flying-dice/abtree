@@ -4,7 +4,7 @@ import llmstxt from "vitepress-plugin-llms";
 
 // Registry is rendered as a single searchable cards page driven by
 // docs/registry.ts — no per-tree subpages, so no dynamic sidebar tree.
-const REGISTRY_SIDEBAR = [{ text: "Discover Trees", link: "/registry" }] as const;
+const REGISTRY_SIDEBAR = [{ text: "Discover trees", link: "/registry" }] as const;
 
 function robotsTxt(siteUrl: string): Plugin {
 	return {
@@ -217,7 +217,7 @@ export default defineConfig({
 			{ text: "Concepts", link: "/concepts/" },
 			{ text: "Guide", link: "/guide/writing-trees" },
 			{ text: "Agents", link: "/agents/execute" },
-			{ text: "Discover Trees", link: "/registry" },
+			{ text: "Discover trees", link: "/registry" },
 			{
 				text: "LLMs",
 				items: [
@@ -252,12 +252,15 @@ export default defineConfig({
 					{ text: "Using a tree", link: "/guide/using-trees" },
 					{ text: "Writing trees", link: "/guide/writing-trees" },
 					{ text: "Fragments", link: "/guide/fragments" },
-					{ text: "Designing workflows", link: "/guide/designing-workflows" },
+					{ text: "Design a new tree", link: "/guide/design-process" },
+					{ text: "Idioms", link: "/guide/idioms" },
+					{ text: "Anti-patterns", link: "/guide/anti-patterns" },
 					{ text: "Testing trees", link: "/guide/testing" },
 					{
 						text: "Inspecting executions",
 						link: "/guide/inspecting-executions",
 					},
+					{ text: "Publishing a tree", link: "/guide/publishing-a-tree" },
 					{ text: "CLI reference", link: "/guide/cli" },
 				],
 			},
@@ -270,7 +273,7 @@ export default defineConfig({
 				],
 			},
 			{
-				text: "Discover Trees",
+				text: "Discover trees",
 				items: [...REGISTRY_SIDEBAR],
 			},
 		],
@@ -281,7 +284,7 @@ export default defineConfig({
 
 		footer: {
 			message: "MIT licensed",
-			copyright: "Built with ❤️ by Flying Dice 🎲",
+			copyright: "Built by Flying Dice",
 		},
 
 		search: {

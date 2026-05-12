@@ -1,12 +1,14 @@
 ---
-description: Two state scopes in abtree — $LOCAL is a per-execution blackboard agents read and write; $GLOBAL is a read-only world model.
+description: Two state scopes in abtree — $LOCAL is a per-execution blackboard agents read and write; $GLOBAL is a read-only world model the tree observes.
 ---
 
 # State
 
 Behaviour trees are stateful by design. abtree separates state into **two scopes**, written explicitly, never implicit.
 
-## $LOCAL — the workflow's blackboard
+A **blackboard** is the term used in the behaviour-tree and game-AI literature for a key-value store scoped to one execution and used to pass data between steps. In abtree the blackboard is `$LOCAL`.
+
+## `$LOCAL` — the workflow's blackboard
 
 `$LOCAL` is a key-value store private to one execution. Actions read from it, write to it, and use it to thread data between steps.
 
@@ -18,9 +20,9 @@ Examples:
 
 `$LOCAL` is initialised when the execution is created. Every state change persists immediately to the execution's JSON document — kill the process and resume tomorrow.
 
-## $GLOBAL — the world model
+## `$GLOBAL` — the world model
 
-`$GLOBAL` describes the **environment** the agent is operating in. You don't *set* `$GLOBAL` values from inside the execution — you *observe* them.
+`$GLOBAL` describes the **environment** the agent operates in. You do not write `$GLOBAL` values from inside the execution — you observe them.
 
 Examples:
 
@@ -33,40 +35,24 @@ state:
     tone: friendly
 ```
 
-Notice the first two values aren't literals — they're **instructions** for how to fetch them. The agent reads `$GLOBAL.user_name`, sees a sentence, and runs `whoami`. The third is a literal that never changes during the execution. The fourth is a configuration knob.
+The first two values are not literals — they are **directives** that tell the agent how to fetch the value. When an action reads `$GLOBAL.user_name`, the agent runs `whoami` and uses the result. The third value is a literal that never changes during the execution. The fourth is a configuration knob.
 
-## Why two scopes?
+## Why two scopes
 
-The distinction matters. `$LOCAL` is something **your tree creates**. `$GLOBAL` is something **the world tells you**.
+The distinction is the contract. `$LOCAL` is something **your tree creates**. `$GLOBAL` is something **the world tells you**.
 
-Putting them in different scopes makes the contract explicit:
+Putting them in different scopes makes the source of every value explicit:
 
 - An action that reads `$GLOBAL.user_name` knows the value comes from the environment.
 - An action that reads `$LOCAL.greeting` knows the value was computed earlier in the execution.
 
-Mixing them — like a single "context" object — hides where data came from. That's the bug surface that bites agentic systems hardest: was this value something I produced, or something I read? abtree makes you answer up front.
+Mixing them — a single "context" object — hides where data came from. That is the bug surface that hurts agentic systems hardest: was this value something I produced, or something I read? abtree makes you answer up front.
 
-## Reading and writing
+## Reading and writing from the CLI
 
-```sh
-# Read all of $LOCAL
-abtree local read <execution-id>
-
-# Read a specific path (dot-notation)
-abtree local read <execution-id> greeting
-
-# Write a value
-abtree local write <execution-id> greeting "Good morning, Alice!"
-
-# Read $GLOBAL
-abtree global read <execution-id>
-abtree global read <execution-id> user_name
-```
-
-Values are JSON-parsed when possible, so `abtree local write <id> ready true` stores a boolean, not the string `"true"`.
-
-`$GLOBAL` is read-only via the CLI — values come from the tree's `state.global` block at execution creation.
+Both scopes are reachable from the CLI — see [CLI reference](/guide/cli).
 
 ## Next
 
 - [Branches and actions](/concepts/branches-and-actions) — the four primitives that drive the tree.
+- [Why behaviour trees?](/concepts/) — back to the concept overview.

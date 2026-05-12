@@ -1,13 +1,18 @@
-# Execution Protocol
+---
+title: Execution protocol
+description: Contract for an agent driving an abtree execution — the request/response loop, the four response shapes, and the strict read-from-store rule that keeps the gate uncorrupted.
+---
+
+# Execution protocol
 
 abtree is a durable behaviour tree engine. Executions bind a tree to a piece of work and persist as JSON documents in `.abtree/executions/`, with two state scopes:
 
-- `$LOCAL` — per-execution blackboard (read/write)
-- `$GLOBAL` — world model (read-only)
+- `$LOCAL` — per-execution blackboard (read/write).
+- `$GLOBAL` — world model (read-only).
 
-Internal bookkeeping (cursor, retry counts, per-node status) lives in a `runtime` field on the execution document — invisible to `local read` and not mutable via `local write`. You don't manage it; the engine does.
+Internal bookkeeping (cursor, retry counts, per-node status) lives in a `runtime` field on the execution document — invisible to `abtree local read` and not mutable via `abtree local write`. The engine owns it.
 
-::: warning STRICT
+::: warning Strict
 Never read tree files directly. All interaction goes through this CLI.
 :::
 
@@ -20,7 +25,7 @@ No arguments         → execution list; resume an existing execution or pick a 
 list                 → show all executions
 ```
 
-## Create protocol
+## Create an execution
 
 ```text
 abtree execution create <tree> <summary>
@@ -28,7 +33,7 @@ abtree local write <execution> change_request "<request>"
 abtree next <execution>   ← begin execution loop
 ```
 
-## Execution loop
+## Drive the loop
 
 Call `abtree next <execution>` to get the next request. Repeat until done.
 
@@ -38,10 +43,10 @@ Call `abtree next <execution>` to get the next request. Repeat until done.
 { "type": "evaluate", "name": "...", "expression": "..." }
 ```
 
-Procedure — **DO NOT** skip steps:
+Procedure — do **not** skip steps:
 
-1. Parse the expression. Identify every `$LOCAL.<path>` and `$GLOBAL.<path>` referenced.
-2. For EACH referenced path, call:
+1. Parse the expression. Identify every `$LOCAL.<path>` and `$GLOBAL.<path>` it references.
+2. For each referenced path, call:
 
    ```text
    abtree local  read <execution> <path>     (for $LOCAL refs)
@@ -50,11 +55,11 @@ Procedure — **DO NOT** skip steps:
 
    Record the actual returned value. Do not skip this step even if you wrote the value yourself one command ago.
 
-3. Apply the expression's truth condition against those actual values and ONLY those values. No inference from context, memory, or "obvious" assumptions.
-4. Call: `abtree eval <execution> true|false`
+3. Apply the expression's truth condition against those actual values and only those values. No inference from context, memory, or "obvious" assumptions.
+4. Call `abtree eval <execution> true|false`.
 
-::: warning STRICT
-Skipping step 2 corrupts the gate. The store is the source of truth, not your context. Even when the answer "feels obvious", read it.
+::: warning Strict
+Skipping step 2 corrupts the gate. The store is the source of truth, not your context. Even when the answer feels obvious, read it.
 :::
 
 ### Response: `instruct`
@@ -68,13 +73,13 @@ Procedure:
 1. Read the instruction in full.
 2. Perform the work named. Use real tools — file I/O, web search, shell commands, sub-agents — as the instruction directs.
 3. Write any produced values to `$LOCAL` via `abtree local write`.
-4. Call: `abtree submit <execution> success|failure|running`. Use `running` only when waiting on something external (e.g. a human approval). Do NOT use `running` to skip an instruct.
+4. Call `abtree submit <execution> success|failure|running`. Use `running` only when waiting on something external (a human approval, a long-running tool). Do not use `running` to skip an instruct.
 
-::: warning STRICT
-Every value written to `$LOCAL` must come from an explicit source named in the instruction (tool, command, `$LOCAL`/`$GLOBAL` path, or a literal fallback). If the source is ambiguous, call `submit failure`. Do not infer, guess, or invent.
+::: warning Strict
+Every value written to `$LOCAL` must come from an explicit source named in the instruction (a tool, a command, a `$LOCAL`/`$GLOBAL` path, or a literal fallback). If the source is ambiguous, call `abtree submit <execution> failure`. Do not infer, guess, or invent.
 :::
 
-### Response: `done` / `failure`
+### Response: `done` or `failure`
 
 ```json
 { "status": "done" }
@@ -85,7 +90,7 @@ Tree terminated. Report the outcome to the human.
 
 ## Available trees
 
-Trees ship as installable node packages — browse [the registry](/registry) and `bun add` / `pnpm add` / `npm install` the ones you need, then run them via `abtree execution create ./node_modules/<pkg-name> "<summary>"`. Project-local trees can also live at `.abtree/trees/<slug>/` (with a `package.json` declaring `main`) and run as `abtree execution create <slug> "<summary>"`.
+Trees ship as installable node packages — browse [Discover trees](/registry) and `bun add` / `pnpm add` / `npm install` the ones you need, then run them via `abtree execution create ./node_modules/<pkg> "<summary>"`. Project-local trees can also live at `.abtree/trees/<slug>/` (with a `package.json` declaring `main`) and run as `abtree execution create <slug> "<summary>"`.
 
 ## State commands
 

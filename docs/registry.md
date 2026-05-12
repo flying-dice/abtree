@@ -1,18 +1,18 @@
 ---
-title: Discover Trees
-description: Searchable catalog of abtree behaviour-tree packages. Each card links to a source repository you can install via npm, pnpm, or bun.
+title: Discover trees
+description: Searchable catalogue of abtree behaviour-tree packages. Each card links to a source repository you can install via npm, pnpm, or bun.
 ---
 
-# Discover Trees
+# Discover trees
 
 Behaviour trees published as installable node packages. Click a card to open the source repository. Once installed, run a tree via:
 
 ```sh
-abtree execution create ./node_modules/<pkg-name> "<summary>"
+abtree execution create ./node_modules/<pkg> "<summary>"
 ```
 
 <RegistryCards />
 
-## Submitting your own
+## Submit your own
 
-Publish your tree as a node package (`package.json` + a `main` pointing at the tree YAML/JSON at the repo root), then open a PR against [`flying-dice/abtree`](https://github.com/flying-dice/abtree) adding an entry to [`docs/registry.ts`](https://github.com/flying-dice/abtree/blob/main/docs/registry.ts).
+See [Publish a tree](/guide/publishing-a-tree) for the package layout and pull-request workflow.
