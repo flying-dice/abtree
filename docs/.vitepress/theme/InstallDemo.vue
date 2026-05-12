@@ -369,16 +369,14 @@ onUnmounted(() => {
 	transform: translateY(3px);
 }
 
+/* On narrow viewports the typed source string (up to 52 chars on a
+ * single line) wraps as the install animation grows the string
+ * character by character, popping the page on every reflow. Hide the
+ * whole card under 820px — the headline above the hero already makes
+ * the same point in text. */
 @media (max-width: 820px) {
-	.install-card {
-		padding: 24px 20px 22px;
-	}
-	.install-headline {
-		font-size: 20px;
-	}
-	.install-terminal {
-		font-size: 13px;
-		padding: 13px 14px;
+	.install-wrap {
+		display: none;
 	}
 }
 </style>
