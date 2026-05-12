@@ -15,6 +15,3 @@ Install the npm package @abtree/technical-writer, then drive the workflow agains
   abtree execution create ./node_modules/@abtree/technical-writer "Document <documentation goal> in docs/"
 ```
 
-## Install and run
-
-See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough. `<pkg>` for this tree is `@abtree/technical-writer`.

@@ -15,10 +15,6 @@ Install the npm package @abtree/srp-refactor, then drive the workflow against th
   abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
 ```
 
-## Install and run
-
-See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough — prerequisites, the agent skill install, and per-repo vs global install. `<pkg>` for this tree is `@abtree/srp-refactor`.
-
 The refactor loop edits source files in your working tree. **Commit or stash first** if you want a clean rollback point. The loop only runs after your explicit choice in step 2 below, so you can safely cancel after the initial scan.
 
 ## What the workflow does

@@ -15,6 +15,3 @@ Install the npm package @abtree/improve-tree, then drive the workflow against th
   abtree execution create ./node_modules/@abtree/improve-tree "Improve <path-to-tree> tree by analysing .abtree/executions/<execution-id>.json"
 ```
 
-## Install and run
-
-See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough. `<pkg>` for this tree is `@abtree/improve-tree`.

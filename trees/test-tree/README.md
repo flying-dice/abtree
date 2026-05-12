@@ -20,20 +20,6 @@ the first `abtree next`:
   abtree local write <execution-id> test_path ./tests/<scenario>.yaml
 ```
 
-## Install and run
-
-See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough — prerequisites, the agent skill install, and per-repo vs global install. `<pkg>` for this tree is `@abtree/test-tree`.
-
-Once installed, seed `$LOCAL.test_path` with the path to a `<scenario>.yaml` spec under `tests/` of the tree you're testing:
-
-```bash
-abtree execution create ./node_modules/@abtree/test-tree "run the smoke scenario"
-abtree local write <execution-id> test_path ./tests/<scenario>.yaml
-abtree next <execution-id>
-```
-
-The runner reads the spec, drives a fresh execution of the target tree through every `when` step, compares the terminal `$LOCAL` against the `then` block, and writes `<scenario>__<timestamp>.md` next to the spec.
-
 ## Spec layout
 
 Test specs live in a `tests/` directory next to the target tree. The directory itself signals these are tests — no `TEST__` prefix needed. The runner writes each report next to its spec; the `.yaml` vs `.md` extension distinguishes them.

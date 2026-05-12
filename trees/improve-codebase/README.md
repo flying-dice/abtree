@@ -15,6 +15,3 @@ Install the npm package @abtree/improve-codebase, then drive the workflow agains
   abtree execution create ./node_modules/@abtree/improve-codebase "Run an improvement cycle on src/"
 ```
 
-## Install and run
-
-See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough. `<pkg>` for this tree is `@abtree/improve-codebase`.

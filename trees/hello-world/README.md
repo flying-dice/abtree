@@ -15,6 +15,3 @@ Install the npm package @abtree/hello-world, then drive the workflow:
   abtree execution create ./node_modules/@abtree/hello-world "Greet me based on the current time"
 ```
 
-## Install and run
-
-See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough. `<pkg>` for this tree is `@abtree/hello-world`.

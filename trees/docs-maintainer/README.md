@@ -4,10 +4,6 @@ An [abtree](https://abtree.sh) workflow for hardening a documentation site. The 
 
 ![tree](./tree.svg)
 
-## Install and run
-
-See [Using a tree](https://abtree.sh/guide/using-trees). `<pkg>` for this tree is `@abtree/docs-maintainer`.
-
 The workflow edits documentation files in your working tree. **Commit or stash first** if you want a clean rollback point.
 
 ## What the workflow does

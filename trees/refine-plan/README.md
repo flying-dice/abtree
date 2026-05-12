@@ -15,6 +15,3 @@ Install the npm package @abtree/refine-plan, then drive the workflow against thi
   abtree execution create ./node_modules/@abtree/refine-plan "Refine change request: <change request>"
 ```
 
-## Install and run
-
-See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough. `<pkg>` for this tree is `@abtree/refine-plan`.
