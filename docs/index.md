@@ -55,7 +55,7 @@ the ranked list to <span class="attention-var">$LOCAL.violations</span>.</pre>
 
 Whether the workflow is two steps or two hundred, abtree hands the agent a single request — `evaluate` this statement, or follow this `instruct`. The cursor advances only when the runtime is satisfied. Every move writes to disk. Context never accumulates. Attention never fades.
 
-<AbtreeDemo />
+See the runtime drive the loop end-to-end on [How it works](/concepts/how-it-works).
 
 ## Every state change<br>is observible.
 

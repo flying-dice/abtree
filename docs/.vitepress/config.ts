@@ -255,6 +255,7 @@ export default defineConfig({
 				text: "Core concepts",
 				items: [
 					{ text: "Why behaviour trees?", link: "/concepts/" },
+					{ text: "How it works", link: "/concepts/how-it-works" },
 					{ text: "State", link: "/concepts/state" },
 					{
 						text: "Branches and actions",
