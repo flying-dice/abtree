@@ -7,8 +7,6 @@
   for <meta name="description">. Aim for two short sentences max.
 -->
 
-![tree](./tree.svg)
-
 <!--
   Optional safety note for destructive workflows. Examples:
 
@@ -31,6 +29,8 @@ Install the npm package @abtree/<slug>, then drive the workflow<!-- optional: ag
   abtree --help
   abtree execution create ./node_modules/@abtree/<slug> "<workflow-specific summary, parameterised with <placeholders> as needed>"
 ```
+
+![tree](./tree.svg)
 
 <!--
   Anything beyond this point is tree-specific and optional. Common

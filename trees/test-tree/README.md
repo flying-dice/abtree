@@ -2,8 +2,6 @@
 
 An [abtree](https://abtree.sh) fragment that runs a BDD test spec against a target tree, captures its mermaid trace, compares the run's final state against the spec's `then` assertions, and writes a markdown test report with the diagram embedded.
 
-![tree](./tree.svg)
-
 ## Run it
 
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace `<scenario>.yaml` with the path to your BDD spec:
@@ -19,6 +17,8 @@ the first `abtree next`:
 
   abtree local write <execution-id> test_path ./tests/<scenario>.yaml
 ```
+
+![tree](./tree.svg)
 
 ## Spec layout
 

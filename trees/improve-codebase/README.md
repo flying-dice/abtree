@@ -2,8 +2,6 @@
 
 Continuous code-improvement cycle. Confirms intent + green baseline, scores quality metrics in parallel, snapshots the baseline, hardens findings via a Senior-Principal critique, looks up best practices, triages with a human gate, then iterates through each refactor with per-item bounded retries until the queue is drained.
 
-![tree](./tree.svg)
-
 ## Run it
 
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. The workflow requires a green baseline before it runs:
@@ -14,4 +12,6 @@ Install the npm package @abtree/improve-codebase, then drive the workflow agains
   abtree --help
   abtree execution create ./node_modules/@abtree/improve-codebase "Run an improvement cycle on src/"
 ```
+
+![tree](./tree.svg)
 

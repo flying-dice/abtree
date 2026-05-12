@@ -2,8 +2,6 @@
 
 An [abtree](https://abtree.sh) workflow for refactoring Single Responsibility Principle (SRP) violations. The workflow scores a codebase, asks you to choose one violation to fix, refactors it in a bounded loop, runs a code review on the result, and writes a before-and-after report.
 
-![tree](./tree.svg)
-
 ## Run it
 
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent:
@@ -14,6 +12,8 @@ Install the npm package @abtree/srp-refactor, then drive the workflow against th
   abtree --help
   abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
 ```
+
+![tree](./tree.svg)
 
 The refactor loop edits source files in your working tree. **Commit or stash first** if you want a clean rollback point. The loop only runs after your explicit choice in step 2 below, so you can safely cancel after the initial scan.
 
