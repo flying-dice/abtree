@@ -85,9 +85,6 @@ onUnmounted(() => {
 <template>
 	<div class="install-wrap">
 		<aside class="install-card">
-			<div class="install-eyebrow">No registry required</div>
-			<h3 class="install-headline">Share trees like any other library.</h3>
-
 			<div class="install-pms" role="tablist" aria-label="Package manager">
 				<button
 					v-for="(pm, i) in pms"
@@ -195,52 +192,23 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Container mirrors VPHero / VPFeatures horizontal padding so the card
- * lines up visually with the hero text above and the feature grid below. */
+/* Stretch to the full width of the surrounding doc container. The
+ * component now sits inline with the page prose, so it inherits the
+ * body container's bounds rather than imposing its own. */
 .install-wrap {
-	padding: 0 24px;
-	margin: 0 auto;
-	max-width: 1152px;
-}
-@media (min-width: 640px) {
-	.install-wrap {
-		padding: 0 48px;
-	}
-}
-@media (min-width: 960px) {
-	.install-wrap {
-		padding: 0 64px;
-	}
+	padding: 0;
+	margin: 0;
+	max-width: none;
+	width: 100%;
 }
 
 .install-card {
 	position: relative;
-	margin: 0 0 32px;
-	padding: 32px 36px 28px;
-	background:
-		radial-gradient(at 0% 0%, rgba(255, 121, 198, 0.08), transparent 55%),
-		radial-gradient(at 100% 100%, rgba(189, 147, 249, 0.08), transparent 55%),
-		linear-gradient(180deg, #1b1b22 0%, #131318 100%);
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	border-radius: 16px;
-	overflow: hidden;
-}
-
-.install-eyebrow {
-	font: 700 10px/1 "IBM Plex Mono", monospace;
-	letter-spacing: 2.4px;
-	text-transform: uppercase;
-	color: #ff79c6;
-	margin-bottom: 10px;
-}
-
-.install-headline {
-	margin: 0 0 22px;
-	font-size: 24px;
-	font-weight: 700;
-	letter-spacing: -0.5px;
-	color: #f8f8f2;
-	line-height: 1.15;
+	margin: 16px 0 32px;
+	padding: 0;
+	background: none;
+	border: none;
+	border-radius: 0;
 }
 
 .install-pms {

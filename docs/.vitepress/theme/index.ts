@@ -42,7 +42,6 @@ export default {
 
 		return h(DefaultTheme.Layout, null, {
 			"home-hero-info": () => h(HeroInfo),
-			"home-features-before": () => h(AbtreeCta),
 		});
 	},
 } satisfies Theme;

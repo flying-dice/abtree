@@ -38,6 +38,70 @@ features:
 
 <AbtreeDemo />
 
+## Run a real workflow in three commands
+
+The `@abtree/srp-refactor` tree scores your codebase for Single Responsibility violations, lets you pick one, then refactors it in a bounded loop with a multi-agent code review at the end.
+
+### 1. Install the abtree CLI
+
+macOS and Linux:
+
+```sh
+curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/install.sh | sh
+```
+
+Windows:
+
+```powershell
+irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 | iex
+```
+
+### 2. Add the srp-refactor tree
+
+::: code-group
+
+```sh [npm]
+npm i --save-dev @abtree/srp-refactor
+```
+
+```sh [pnpm]
+pnpm add --save-dev @abtree/srp-refactor
+```
+
+```sh [bun]
+bun add --dev @abtree/srp-refactor
+```
+
+```sh [yarn]
+yarn add --dev @abtree/srp-refactor
+```
+
+:::
+
+### 3. Hand the brief to your agent
+
+Paste this into Claude Code, ChatGPT, or any agent that can run shell commands:
+
+```text
+Run the @abtree/srp-refactor workflow against this repo.
+
+First read the runtime protocol:
+  abtree --help
+
+Then create an execution and drive it:
+  abtree execution create ./node_modules/@abtree/srp-refactor \
+    "Refactor the worst SRP violation in src/"
+
+Step through every prompt with `abtree next`, `abtree eval`, and
+`abtree submit` until status: done.
+```
+
+The agent reads the protocol, drives the loop, and tells you when it is done. For the long-form walkthrough, see [Get started](/getting-started).
+
+Trees ship through every other transport too — published, private, or self-hosted.
+
+<InstallDemo />
+
 <div class="hide-on-touch">
 
 ## See an execution
@@ -81,5 +145,3 @@ Where abtree is going. Each tier builds on the same behaviour-tree model; MCP is
 - … **HTTP MCP server** — Host central workflows any fleet of agents can reach.
 
 One behaviour-tree model. From a developer at a laptop to a fleet running unattended, the engine, DSL, and protocol stay the same.
-
-<InstallDemo />
