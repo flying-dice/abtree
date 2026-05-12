@@ -9,9 +9,8 @@ Greet a user based on time of day. Demonstrates sequence, selector, and action p
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent:
 
 ```text
-Install and drive the @abtree/hello-world workflow:
+Install the npm package @abtree/hello-world, then drive the workflow:
 
-  npm i --save-dev @abtree/hello-world
   abtree --help
   abtree execution create ./node_modules/@abtree/hello-world "Greet me based on the current time"
 ```

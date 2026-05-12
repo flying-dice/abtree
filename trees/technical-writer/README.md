@@ -9,9 +9,8 @@ Take a documentation goal, ground it in the repo's styleguide, find or build a h
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace `<documentation goal>` with what you want documented:
 
 ```text
-Install and drive the @abtree/technical-writer workflow against this repo:
+Install the npm package @abtree/technical-writer, then drive the workflow against this repo:
 
-  npm i --save-dev @abtree/technical-writer
   abtree --help
   abtree execution create ./node_modules/@abtree/technical-writer "Document <documentation goal> in docs/"
 ```

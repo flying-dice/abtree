@@ -9,9 +9,8 @@ An [abtree](https://abtree.sh) workflow for refactoring Single Responsibility Pr
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent:
 
 ```text
-Install and drive the @abtree/srp-refactor workflow against this repo:
+Install the npm package @abtree/srp-refactor, then drive the workflow against this repo:
 
-  npm i --save-dev @abtree/srp-refactor
   abtree --help
   abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
 ```

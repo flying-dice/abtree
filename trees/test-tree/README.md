@@ -9,9 +9,8 @@ An [abtree](https://abtree.sh) fragment that runs a BDD test spec against a targ
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace `<scenario>.yaml` with the path to your BDD spec:
 
 ```text
-Install and drive the @abtree/test-tree workflow:
+Install the npm package @abtree/test-tree, then drive the workflow:
 
-  npm i --save-dev @abtree/test-tree
   abtree --help
   abtree execution create ./node_modules/@abtree/test-tree "Run the BDD spec at tests/<scenario>.yaml"
 

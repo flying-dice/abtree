@@ -9,9 +9,8 @@ Implement an approved plan with complexity-gated architectural review, following
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace `<plan-name>` with the filename of an approved plan in `plans/`:
 
 ```text
-Install and drive the @abtree/implement workflow:
+Install the npm package @abtree/implement, then drive the workflow:
 
-  npm i --save-dev @abtree/implement
   abtree --help
   abtree execution create ./node_modules/@abtree/implement "Implement plans/<plan-name>.md"
 ```

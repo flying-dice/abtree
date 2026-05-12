@@ -9,9 +9,8 @@ Refine a change request into an approved plan: analyse intent, draft to a per-ex
 Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace `<change request>` with the work you want a plan for:
 
 ```text
-Install and drive the @abtree/refine-plan workflow against this repo:
+Install the npm package @abtree/refine-plan, then drive the workflow against this repo:
 
-  npm i --save-dev @abtree/refine-plan
   abtree --help
   abtree execution create ./node_modules/@abtree/refine-plan "Refine change request: <change request>"
 ```
