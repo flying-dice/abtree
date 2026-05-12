@@ -10,6 +10,8 @@ abtree brings the same idea to LLM agents.
 
 A behaviour tree in abtree is built from four primitives: three composite types — `sequence`, `selector`, `parallel` — and one leaf type, `action`. The composites coordinate control flow; the actions are the units of work the agent performs. The rest of the concept tier expands on each one.
 
+<AbtreeContrast />
+
 ## The problem
 
 You can describe almost any workflow to a modern LLM in a single Markdown document. The document mostly works. Then it does not.

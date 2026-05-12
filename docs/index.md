@@ -2,7 +2,7 @@
 layout: home
 title: abtree — Behaviour Trees for AI Agents and Agentic Workflows
 titleTemplate: false
-description: Replace the skill file you hope your agent reads with a behaviour tree the runtime walks. abtree is an open-source runtime for AI agents — deterministic, durable, resumable, and driven from a CLI that works with Claude, ChatGPT, or any shell-capable agent.
+description: Treat agent instructions like the software they are. Clear steps, predictable behavior, real answers when something goes wrong. abtree is an open-source runtime for AI agents — deterministic, durable, resumable, and driven from a CLI that works with Claude, ChatGPT, or any shell-capable agent.
 
 hero:
   name: "abtree"
@@ -18,12 +18,6 @@ hero:
       text: How it works
       link: /concepts/
 ---
-
-## Two steps.<br>Or twenty.
-
-Whether you split your workflow into two coarse phases or twenty fine-grained checks, abtree treats each node the same. The runtime walks; the agent receives whatever instruction sits at the cursor.
-
-<AbtreeContrast />
 
 ## New attention,<br>not new prompts.
 
