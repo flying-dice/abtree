@@ -16,7 +16,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: How it works
-      link: /concepts/
+      link: /concepts/how-it-works
 ---
 
 ## New attention,<br>not new prompts.
