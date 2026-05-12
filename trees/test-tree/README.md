@@ -4,9 +4,29 @@ An [abtree](https://abtree.sh) fragment that runs a BDD test spec against a targ
 
 ![tree](./tree.svg)
 
+## Run it
+
+Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace `<scenario>.yaml` with the path to your BDD spec:
+
+```text
+Install and drive the @abtree/test-tree workflow:
+
+  npm i --save-dev @abtree/test-tree
+  abtree --help
+  abtree execution create ./node_modules/@abtree/test-tree "Run the BDD spec at tests/<scenario>.yaml"
+
+The runner reads $LOCAL.test_path from the execution. Seed it before
+the first `abtree next`:
+
+  abtree local write <execution-id> test_path ./tests/<scenario>.yaml
+
+Step through every prompt with `abtree next`, `abtree eval`, and
+`abtree submit` until status: done.
+```
+
 ## Install and run
 
-See [Using a tree](https://abtree.sh/guide/using-trees) — covers prerequisites, the abtree CLI + skill install, and per-repo vs global install. `<pkg>` for this tree is `@abtree/test-tree`.
+See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough — prerequisites, the agent skill install, and per-repo vs global install. `<pkg>` for this tree is `@abtree/test-tree`.
 
 Once installed, seed `$LOCAL.test_path` with the path to a `<scenario>.yaml` spec under `tests/` of the tree you're testing:
 

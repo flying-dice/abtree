@@ -4,6 +4,21 @@ Score the effectiveness of a tree using evidence from one of its sessions, find 
 
 ![tree](./tree.svg)
 
+## Run it
+
+Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace `<execution-id>` with the id of the session you want to learn from:
+
+```text
+Install and drive the @abtree/improve-tree workflow against this repo:
+
+  npm i --save-dev @abtree/improve-tree
+  abtree --help
+  abtree execution create ./node_modules/@abtree/improve-tree "Improve this tree using evidence from .abtree/executions/<execution-id>.json"
+
+Step through every prompt with `abtree next`, `abtree eval`, and
+`abtree submit` until status: done.
+```
+
 ## Install and run
 
-See [Using a tree](https://abtree.sh/guide/using-trees). `<pkg>` for this tree is `@abtree/improve-tree`.
+See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough. `<pkg>` for this tree is `@abtree/improve-tree`.

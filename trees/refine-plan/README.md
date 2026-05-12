@@ -4,6 +4,21 @@ Refine a change request into an approved plan: analyse intent, draft to a per-ex
 
 ![tree](./tree.svg)
 
+## Run it
+
+Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace `<change request>` with the work you want a plan for:
+
+```text
+Install and drive the @abtree/refine-plan workflow against this repo:
+
+  npm i --save-dev @abtree/refine-plan
+  abtree --help
+  abtree execution create ./node_modules/@abtree/refine-plan "Refine change request: <change request>"
+
+Step through every prompt with `abtree next`, `abtree eval`, and
+`abtree submit` until status: done.
+```
+
 ## Install and run
 
-See [Using a tree](https://abtree.sh/guide/using-trees). `<pkg>` for this tree is `@abtree/refine-plan`.
+See [Using a tree](https://abtree.sh/guide/using-trees) for the long-form walkthrough. `<pkg>` for this tree is `@abtree/refine-plan`.
