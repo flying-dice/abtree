@@ -2,11 +2,15 @@
 description: Five-minute walkthrough to install abtree, hand a behaviour tree to your agent, and watch it drive a workflow end-to-end.
 ---
 
-# Getting started
+# Get started
 
-A five-minute walkthrough: install abtree, hand a tree to your agent, and watch it drive.
+A five-minute walkthrough: install abtree, hand a tree to your agent, and watch it drive. For the vocabulary behind the moving parts, see [Why behaviour trees?](/concepts/).
 
-## Install
+::: tip Terms used below
+`$LOCAL` is the per-execution blackboard, `instruct` is an action step that asks the agent to do work, and `evaluate` is an action step that asks the agent to judge a precondition. All three are defined in the [Concepts](/concepts/) tier.
+:::
+
+## 1. Install abtree
 
 ::: code-group
 
@@ -20,25 +24,15 @@ irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 |
 
 :::
 
-Verify:
+Verify the install:
 
 ```sh
 abtree --version
 ```
 
-You'll see a version number. If you don't, restart your terminal so the new `PATH` takes effect.
+You see a version number. If you do not, restart your terminal so the new `PATH` takes effect.
 
-## Concepts in 60 seconds
-
-Three words worth knowing:
-
-- **Tree** — a YAML file describing a workflow. Lives in `.abtree/trees/`.
-- **Execution** — one run of a tree, bound to a piece of work. Persists as JSON in `.abtree/executions/`.
-- **Step** — the smallest unit. Either an `evaluate` (a precondition the agent confirms) or an `instruct` (work the agent performs).
-
-abtree is a CLI **for agents**. You don't drive executions yourself — you hand a brief to your agent and it runs the loop. Three commands carry the whole protocol: `abtree next` to ask "what now?", `abtree eval` to answer a precondition, `abtree submit` to report an outcome. JSON in, JSON out.
-
-## 1. Set up a workspace
+## 2. Set up a workspace
 
 ```sh
 mkdir my-abtree-demo && cd my-abtree-demo
@@ -49,9 +43,9 @@ curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/tre
 
 `hello-world` is a small tree: classify the time of day, then pick the matching greeting from a four-way selector. It exercises three of the four behaviour-tree primitives — `sequence`, `selector`, and `action` — in a few dozen lines.
 
-## 2. Hand it off to your agent
+## 3. Hand it off to your agent
 
-In Claude Code, ChatGPT, or any agent that can run shell commands, send:
+In Claude Code, ChatGPT, or any agent that runs shell commands, send:
 
 ```text
 Run the abtree hello-world tree end-to-end. Start by running
@@ -60,13 +54,13 @@ execution with 'abtree execution create hello-world "first run"' and drive
 it through every step until you see status: done.
 ```
 
-That is the entire human-side interaction. The agent reads the protocol from `--help`, creates an execution, and runs the loop autonomously.
+That is the entire human-side interaction. The agent reads the protocol from `--help`, creates an execution, and drives the loop autonomously.
 
-## 3. What the agent does under the hood
+## 4. Watch the agent drive the loop
 
 Each turn, the agent calls one command and reads its JSON response.
 
-The very first `abtree next` on any execution is a runtime-level gate that hands the agent the execution protocol — every execution starts here, regardless of which tree it's running:
+The first `abtree next` on any execution is a runtime-level gate that hands the agent the execution protocol — every execution starts here, regardless of which tree it runs:
 
 ```json
 {
@@ -121,11 +115,11 @@ The loop repeats — `next` → do the work or judge the precondition → `submi
 { "status": "done" }
 ```
 
-The agent never sees the rest of the tree. Just the next request.
+The agent only ever sees the next request.
 
-## 4. The execution diagram
+## 5. Read the execution diagram
 
-abtree regenerates a Mermaid diagram at `.abtree/executions/first-run__hello-world__1.mermaid` after every state change. Here's what a completed `hello-world` run looks like — green nodes succeeded, uncoloured ones were skipped.
+abtree regenerates a Mermaid diagram at `.abtree/executions/first-run__hello-world__1.mermaid` after every state change. A completed `hello-world` run looks like this — green nodes succeeded, uncoloured ones were skipped.
 
 ```mermaid
 ---
@@ -152,15 +146,15 @@ flowchart TD
 
 The cursor advanced through the sequence. The selector chose Morning Greeting after its `evaluate` precondition held — the afternoon, evening, and default branches were never entered.
 
-## What just happened
+## What that gives you
 
-Your agent drove a structured workflow without you writing a system prompt, without a JSON schema in its context, without chain-of-thought. The tree handed it exactly one task at a time, and only let it advance when it proved the task was complete.
+Your agent drove a structured workflow without a 2,000-line system prompt, without a JSON schema in its context, and without chain-of-thought. The tree handed it exactly one task at a time, and only let it advance when the task was complete.
 
-That's the core idea: **deterministic structure for non-deterministic agents.**
+That is the core idea: **deterministic structure for non-deterministic agents.**
 
 ## Next
 
-- [Why behaviour trees?](/concepts/) — the problem they solve
-- [State, branches, and actions](/concepts/state) — how the building blocks fit together
-- [Writing your own trees](/guide/writing-trees) — YAML structure walkthrough
-- [CLI reference](/guide/cli) — every command, every flag
+- [Why behaviour trees?](/concepts/) — the problem they solve.
+- [State](/concepts/state) — `$LOCAL` and `$GLOBAL`, the two scopes the runtime exposes.
+- [Writing trees](/guide/writing-trees) — author your own tree, step by step.
+- [CLI reference](/guide/cli) — every command, every flag.

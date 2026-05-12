@@ -2,12 +2,11 @@
 layout: home
 title: abtree — Behaviour Trees for AI Agents and Agentic Workflows
 titleTemplate: false
-description: Open-source behaviour tree runtime for AI agents and autonomous agentic workflows. Build deterministic, durable, resumable LLM agent workflows in YAML and drive them from the CLI — works with Claude, ChatGPT, and any LLM.
+description: Treat agent instructions like the software they are. Clear steps, predictable behavior, real answers when something goes wrong. abtree is an open-source runtime for AI agents — deterministic, durable, resumable, and driven from a CLI that works with Claude, ChatGPT, or any shell-capable agent.
 
 hero:
   name: "abtree"
-  text: "Behaviour trees for AI agents"
-  tagline: "Define agent workflows as YAML trees. The runtime hands the agent one step at a time, verifies the result, and persists the cursor — so workflows stay reproducible no matter how big they get."
+  text: '<s>Hoping.</s> <span class="accent">Behaving.</span>'
   image:
     src: /abtree-mark.svg
     alt: abtree
@@ -16,41 +15,85 @@ hero:
       text: Get started
       link: /getting-started
     - theme: alt
-      text: Why behaviour trees?
-      link: /concepts/
-
-features:
-  - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M6 9v6"/><path d="M18 9v3a3 3 0 0 1-3 3H6"/></svg>'
-    title: One step at a time
-    details: Agents see only the next instruction, not the full plan. No 2,000-line prompts. No "jumping ahead". No skipped invariants.
-  - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="6" width="18" height="12"/><path d="M3 11h18M7 15h2M12 15h2"/></svg>'
-    title: Durable by default
-    details: Every execution persists as a JSON document. Resume work hours or weeks later — the cursor remembers where you left off.
-  - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>'
-    title: Visual execution traces
-    details: Every state change regenerates a Mermaid diagram. Green for success, red for failure. See exactly what your agent did and where it stopped.
-  - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M9 4v4M15 4v4M3 11h6l1 5 4-12 1 7h6"/></svg>'
-    title: Framework-agnostic
-    details: A CLI any agent can drive. Works with Claude, ChatGPT, local models — anything that can run a shell command.
+      text: How it works
+      link: /concepts/how-it-works
 ---
 
-<AbtreeContrast />
+## One instruction.<br>At a time.
 
-<AbtreeDemo />
+Agents start guessing when they try to do too much. Hide the full plan, ask for a single instruction, and allow your agent to focus on the present. The agent only ever sees the next step. The plan stays in the tree, not in the prompt.
 
-## What is abtree?
+<div class="attention-split">
+  <div class="attention-panel attention-before">
+    <div class="attention-tag">CLAUDE.md · 487 lines</div>
+    <pre>1. First, check the git status. Confirm a clean tree.
+2. Read the existing tests. Note their style.
+3. Locate the file containing the function to refactor.
+4. Identify single-responsibility violations. Score each.
+5. Draft a refactor plan and present to the user.
+6. Apply the refactor, splitting concerns into modules.
+7. Update the imports across the codebase.
+8. Run the test suite. Verify everything stays green.
+9. Re-score the codebase against the SRP criteria.
+10. Confirm violations resolved. Loop if any remain.
+11. Run a multi-agent code review on the diff.
+12. Compose a before-vs-after report. Save to disk.
+13. ...</pre>
+  </div>
+  <div class="attention-arrow" aria-hidden="true">→</div>
+  <div class="attention-panel attention-after">
+    <div class="attention-tag">abtree next</div>
+    <pre><span class="attention-kind">instruct</span>
+<span class="attention-action">Score_SRP</span>
+Score the codebase for Single
+Responsibility violations. Save
+the ranked list to <span class="attention-var">$LOCAL.violations</span>.</pre>
+  </div>
+</div>
 
-Modern LLMs follow Markdown instructions remarkably well — until workflows grow. Then two things go wrong:
+## Observability<br>built in.
 
-1. **Instruction fatigue.** A long system prompt loses focus. Agents skim, skip steps, hallucinate fields.
-2. **Non-determinism.** Decisions left to the model produce different paths on every run.
+Never guess where your agent got stuck. The runtime shows the tree in real time, logging each step. So you can see exactly what ran, what was skipped, and how far it got.
 
-abtree is a CLI that solves both. You describe the workflow once as a YAML behaviour tree — the same formal structure game AI and robotics have used for decades. Your agent then drives the execution through three commands:
+<TreeSvg src="/example.svg" :height="520" />
 
-- `abtree next` — ask the runtime what to do.
-- `abtree eval` — answer a precondition (`true` or `false`).
-- `abtree submit` — report the outcome of an instruction.
+## YAML. JSON.<br>TypeScript.
 
-Every call returns JSON, advances the cursor, and persists the execution to disk. The agent only ever sees the next step. The path stays predictable. The state survives.
+Whether you prefer code first or plain text, the TypeScript DSL gives composability and IDE support; YAML and JSON give a no tooling approach.
 
-[Get started in five minutes →](/getting-started)
+<AbtreeDsl />
+
+## Share<br>with the tools you love.
+
+Publish to npm, share through GitHub or bring your own tooling.
+
+<InstallDemo />
+
+## Hand over<br>to your agent.
+
+Claude Code, ChatGPT, or any shell-capable agent, the brief is the same. Paste it. The agent understands and walks the tree until the end.
+
+```text
+Install the npm package @abtree/srp-refactor, then drive the workflow against this repo:
+
+  abtree --help
+  abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
+```
+
+> For the long-form walkthrough — install the CLI, add a tree, drive it from your agent — see [Get started](/getting-started).
+
+## The same model.<br>From laptop to fleet.
+
+Whether running locally or with a fleet of agents, the engine, DSL, and protocol stay the same.
+
+- ✓ **Core engine** — Deterministic execution, one step at a time. Resumable and replayable.
+- ✓ **DSL** — Author workflows in YAML, JSON, or TypeScript that compile to one tree shape.
+- ✓ **CLI tool** — Drive a workflow from any shell or agent with `next`, `eval`, and `submit`.
+- → **STDIO MCP server** — Native protocol for local agents; skip the CLI plumbing.
+- … **HTTP MCP server** — Host central workflows any fleet of agents can reach.
+
+> MCP is the [Model Context Protocol](https://modelcontextprotocol.io/) — the wire format agents already speak.
+
+## Dive in.
+
+[Get started](/getting-started) · [Discover trees](/registry) · [View on GitHub](https://github.com/flying-dice/abtree)

@@ -1,0 +1,34 @@
+{
+	"name": "@abtree/test-tree",
+	"version": "0.1.0",
+	"description": "abtree fragment: run a BDD test spec against its target tree and write a markdown report embedding the mermaid trace.",
+	"main": "main.json",
+	"homepage": "https://github.com/flying-dice/abtree/tree/main/trees/test-tree",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/flying-dice/abtree.git",
+		"directory": "trees/test-tree"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"main.json",
+		"tree.svg"
+	],
+	"scripts": {
+		"build": "bun scripts/build.ts",
+		"prepublishOnly": "bun run build"
+	},
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"testing",
+		"bdd"
+	],
+	"devDependencies": {
+		"@abtree/dsl": "workspace:*",
+		"@abtree/runtime": "workspace:*"
+	}
+}

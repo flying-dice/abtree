@@ -1,0 +1,83 @@
+{
+	"$schema": "https://abtree.sh/schemas/tree.schema.json",
+	"name": "@abtree/hello-world",
+	"version": "0.1.0",
+	"tree": {
+		"type": "sequence",
+		"name": "Hello_World",
+		"children": [
+			{
+				"type": "action",
+				"name": "Determine_Time",
+				"steps": [
+					{
+						"instruct": "Check the system clock to get the current hour. Classify as: before 12:00 = \"morning\", 12:00-17:00 = \"afternoon\", after 17:00 = \"evening\". Store the classification string at $LOCAL.time_of_day."
+					}
+				]
+			},
+			{
+				"type": "selector",
+				"name": "Choose_Greeting",
+				"children": [
+					{
+						"type": "action",
+						"name": "Morning_Greeting",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.time_of_day is \"morning\""
+							},
+							{
+								"instruct": "Compose a cheerful morning greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Afternoon_Greeting",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.time_of_day is \"afternoon\""
+							},
+							{
+								"instruct": "Compose a warm afternoon greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Evening_Greeting",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.time_of_day is \"evening\""
+							},
+							{
+								"instruct": "Compose a relaxed evening greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Default_Greeting",
+						"steps": [
+							{
+								"instruct": "Compose a neutral greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	"description": "Greet a user based on time of day. Demonstrates sequence, selector, and action primitives.",
+	"state": {
+		"local": {
+			"time_of_day": null,
+			"greeting": null
+		},
+		"global": {
+			"user_name": "retrieve by running the shell command \"whoami\"",
+			"tone": "friendly",
+			"language": "english"
+		}
+	}
+}

@@ -1,54 +1,26 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitepress";
 import llmstxt from "vitepress-plugin-llms";
+import { registry } from "../registry";
 
-function titleCase(s: string): string {
-	return s
-		.split(/[-_]/)
-		.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-		.join(" ");
+// Derive the tree slug from a registry entry's GitHub link. The link
+// pattern is `…/trees/main/trees/<slug>`; the slug is the last path
+// segment. Mirrors the same derivation in
+// scripts/generate-registry-md.ts and theme/RegistryCards.vue.
+function slugFor(link: string): string {
+	const parts = link.split("/").filter(Boolean);
+	return parts[parts.length - 1] ?? "";
 }
 
-function exampleSidebarItems() {
-	const dir = resolve(import.meta.dirname, "../examples");
-	const base = [{ text: "Registry", link: "/examples" }];
-	if (!existsSync(dir)) return base;
-
-	const slugs = readdirSync(dir)
-		.filter((entry) => {
-			const full = join(dir, entry);
-			return statSync(full).isDirectory() && existsSync(join(full, "index.md"));
-		})
-		.sort();
-
-	const groups = slugs.map((slug) => {
-		const slugDir = join(dir, slug);
-		const subpages = readdirSync(slugDir)
-			.filter((f) => f.endsWith(".md") && f !== "index.md")
-			.map((f) => f.replace(/\.md$/, ""));
-		const hasDefinition = subpages.includes("definition");
-		const scenarios = subpages.filter((s) => s !== "definition").sort();
-
-		return {
-			text: titleCase(slug),
-			collapsed: true,
-			items: [
-				{ text: "Overview", link: `/examples/${slug}/` },
-				...(hasDefinition
-					? [{ text: "Definition", link: `/examples/${slug}/definition` }]
-					: []),
-				...scenarios.map((s) => ({
-					text: titleCase(s),
-					link: `/examples/${slug}/${s}`,
-				})),
-			],
-		};
-	});
-
-	return [...base, ...groups];
-}
+// "Discover trees" landing page followed by each per-tree page,
+// generated from docs/registry.ts by scripts/generate-registry-md.ts.
+const REGISTRY_SIDEBAR = [
+	{ text: "Discover trees", link: "/registry" },
+	...registry.map((entry) => ({
+		text: entry.name,
+		link: `/trees/${slugFor(entry.link)}`,
+	})),
+];
 
 function robotsTxt(siteUrl: string): Plugin {
 	return {
@@ -261,7 +233,7 @@ export default defineConfig({
 			{ text: "Concepts", link: "/concepts/" },
 			{ text: "Guide", link: "/guide/writing-trees" },
 			{ text: "Agents", link: "/agents/execute" },
-			{ text: "Examples", link: "/examples" },
+			{ text: "Discover trees", link: "/registry" },
 			{
 				text: "LLMs",
 				items: [
@@ -283,6 +255,7 @@ export default defineConfig({
 				text: "Core concepts",
 				items: [
 					{ text: "Why behaviour trees?", link: "/concepts/" },
+					{ text: "How it works", link: "/concepts/how-it-works" },
 					{ text: "State", link: "/concepts/state" },
 					{
 						text: "Branches and actions",
@@ -293,14 +266,18 @@ export default defineConfig({
 			{
 				text: "Guide",
 				items: [
+					{ text: "Using a tree", link: "/guide/using-trees" },
 					{ text: "Writing trees", link: "/guide/writing-trees" },
 					{ text: "Fragments", link: "/guide/fragments" },
-					{ text: "Designing workflows", link: "/guide/designing-workflows" },
+					{ text: "Design a new tree", link: "/guide/design-process" },
+					{ text: "Idioms", link: "/guide/idioms" },
+					{ text: "Anti-patterns", link: "/guide/anti-patterns" },
 					{ text: "Testing trees", link: "/guide/testing" },
 					{
 						text: "Inspecting executions",
 						link: "/guide/inspecting-executions",
 					},
+					{ text: "Publishing a tree", link: "/guide/publishing-a-tree" },
 					{ text: "CLI reference", link: "/guide/cli" },
 				],
 			},
@@ -313,8 +290,8 @@ export default defineConfig({
 				],
 			},
 			{
-				text: "Examples",
-				items: exampleSidebarItems(),
+				text: "Discover trees",
+				items: [...REGISTRY_SIDEBAR],
 			},
 		],
 
@@ -324,7 +301,7 @@ export default defineConfig({
 
 		footer: {
 			message: "MIT licensed",
-			copyright: "Built with ❤️ by Flying Dice 🎲",
+			copyright: "Built by Flying Dice",
 		},
 
 		search: {

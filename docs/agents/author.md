@@ -1,12 +1,17 @@
-# Tree Authoring Guide
+---
+title: Authoring trees
+description: Reference for an agent (or human) authoring an abtree tree. Covers the full field reference — file shape, step kinds, retries, $ref fragments — plus a worked example and validation tooling.
+---
 
-Authoring an abtree tree means writing a YAML file that an agent can drive deterministically through `abtree next`, `eval`, and `submit`. Trees live in `.abtree/trees/<slug>/TREE.yaml` (project-local) or `~/.abtree/trees/<slug>/TREE.yaml` (user-global). The folder name is the slug. Project-local shadows global on slug collision.
+# Authoring trees
+
+Authoring an abtree tree means writing a tree file that an agent can drive deterministically through `abtree next`, `abtree eval`, and `abtree submit`. Trees live in `.abtree/trees/<slug>/TREE.yaml` (project-local) or `~/.abtree/trees/<slug>/TREE.yaml` (user-global). The folder name is the slug. Project-local shadows global on slug collision.
 
 ::: tip
 Run `abtree docs schema` to print the JSON Schema, or reference the published copy via the YAML language-server comment:
 
 ```yaml
-# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+# yaml-language-server: $schema=https://abtree.sh/schemas/tree.schema.json
 ```
 :::
 
@@ -23,18 +28,41 @@ tree:                    # the root node. Required.
   ...
 ```
 
+| Field | Required | Purpose |
+|---|---|---|
+| `name` | yes | Slug. Must match the folder name. |
+| `version` | yes | Semver label. Pure label; not parsed. |
+| `description` | no | One-line summary surfaced by tooling and the registry. |
+| `state.local` | no | Initial `$LOCAL` keys. `null` values are filled in by actions during the run. |
+| `state.global` | no | Initial `$GLOBAL` values. Strings that look like sentences are interpreted by the agent as retrieval directives. |
+| `tree` | yes | The root node. Always a single node — usually a `sequence`. |
+
 ## Node primitives
 
-There are four. Three composites and one leaf.
+There are four — three composites and one leaf. For the conceptual semantics see [Branches and actions](/concepts/branches-and-actions); the abridged contract is:
 
-| Type       | Behaviour                                                    | Result                                |
-|------------|--------------------------------------------------------------|---------------------------------------|
-| `sequence` | Tick children left-to-right. Stops on first failure.         | success iff all children succeeded.   |
-| `selector` | Tick children left-to-right. Stops on first success.         | success iff any child succeeded.      |
-| `parallel` | Tick all children. No short-circuit.                         | success iff all children succeeded.   |
-| `action`   | Leaf. Carries a list of `steps`, each `evaluate` or `instruct`. | success iff every step succeeded. |
+| Type | Behaviour | Result |
+|---|---|---|
+| `sequence` | Tick children left-to-right. Stop on the first failure. | success iff all children succeeded. |
+| `selector` | Tick children left-to-right. Stop on the first success. | success iff any child succeeded. |
+| `parallel` | Tick all children. No short-circuit. | success iff all children succeeded. |
+| `action` | Leaf. Carries a list of `steps`, each `evaluate` or `instruct`. | success iff every step succeeded. |
 
-Every node carries a `name` (used in `abtree next` output and the mermaid render). Composites carry `children: [...]`. Actions carry `steps: [...]`.
+Every node carries a `name` (used in `abtree next` output and the Mermaid render). Composites carry `children: [...]`. Actions carry `steps: [...]`.
+
+## Naming conventions
+
+| Element | Convention | Example |
+|---|---|---|
+| Tree slug (`name` and folder) | kebab-case | `hello-world`, `improve-codebase` |
+| Node name | PascalCase with underscores; Mermaid renders `_` as a space | `Choose_Greeting`, `Check_Weather` |
+| Composite name | describes the decision | `Choose_Greeting`, `Gather_Context`, `Write_With_Retries` |
+| Action name | describes the work | `Determine_Time`, `Compose_Response` |
+| Root sequence name | usually `<Tree>_Workflow` | `Hello_World_Workflow` |
+| `$LOCAL` key | a variable the tree creates | `$LOCAL.draft`, `$LOCAL.review_notes` |
+| `$GLOBAL` key | a value the tree reads from the world | `$GLOBAL.user_name`, `$GLOBAL.review_playbook` |
+
+Do not mix `$LOCAL` and `$GLOBAL`: `$LOCAL` is something the tree creates; `$GLOBAL` is something the world tells the tree.
 
 ## Step kinds (action only)
 
@@ -56,11 +84,11 @@ The agent performs the work, writes any produced values via `abtree local write`
 
 ## Retries
 
-Any node can carry `retries: N` (positive integer). On failure, the runtime wipes the node's runtime subtree (its own `node_status`/`step_index` and all descendants') and re-attempts from a clean slate, up to N times. User-written `$LOCAL` data is preserved across retries — that is the whole point of the feedback loop.
+Any node can carry `retries: N` (a positive integer). On failure the runtime wipes the node's runtime subtree (its own `node_status`, `step_index`, and all descendants') and re-attempts from a clean slate, up to `N` times. User-written `$LOCAL` data is preserved across retries — that is the feedback channel between attempts.
 
 ## `$ref` fragments
 
-Split a tree across multiple YAML files using JSON-Schema-style `$ref`. Relative paths, absolute paths, and URLs are dereferenced at load time:
+Split a tree across multiple files using JSON-Schema-style `$ref`. Relative paths, absolute paths, and URLs are dereferenced at load time:
 
 ```yaml
 tree:
@@ -71,12 +99,12 @@ tree:
     - $ref: "./fragments/work.yaml"
 ```
 
-The dereferenced object must itself be a valid node (composite or action). Cyclic refs are not expanded — they are preserved literally as `$ref` nodes that surface a clean failure if the runtime ever ticks them.
+The dereferenced object must itself be a valid node (composite or action). Cyclic refs are not expanded — they are preserved literally as `$ref` nodes that surface a clean failure if the runtime ever ticks them. See [Fragments](/guide/fragments) for the full reference.
 
 ## Worked example
 
 ```yaml
-# yaml-language-server: $schema=https://abtree.dev/schemas/tree.schema.json
+# yaml-language-server: $schema=https://abtree.sh/schemas/tree.schema.json
 name: my-tree
 version: 1.0.0
 description: short summary
@@ -112,14 +140,19 @@ tree:
 
 ## Validation
 
-| Mechanism      | What it covers                                                                                |
-|----------------|-----------------------------------------------------------------------------------------------|
-| Schema check   | `tests/trees-schema.test.ts` parses every tree in `.abtree/trees/` through `TreeFileSchema`.   |
-| CLI errors     | Malformed trees fail `abtree execution create` with a path-prefixed message: `tree.steps: Too small: expected array to have >=1 items`. |
-| Editor LSP     | The `# yaml-language-server: $schema=...` comment enables completions, tooltips, and inline error highlights in any YAML LSP client. |
+| Mechanism | What it covers |
+|---|---|
+| Schema check | The repository test suite parses every tree in `.abtree/trees/` through `TreeFileSchema`. |
+| CLI errors | Malformed trees fail `abtree execution create` with a path-prefixed message: `tree.steps: Too small: expected array to have >=1 items`. |
+| Editor LSP | The `# yaml-language-server: $schema=...` comment enables completions, tooltips, and inline error highlights in any YAML LSP client. |
 
 ## Reporting (per tree authored)
 
 ```text
-[tree-slug] ✓ valid → run `abtree tree list` to confirm it loads
+[tree-slug] ✓ valid → run `abtree execution create <slug> "smoke test"` to confirm it loads
 ```
+
+## Next
+
+- [JSON Schema](/agents/schema) — where the canonical schema lives, editor integration, and CI validation.
+- [Writing trees](/guide/writing-trees) — tutorial walkthrough that builds the bundled `hello-world` tree from scratch.

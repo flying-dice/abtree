@@ -1,26 +1,25 @@
 {
 	"name": "abtree",
 	"version": "0.1.0",
-	"module": "index.ts",
 	"type": "module",
 	"private": true,
-	"bin": {
-		"abtree": "index.ts"
-	},
+	"workspaces": [
+		"packages/*",
+		"trees/*"
+	],
 	"scripts": {
 		"release": "semantic-release",
-		"schema": "bun scripts/generate-schema.ts",
-		"build": "bun scripts/build.ts",
-		"generate-examples": "bun scripts/generate-examples.ts",
-		"docs:dev": "bun run generate-examples && vitepress dev docs",
-		"docs:build": "bun run generate-examples && vitepress build docs",
+		"schema": "bun packages/runtime/scripts/generate-schema.ts",
+		"build": "bun packages/cli/scripts/build.ts",
+		"docs:registry": "bun scripts/generate-registry-md.ts",
+		"docs:dev": "bun run docs:registry && vitepress dev docs --host",
+		"docs:build": "bun run docs:registry && vitepress build docs",
 		"docs:preview": "vitepress preview docs"
 	},
 	"dependencies": {
-		"@apidevtools/json-schema-ref-parser": "^15.3.5",
-		"@inquirer/prompts": "^8.4.2",
-		"commander": "^12",
-		"zod": "^4.4.3"
+		"@abtree/cli": "workspace:*",
+		"@abtree/dsl": "workspace:*",
+		"@abtree/runtime": "workspace:*"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.14",
@@ -30,10 +29,12 @@
 		"@semantic-release/npm": "^12.0.0",
 		"@semantic-release/release-notes-generator": "^14.0.0",
 		"@types/bun": "latest",
+		"@vue/server-renderer": "3.5.34",
 		"semantic-release": "^24.0.0",
 		"vitepress": "^2.0.0-alpha.17",
 		"vitepress-mermaid-renderer": "^1.1.23",
-		"vitepress-plugin-llms": "^1.12.2"
+		"vitepress-plugin-llms": "^1.12.2",
+		"vue": "3.5.34"
 	},
 	"peerDependencies": {
 		"typescript": "^5"

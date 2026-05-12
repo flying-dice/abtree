@@ -1,0 +1,364 @@
+{
+	"$schema": "https://abtree.sh/schemas/tree.schema.json",
+	"name": "@abtree/improve-codebase",
+	"version": "0.1.0",
+	"tree": {
+		"type": "sequence",
+		"name": "Improve_Codebase",
+		"children": [
+			{
+				"type": "action",
+				"name": "Check_Intent",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.change_request is set"
+					},
+					{
+						"instruct": "Read $LOCAL.change_request. State what \"improve\" means for this run — full repo, one module, one metric, etc. Surface the interpretation to the human and pause until they confirm by calling `abtree local write <flow-id> scope_confirmed true`. Submit `running` while waiting."
+					},
+					{
+						"evaluate": "$LOCAL.scope_confirmed is true"
+					}
+				]
+			},
+			{
+				"type": "action",
+				"name": "Verify_Baseline",
+				"steps": [
+					{
+						"evaluate": "$GLOBAL.test_command is set"
+					},
+					{
+						"instruct": "Run $GLOBAL.test_command end-to-end on the unchanged codebase. If anything fails, abort the workflow with submit failure — improvement requires a green baseline. Otherwise set $LOCAL.baseline_tests_pass to true."
+					},
+					{
+						"evaluate": "$LOCAL.baseline_tests_pass is true"
+					}
+				]
+			},
+			{
+				"type": "parallel",
+				"name": "Score_Quality_Metrics",
+				"children": [
+					{
+						"type": "action",
+						"name": "Score_DRY",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.scope_confirmed is true"
+							},
+							{
+								"instruct": "Score the codebase on Don't-Repeat-Yourself. Identify duplicated logic, near-duplicate functions, parallel inheritance hierarchies, and repeated patterns that should be abstracted. Score in [0, 1] (1 = no duplication). Per finding: file, severity (low/med/high), risk of refactoring, cost/benefit (0..1, higher = cheap and impactful). Store at $LOCAL.score_dry."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Score_SRP",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.scope_confirmed is true"
+							},
+							{
+								"instruct": "Score the codebase on Single Responsibility Principle. Identify modules / classes / functions with more than one reason to change. Score in [0, 1] (1 = one responsibility per unit). Per finding: file, severity, risk, cost_benefit. Store at $LOCAL.score_srp."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Score_Coupling",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.scope_confirmed is true"
+							},
+							{
+								"instruct": "Score the codebase on coupling. Identify excessive cross-module dependencies, circular imports, leaky abstractions. Score in [0, 1] (1 = clean boundaries). Per finding: file, severity, risk, cost_benefit. Store at $LOCAL.score_coupling."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Score_Cohesion",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.scope_confirmed is true"
+							},
+							{
+								"instruct": "Score the codebase on cohesion. Identify modules whose contents don't naturally belong together, utility classes that have grown into miscellany dumps. Score in [0, 1] (1 = strong cohesion). Per finding: file, severity, risk, cost_benefit. Store at $LOCAL.score_cohesion."
+							}
+						]
+					}
+				]
+			},
+			{
+				"type": "action",
+				"name": "Snapshot_Baseline",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.score_dry is set and $LOCAL.score_srp is set and $LOCAL.score_coupling is set and $LOCAL.score_cohesion is set"
+					},
+					{
+						"instruct": "Capture only the score values into $LOCAL.baseline_scores = { dry: <n>, srp: <n>, coupling: <n>, cohesion: <n> }. This frozen snapshot is the before-state used by Cycle_Verdict to show the codebase-level delta."
+					}
+				]
+			},
+			{
+				"type": "action",
+				"name": "Compile_Report",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.baseline_scores is set"
+					},
+					{
+						"instruct": "Synthesise $LOCAL.score_dry / $LOCAL.score_srp / $LOCAL.score_coupling / $LOCAL.score_cohesion into one working list. Each candidate gets: { id, metric, threshold (from $GLOBAL.metric_thresholds), summary, file, risk, cost_benefit }. Store the report text at $LOCAL.report and the candidate list at $LOCAL.refactor_queue. The threshold field is the target the per-item Reassess_Metric will gate against."
+					}
+				]
+			},
+			{
+				"type": "action",
+				"name": "Critique_Findings",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.refactor_queue is set"
+					},
+					{
+						"instruct": "Act as a Senior Principal Engineer reviewing the proposed refactor list. For each item: - Is the metric actually wrong here, or is the score gaming an irrelevant heuristic? - Does fixing this move the needle, or is it cosmetic? - Will the change destabilise something downstream? Drop items that don't survive scrutiny. Tighten the rest's risk and cost_benefit estimates. Overwrite $LOCAL.refactor_queue with the hardened list."
+					}
+				]
+			},
+			{
+				"type": "action",
+				"name": "Lookup_Online",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.refactor_queue is set"
+					},
+					{
+						"instruct": "For each unique metric represented in $LOCAL.refactor_queue, look up canonical refactoring patterns and best-practice approaches in the project's language and framework. Aim for high-signal references agents can apply at refactor time, not exhaustive literature reviews. Store at $LOCAL.online_references keyed by metric."
+					}
+				]
+			},
+			{
+				"type": "action",
+				"name": "Triage_Refactor_Queue",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.refactor_queue is set"
+					},
+					{
+						"instruct": "Triage $LOCAL.refactor_queue. Drop items where cost_benefit < 0.3 (not worth doing). Sort the rest by cost_benefit descending — high-impact, low-risk first. Surface the triaged list to the human for approval and overwrite $LOCAL.refactor_queue with the ordered, filtered version."
+					}
+				]
+			},
+			{
+				"type": "action",
+				"name": "Triage_Approval_Gate",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.refactor_queue is set"
+					},
+					{
+						"instruct": "Wait for the human to approve the triaged queue. They'll call `abtree local write <flow-id> triage_approved true` once they're ready. Submit `running` periodically while waiting. If they want changes to the triage, call submit failure so the bootstrap re-runs."
+					},
+					{
+						"evaluate": "$LOCAL.triage_approved is true"
+					}
+				]
+			},
+			{
+				"type": "sequence",
+				"name": "Iterative_Refactor",
+				"children": [
+					{
+						"type": "action",
+						"name": "Halt_Check",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.stage_halt is not true"
+							},
+							{
+								"instruct": "Stage active — proceed."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Pick_Next_Item",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.refactor_queue is not empty"
+							},
+							{
+								"instruct": "Pop the head of $LOCAL.refactor_queue and store the full item at $LOCAL.current_item. Reset $LOCAL.current_score and $LOCAL.refactor_plan to null."
+							}
+						]
+					},
+					{
+						"type": "sequence",
+						"name": "Refactor_Item",
+						"children": [
+							{
+								"type": "selector",
+								"name": "Pre_Refactor_Critique",
+								"children": [
+									{
+										"type": "action",
+										"name": "High_Risk_Critique",
+										"steps": [
+											{
+												"evaluate": "$LOCAL.current_item.risk is \"high\""
+											},
+											{
+												"instruct": "High-risk item. Map blast radius before touching code: list affected files, downstream consumers, and tests that exercise the area. Identify the safest order of edits. Consult $LOCAL.online_references[current_item.metric] for established patterns. Store a brief plan at $LOCAL.refactor_plan."
+											}
+										]
+									},
+									{
+										"type": "action",
+										"name": "Skip_Critique",
+										"steps": [
+											{
+												"instruct": "Risk is low or medium — proceed directly to implementation. No blast-radius mapping needed."
+											}
+										]
+									}
+								]
+							},
+							{
+								"type": "action",
+								"name": "Implement_Refactor",
+								"steps": [
+									{
+										"evaluate": "$LOCAL.current_item is set"
+									},
+									{
+										"instruct": "Implement the refactor described by $LOCAL.current_item. If $LOCAL.refactor_plan is set, follow it. Consult $LOCAL.online_references[current_item.metric] for canonical patterns. Edit code, run any local sanity checks. If you cannot make progress on this item, set $LOCAL.stage_halt to true and submit failure to end the stage cleanly."
+									}
+								]
+							},
+							{
+								"type": "action",
+								"name": "Regression_Test",
+								"steps": [
+									{
+										"evaluate": "full regression test suite passes after the refactor (use $GLOBAL.test_command)"
+									},
+									{
+										"instruct": "Run $GLOBAL.test_command end-to-end. Do NOT submit success unless every test passes. If you cannot get them green, set $LOCAL.stage_halt to true and submit failure."
+									}
+								]
+							},
+							{
+								"type": "action",
+								"name": "Reassess_Metric",
+								"steps": [
+									{
+										"instruct": "Run a smaller, focused assessment scoped to $LOCAL.current_item.metric — re-score only that one metric, not the full suite. Store the new score at $LOCAL.current_score."
+									},
+									{
+										"evaluate": "$LOCAL.current_score is set and $LOCAL.current_score is greater than or equal to $LOCAL.current_item.threshold"
+									}
+								]
+							}
+						],
+						"retries": 2
+					},
+					{
+						"type": "action",
+						"name": "Record_Item_Done",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.current_item is set"
+							},
+							{
+								"instruct": "Append $LOCAL.current_item (with its final $LOCAL.current_score) to $LOCAL.done_log. Clear $LOCAL.current_item, $LOCAL.current_score, and $LOCAL.refactor_plan."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Continue_Or_Done",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.refactor_queue is empty"
+							}
+						]
+					}
+				],
+				"retries": 50
+			},
+			{
+				"type": "action",
+				"name": "Final_Reassessment",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.refactor_queue is empty"
+					},
+					{
+						"instruct": "Re-run the four metric scorers (DRY, SRP, coupling, cohesion) against the now-refactored codebase. Summary scores only — no per-finding detail required. Store at $LOCAL.final_scores = { dry: <n>, srp: <n>, coupling: <n>, cohesion: <n> }."
+					}
+				]
+			},
+			{
+				"type": "selector",
+				"name": "Cycle_Verdict",
+				"children": [
+					{
+						"type": "action",
+						"name": "Cycle_Passed",
+						"steps": [
+							{
+								"evaluate": "every metric in $LOCAL.final_scores is at or above its $GLOBAL.metric_thresholds value"
+							},
+							{
+								"instruct": "Every metric cleared its threshold. Surface a final report to the human covering: $LOCAL.baseline_scores vs $LOCAL.final_scores (delta per metric), $LOCAL.done_log (what got fixed), $LOCAL.failed_log (anything that exhausted retries). The cycle is complete."
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Cycle_Partial",
+						"steps": [
+							{
+								"instruct": "Some metrics are still below threshold. Surface a report to the human covering: which metrics improved vs which didn't, $LOCAL.done_log, $LOCAL.failed_log, and a recommendation on whether to start another improvement cycle or escalate to a human-led architectural review."
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	"description": "Continuous code-improvement cycle. Confirms intent + green baseline, scores quality metrics in parallel, snapshots the baseline, hardens findings via a Senior-Principal critique, looks up best practices, triages with a human gate, then iterates through each refactor with per-item bounded retries until the queue is drained.",
+	"state": {
+		"local": {
+			"change_request": null,
+			"scope_confirmed": null,
+			"baseline_tests_pass": null,
+			"score_dry": null,
+			"score_srp": null,
+			"score_coupling": null,
+			"score_cohesion": null,
+			"baseline_scores": null,
+			"report": null,
+			"refactor_queue": null,
+			"online_references": null,
+			"current_item": null,
+			"current_score": null,
+			"refactor_plan": null,
+			"done_log": [],
+			"failed_log": [],
+			"stage_halt": false,
+			"triage_approved": null,
+			"final_scores": null
+		},
+		"global": {
+			"test_command": "the command that runs the project's full regression test suite (e.g. 'bun test', 'pnpm test')",
+			"metric_thresholds": {
+				"dry": 0.7,
+				"srp": 0.7,
+				"coupling": 0.7,
+				"cohesion": 0.7
+			}
+		}
+	}
+}

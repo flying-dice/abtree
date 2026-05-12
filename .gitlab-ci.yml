@@ -78,5 +78,9 @@ release:
     - git config --global user.email "semantic-release@abtree"
     - git config --global user.name "semantic-release"
     - bun install --frozen-lockfile
+    # `bun publish` reads the token from .npmrc. NPM_TOKEN is set as a
+    # protected + masked CI/CD variable; it must be an "Automation" token
+    # so the publish doesn't prompt for 2FA.
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
   script:
     - bunx semantic-release

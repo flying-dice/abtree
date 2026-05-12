@@ -1,0 +1,33 @@
+{
+	"name": "@abtree/srp-refactor",
+	"version": "0.1.0",
+	"description": "Score the codebase for Single Responsibility violations, snapshot the initial scoring, pause for the human to pick one to tackle, refactor it in a bounded loop (re-scoring after every pass), do a multi-agent code review, and finish with a before-vs-after change report.",
+	"main": "main.json",
+	"homepage": "https://github.com/flying-dice/abtree/tree/main/trees/srp-refactor",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/flying-dice/abtree.git",
+		"directory": "trees/srp-refactor"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"main.json",
+		"tree.svg",
+		"fragments/code-review.md",
+		"tests/"
+	],
+	"scripts": {
+		"build": "bun scripts/build.ts",
+		"prepublishOnly": "bun run build",
+		"setup:skill": "abtree install skill --variant claude --scope project",
+		"test:clean-on-first-pass": "claude --model sonnet 'abtree execution create ./node_modules/@abtree/test-tree \"Run tests/clean-on-first-pass.yaml against ./main.json\"'",
+		"test:clean-on-second-pass": "claude --model sonnet 'abtree execution create ./node_modules/@abtree/test-tree \"Run tests/clean-on-second-pass.yaml against ./main.json\"'"
+	},
+	"devDependencies": {
+		"@abtree/dsl": "workspace:*",
+		"@abtree/runtime": "workspace:*",
+		"@abtree/test-tree": "workspace:*"
+	}
+}

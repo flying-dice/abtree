@@ -1,0 +1,35 @@
+{
+	"name": "@abtree/improve-codebase",
+	"version": "0.1.0",
+	"description": "Continuous code-improvement cycle. Confirms intent + green baseline, scores quality metrics in parallel, snapshots the baseline, hardens findings via a Senior-Principal critique, looks up best practices, triages with a human gate, then iterates through each refactor with per-item bounded retries until the queue is drained.",
+	"main": "main.json",
+	"homepage": "https://github.com/flying-dice/abtree/tree/main/trees/improve-codebase",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/flying-dice/abtree.git",
+		"directory": "trees/improve-codebase"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"main.json",
+		"tree.svg",
+		"tests"
+	],
+	"scripts": {
+		"build": "bun scripts/build.ts",
+		"prepublishOnly": "bun run build"
+	},
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"refactor",
+		"quality"
+	],
+	"devDependencies": {
+		"@abtree/dsl": "workspace:*",
+		"@abtree/runtime": "workspace:*"
+	}
+}

@@ -1,0 +1,34 @@
+{
+	"name": "@abtree/technical-writer",
+	"version": "0.1.0",
+	"description": "Take a documentation goal, ground it in the repo's styleguide, find or build a home in the docs tree, write to it, and gate-check structure / flow / atomicity. Up to three write/review passes (one initial + two retries) before surfacing failure to the human.",
+	"main": "main.json",
+	"homepage": "https://github.com/flying-dice/abtree/tree/main/trees/technical-writer",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/flying-dice/abtree.git",
+		"directory": "trees/technical-writer"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"main.json",
+		"tree.svg",
+		"tests"
+	],
+	"scripts": {
+		"build": "bun scripts/build.ts",
+		"prepublishOnly": "bun run build"
+	},
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"documentation"
+	],
+	"devDependencies": {
+		"@abtree/dsl": "workspace:*",
+		"@abtree/runtime": "workspace:*"
+	}
+}

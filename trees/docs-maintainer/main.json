@@ -1,0 +1,208 @@
+{
+	"$schema": "https://abtree.sh/schemas/tree.schema.json",
+	"name": "@abtree/docs-maintainer",
+	"version": "0.1.0",
+	"tree": {
+		"type": "sequence",
+		"name": "Docs_Maintainer",
+		"children": [
+			{
+				"type": "action",
+				"name": "Locate_CLI_Surface",
+				"steps": [
+					{
+						"evaluate": "$GLOBAL.cli_root is set and $GLOBAL.docs_root is set"
+					},
+					{
+						"instruct": "Read the CLI source rooted at $GLOBAL.cli_root and enumerate the full public surface: every command, subcommand, positional, flag, option, environment variable, and exit code a user is expected to see. Be exhaustive — this list is the source of truth for documentation completeness. Save the enumeration as a structured object at $LOCAL.cli_surface keyed by command path, each entry containing: - command (full invocation path) - summary (one line) - args (positionals) - flags (with type and default) - env (environment variables read) - exit_codes - source_path (where the surface is defined)"
+					},
+					{
+						"evaluate": "$LOCAL.cli_surface is set"
+					}
+				]
+			},
+			{
+				"type": "sequence",
+				"name": "Cycle",
+				"children": [
+					{
+						"type": "action",
+						"name": "Sweep_And_Classify",
+						"steps": [
+							{
+								"evaluate": "$GLOBAL.docs_root is set"
+							},
+							{
+								"instruct": "Walk $GLOBAL.docs_root. For every documentation page (markdown, MDX, or doc-config file) capture: - path - tier: \"orientation\" | \"education\" | \"reference\" (orientation = top-level pages such as home / motivation / getting-started; education = guides, tutorials, conceptual explainers; reference = lookup pages, schemas, CLI reference) - purpose: one sentence on what the page is for - audience: who reads it - clarity_score: 0..1 (does the prose read well?) - impact_score: 0..1 (how load-bearing is the page in the reader's journey?) - srp_score: 0..1 (does the page own exactly one concept, task, or surface?) - issues: list of concrete problems flagged on this page (style, structure, gaps, drift) Save the full inventory at $LOCAL.inventory."
+							},
+							{
+								"evaluate": "$LOCAL.inventory is set"
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Build_Sitemap",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.inventory is set"
+							},
+							{
+								"instruct": "Compose a markdown sitemap from $LOCAL.inventory. Structure: --- private: true generated_by: docs-maintainer generated_at: <YYYY-MM-DD HH:MM> --- # Documentation sitemap ## Tier map Three sections — Orientation, Education, Reference — each listing the pages in that tier with a one-line summary. Within a tier, order pages by impact_score descending. ## Per-page detail For each page in $LOCAL.inventory: ### <path> - Tier: <tier> - Purpose: <purpose> - Audience: <audience> - Scores: clarity <n> | impact <n> | SRP <n> - Issues: bulleted list (or \"none\") - Status: \"pending\" | \"amended\" | \"stable\" ## Narrative arc One paragraph describing the intended reader journey from orientation → education → reference, naming the specific pages that anchor each stage. Write the markdown to ./documentation-sitemap.md (overwriting any prior copy). Save the path to $LOCAL.sitemap. This file is private — it is the maintainer's working document, not a published page, and the frontmatter must declare `private: true`."
+							},
+							{
+								"evaluate": "$LOCAL.sitemap is set"
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Snapshot_Initial_Sitemap",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.sitemap is set"
+							},
+							{
+								"instruct": "If $LOCAL.initial_sitemap is already set, this is not the first cycle — submit success without doing anything. Otherwise copy the file at $LOCAL.sitemap to ./documentation-sitemap.initial.md (overwriting any prior copy) and save the new path to $LOCAL.initial_sitemap. This is the only record of the initial state, since Build_Sitemap overwrites the live sitemap on every cycle."
+							},
+							{
+								"evaluate": "$LOCAL.initial_sitemap is set"
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Critique_Sitemap",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.sitemap is set"
+							},
+							{
+								"instruct": "Read fragments/style-principles.md verbatim and apply it to the sitemap at $LOCAL.sitemap and the underlying docs at $GLOBAL.docs_root. Act as a senior technical writer assessing the site against: - MDN three-tier structure (orientation / education / reference) - Microsoft Manual of Style (voice, tense, sentence case, parallel construction, action-oriented headings, scannable structure, defined jargon) - Narrative arc — does the reader progress orientation → education → reference cleanly? - Single responsibility — does each page own exactly one concept? - Coverage — is the educational content sufficient to onboard a new reader end-to-end? Emit an ordered catalog of suggestions stored at $LOCAL.suggestions, highest-impact first. Each suggestion: { id, target_path, type, severity, description, why } where `type` is one of: \"split\", \"merge\", \"rewrite\", \"rename\", \"move\", \"add\", \"delete\", \"restructure\". An empty list is a valid result and signals the cycle is converging. Set $LOCAL.suggestions_count to the length of $LOCAL.suggestions."
+							},
+							{
+								"evaluate": "$LOCAL.suggestions is set and $LOCAL.suggestions_count is set"
+							}
+						]
+					},
+					{
+						"type": "sequence",
+						"name": "Apply_Suggestions",
+						"children": [
+							{
+								"type": "action",
+								"name": "Pick_Suggestion",
+								"steps": [
+									{
+										"evaluate": "$LOCAL.suggestions is set"
+									},
+									{
+										"instruct": "If $LOCAL.suggestions is empty, set $LOCAL.current_suggestion to null and submit success — there is nothing to apply this pass. Otherwise pop the head of $LOCAL.suggestions into $LOCAL.current_suggestion and remove it from the queue."
+									}
+								]
+							},
+							{
+								"type": "action",
+								"name": "Apply_Suggestion",
+								"steps": [
+									{
+										"instruct": "If $LOCAL.current_suggestion is null, submit success — the queue is empty and there is nothing to apply. Otherwise apply $LOCAL.current_suggestion. Edit the target file(s) at $LOCAL.current_suggestion.target_path. Consult fragments/style-principles.md as you write so the new text matches the encoded MDN + Microsoft Manual of Style principles. Then amend $LOCAL.sitemap inline: locate the per-page entry for $LOCAL.current_suggestion.target_path and update its Status to \"amended\", refresh its scores, and add a one-line note under Issues describing what landed. If the suggestion created or deleted pages, add or remove the corresponding entries in the sitemap and update the Tier map. Append a summary of the applied suggestion to $LOCAL.applied_log: { id, target_path, type, summary }."
+									}
+								]
+							},
+							{
+								"type": "action",
+								"name": "Continue_Or_Done",
+								"steps": [
+									{
+										"evaluate": "$LOCAL.suggestions is empty"
+									}
+								]
+							}
+						],
+						"retries": 40
+					},
+					{
+						"type": "action",
+						"name": "CLI_Completeness_Gate",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.cli_surface is set"
+							},
+							{
+								"instruct": "Cross-check $LOCAL.cli_surface against the docs under $GLOBAL.docs_root. For every command, flag, environment variable, and exit code in the CLI surface, locate where it is documented (path + line). Compose a coverage report at $LOCAL.coverage_report: { documented: [...], missing: [...], stale: [...] } where `missing` is anything in $LOCAL.cli_surface not found in the docs, and `stale` is anything documented that no longer exists in $LOCAL.cli_surface. Set $LOCAL.coverage_complete to true iff `missing` and `stale` are both empty."
+							},
+							{
+								"evaluate": "$LOCAL.coverage_report is set and $LOCAL.coverage_complete is set"
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Final_Review",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.applied_log is set"
+							},
+							{
+								"instruct": "Run the docs-review procedure documented at fragments/docs-review.md. Read that file and follow its numbered steps verbatim, scoping the review to the changes captured in $LOCAL.applied_log during this cycle. The procedure orchestrates haiku/sonnet/opus subagents in parallel and ends with a filtered, high-signal issue list. Capture that final list (issue description + reason + cited_lines + page_path) as $LOCAL.review_report. An empty list is a valid result — it is the signal that this cycle's changes hold up."
+							},
+							{
+								"evaluate": "$LOCAL.review_report is set"
+							}
+						]
+					},
+					{
+						"type": "action",
+						"name": "Verify_Cycle_Clean",
+						"steps": [
+							{
+								"evaluate": "$LOCAL.suggestions_count is 0 and $LOCAL.coverage_complete is true and $LOCAL.review_report is empty"
+							},
+							{
+								"instruct": "Cycle converged: no outstanding critique, full CLI coverage, and no review findings. The documentation set is now clear, consistent, and progressively structured."
+							}
+						]
+					}
+				],
+				"retries": 6
+			},
+			{
+				"type": "action",
+				"name": "Change_Report",
+				"steps": [
+					{
+						"evaluate": "$LOCAL.initial_sitemap is set and $LOCAL.sitemap is set and $LOCAL.applied_log is set"
+					},
+					{
+						"instruct": "Compose a markdown change report. Required sections: # Documentation change report — <YYYY-MM-DD HH:MM> ## Headline - Pages reviewed: <n> - Suggestions applied: <count of $LOCAL.applied_log> - CLI coverage: complete | <n missing> | <n stale> - Final review findings: <count of $LOCAL.review_report> ## What changed Bulleted list rendered from $LOCAL.applied_log: target → type → summary. ## Coverage $LOCAL.coverage_report (verbatim). ## Final review $LOCAL.review_report (verbatim). ## Sitemaps on disk - Initial: $LOCAL.initial_sitemap - Final: $LOCAL.sitemap Write the markdown to ./DOCUMENTATION_CHANGE_REPORT.md (overwriting any prior copy). Save the path to $LOCAL.change_report."
+					},
+					{
+						"evaluate": "$LOCAL.change_report is set"
+					}
+				]
+			}
+		]
+	},
+	"description": "Sweep a docs site, classify every page into the MDN orientation / education / reference tiers, score each on clarity, impact, and single responsibility, and gather everything into a private documentation-sitemap.md. A senior-writer critique drives a bounded refactor loop that applies suggestions and amends the sitemap inline. Each cycle ends with a CLI completeness gate and a multi-agent review; cycles repeat until the site is clear, consistent, fully covers the CLI, and the review is clean.",
+	"state": {
+		"local": {
+			"inventory": null,
+			"sitemap": null,
+			"initial_sitemap": null,
+			"suggestions": null,
+			"suggestions_count": null,
+			"current_suggestion": null,
+			"applied_log": [],
+			"cli_surface": null,
+			"coverage_report": null,
+			"coverage_complete": null,
+			"review_report": null,
+			"change_report": null
+		},
+		"global": {
+			"docs_root": "the docs directory of the project being maintained (e.g. ./docs)",
+			"cli_root": "the source directory of the CLI being documented (e.g. ./packages/cli)"
+		}
+	}
+}
