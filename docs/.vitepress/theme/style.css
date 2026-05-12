@@ -390,7 +390,9 @@
 	position: relative;
 }
 .attention-tag {
-	font: 700 10px/1 "IBM Plex Mono", monospace;
+	font:
+		700 10px / 1 "IBM Plex Mono",
+		monospace;
 	letter-spacing: 2px;
 	text-transform: uppercase;
 	color: #6272a4;
@@ -398,7 +400,10 @@
 }
 .attention-panel pre {
 	margin: 0;
-	font: 500 12px/1.55 "IBM Plex Mono", "Fira Mono", monospace;
+	font:
+		500 12px / 1.55 "IBM Plex Mono",
+		"Fira Mono",
+		monospace;
 	white-space: pre;
 	overflow: hidden;
 	color: #f8f8f2;
@@ -426,7 +431,9 @@
 	display: inline-block;
 	padding: 2px 7px;
 	margin-bottom: 8px;
-	font: 700 10px/1 "IBM Plex Mono", monospace;
+	font:
+		700 10px / 1 "IBM Plex Mono",
+		monospace;
 	letter-spacing: 1.4px;
 	text-transform: uppercase;
 	color: #0e0e14;

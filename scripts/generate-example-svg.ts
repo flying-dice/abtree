@@ -9,11 +9,11 @@
  */
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { renderTreeSvg } from "@abtree/runtime";
 import type {
 	NormalizedCompositeNode,
 	WalkthroughScript,
 } from "@abtree/runtime";
+import { renderTreeSvg } from "@abtree/runtime";
 
 const tree: NormalizedCompositeNode = {
 	type: "sequence",
@@ -30,16 +30,12 @@ const tree: NormalizedCompositeNode = {
 		{
 			type: "action",
 			name: "Score_SRP",
-			steps: [
-				{ instruct: "Re-score the codebase for SRP violations." },
-			],
+			steps: [{ instruct: "Re-score the codebase for SRP violations." }],
 		},
 		{
 			type: "action",
 			name: "Verify_Resolved",
-			steps: [
-				{ evaluate: "$LOCAL.has_critical_violations is false" },
-			],
+			steps: [{ evaluate: "$LOCAL.has_critical_violations is false" }],
 		},
 	],
 };

@@ -119,10 +119,7 @@ const YAML_KEYS = new Set([
 const YAML_STEP_KEYS = new Set(["evaluate", "instruct"]);
 
 function esc(s: string): string {
-	return s
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;");
+	return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function highlight(src: string): string {
@@ -215,7 +212,7 @@ function interpolate(literal: string): string {
 				else if (literal[i] === "}") depth--;
 				if (depth > 0) i++;
 			}
-			out += esc(literal.slice(start, i)) + "}</span>";
+			out += `${esc(literal.slice(start, i))}}</span>`;
 			i++;
 			out += '<span class="t-str">';
 		} else {
@@ -304,6 +301,7 @@ function isInsideYamlString(line: string, idx: number): boolean {
 	return inStr;
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const renderedTiles = computed(() =>
 	tiles.map((t) => ({
 		...t,

@@ -4,7 +4,9 @@ import llmstxt from "vitepress-plugin-llms";
 
 // Registry is rendered as a single searchable cards page driven by
 // docs/registry.ts — no per-tree subpages, so no dynamic sidebar tree.
-const REGISTRY_SIDEBAR = [{ text: "Discover trees", link: "/registry" }] as const;
+const REGISTRY_SIDEBAR = [
+	{ text: "Discover trees", link: "/registry" },
+] as const;
 
 function robotsTxt(siteUrl: string): Plugin {
 	return {
