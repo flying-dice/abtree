@@ -5,14 +5,14 @@
 <h1 align="center">abtree</h1>
 
 <p align="center">
-  <strong>Behaviour trees for AI agents.</strong><br/>
-  Define agent workflows as YAML. The runtime hands the agent one step at a time, verifies the result, and persists the cursor — so workflows stay on rails and reproducible no matter how big they get.
+  <strong><s>Hoping.</s> Behaving.</strong><br/>
+  Replace the skill file you hope your agent reads with a tree the runtime walks — one step at a time, verified at every move.
 </p>
 
 <p align="center">
   <a href="https://abtree.sh">Docs</a> ·
   <a href="https://abtree.sh/getting-started">Get started</a> ·
-  <a href="https://abtree.sh/concepts/">Why behaviour trees?</a>
+  <a href="https://abtree.sh/concepts/">How it works</a>
 </p>
 
 ---
@@ -31,16 +31,14 @@ curl -fsSL https://github.com/flying-dice/abtree/releases/latest/download/instal
 irm https://github.com/flying-dice/abtree/releases/latest/download/install.ps1 | iex
 ```
 
-## What it is
-
-abtree is a runtime for agent workflows. Your agent drives execution through three commands — `next`, `eval`, `submit` — and only ever sees the next step. State persists between calls; every state change regenerates a visual trace so you can see exactly what ran, what passed, and what was bypassed.
-
-Workflows are plain JSON or YAML files. Author them by hand or compile them from the [TypeScript DSL](https://abtree.sh/guide/writing-trees). Ship them through npm, a GitHub ref, a private git server, or any transport you already use — abtree never sees the distribution; it only reads the file at the path you point it at.
-
 ![A behaviour tree walking the SRP refactor loop end-to-end](docs/public/example.svg)
+
+## What it does
+
+abtree is a runtime for agent workflows. Author a tree as JSON, YAML, or compile it from the TypeScript DSL. Ship it through any transport your team already uses — abtree never sees the distribution; it only reads the file at the path you point it at. Your agent drives execution through three commands (`next`, `eval`, `submit`) and only ever sees the next step.
 
 ## Read the docs
 
-Concepts, guides, agent integration, CLI reference, and examples all live at **[abtree.sh](https://abtree.sh)**.
+Concepts, guides, CLI reference, and a five-minute walkthrough all live at **[abtree.sh](https://abtree.sh)**.
 
 → [**Get started in five minutes**](https://abtree.sh/getting-started)
