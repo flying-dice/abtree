@@ -62,11 +62,13 @@ for (const entry of registry) {
 
 	const readme = readFileSync(readmePath, "utf8");
 
-	// Rewrite `![alt](./tree.svg)` → `![alt](/trees/<slug>.svg)` so the
-	// vitepress page resolves the image from /public/trees/.
+	// Replace `![alt](./tree.svg)` with the interactive <TreeSvg>
+	// component. The source README keeps a portable markdown image
+	// (renders on GitHub and inside the npm tarball); the docs page
+	// upgrades to a pannable, zoomable, fullscreen-capable widget.
 	let body = readme.replace(
-		/!\[([^\]]*)\]\(\.\/tree\.svg\)/g,
-		`![$1](/trees/${slug}.svg)`,
+		/!\[[^\]]*\]\(\.\/tree\.svg\)/g,
+		`<TreeSvg src="/trees/${slug}.svg" :height="520" />`,
 	);
 
 	// Drop a leading `# <name>` line if present — vitepress renders the
