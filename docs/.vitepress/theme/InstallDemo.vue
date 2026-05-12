@@ -86,7 +86,7 @@ onUnmounted(() => {
 	<div class="install-wrap">
 		<aside class="install-card">
 			<div class="install-eyebrow">No registry required</div>
-			<h3 class="install-headline">Ship trees like any other library.</h3>
+			<h3 class="install-headline">Share trees like any other library.</h3>
 
 			<div class="install-pms" role="tablist" aria-label="Package manager">
 				<button
