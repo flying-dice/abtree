@@ -84,7 +84,6 @@ const { frontmatter } = useData();
 	line-height: 28px;
 	font-size: 18px;
 	font-weight: 500;
-	white-space: pre-wrap;
 	color: var(--vp-c-text-2);
 }
 @media (min-width: 640px) {
