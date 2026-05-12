@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong><s>Hoping.</s> Behaving.</strong><br/>
-  Replace the skill file you hope your agent reads with a tree the runtime walks — one step at a time, verified at every move.
+  Treat agent instructions like the software they are. Clear steps, predictable behavior, real answers when something goes wrong.
 </p>
 
 <p align="center">

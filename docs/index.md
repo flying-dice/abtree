@@ -19,9 +19,9 @@ hero:
       link: /concepts/how-it-works
 ---
 
-## New attention,<br>not new prompts.
+## One instruction.<br>At a time.
 
-Whether you're driving a five-step refactor or a hundred-step audit, today's agents read the whole skill file once and lose the rest to drift. abtree replaces it with a behaviour tree — a structure the runtime walks node by node. The agent only ever sees the next step. The plan stays in the tree, not in the prompt.
+Agents start guessing when they try to do too much. Hide the full plan, ask for a single instruction, and allow your agent to focus on the present. The agent only ever sees the next step. The plan stays in the tree, not in the prompt.
 
 <div class="attention-split">
   <div class="attention-panel attention-before">
@@ -51,36 +51,27 @@ the ranked list to <span class="attention-var">$LOCAL.violations</span>.</pre>
   </div>
 </div>
 
-## One instruction.<br>At a time.
+## Observability<br>built in.
 
-Whether the workflow is two steps or two hundred, abtree hands the agent a single request — `evaluate` this statement, or follow this `instruct`. The cursor advances only when the runtime is satisfied. Every move writes to disk. Context never accumulates. Attention never fades.
-
-See the runtime drive the loop end-to-end on [How it works](/concepts/how-it-works).
-
-## Every state change<br>is observible.
-
-Whether you're auditing a passing run or chasing a stuck one, abtree regenerates a visual diagram after every cursor move. Green nodes ran and succeeded. Red nodes ran and failed.
-<div class="hide-on-touch">
+Never guess where your agent got stuck. The runtime shows the tree in real time, logging each step. So you can see exactly what ran, what was skipped, and how far it got.
 
 <TreeSvg src="/example.svg" :height="520" />
 
-</div>
-
 ## YAML. JSON.<br>TypeScript.
 
-Whether you prefer hand-authored data or code first, abtree compiles all three into the same tree shape. The TypeScript DSL gives composability and IDE support; YAML and JSON give the no-build path.
+Whether you prefer code first or plain text, the TypeScript DSL gives composability and IDE support; YAML and JSON give a no tooling approach.
 
 <AbtreeDsl />
 
-## Trees ship<br>like libraries.
+## Share<br>with the tools you love.
 
-Whether you publish to npm, share through GitHub, or drop a tarball, abtree never sees the transport. Bring your own tooling. Point the runtime at a JSON or YAML file and it walks the tree.
+Publish to npm, share through GitHub or bring your own tooling.
 
 <InstallDemo />
 
-## Hand it<br>to your agent.
+## Hand over<br>to your agent.
 
-Whether you drive abtree from Claude Code, ChatGPT, or any shell-capable agent, the brief is the same. Paste it. The agent reads the runtime protocol with `abtree --help`, creates an execution, and walks the tree until the status is done. You watch.
+Claude Code, ChatGPT, or any shell-capable agent, the brief is the same. Paste it. The agent understands and walks the tree until the end.
 
 ```text
 Install the npm package @abtree/srp-refactor, then drive the workflow against this repo:
@@ -89,17 +80,19 @@ Install the npm package @abtree/srp-refactor, then drive the workflow against th
   abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
 ```
 
-For the long-form walkthrough — install the CLI, add a tree, drive it from your agent — see [Get started](/getting-started).
+> For the long-form walkthrough — install the CLI, add a tree, drive it from your agent — see [Get started](/getting-started).
 
 ## The same model.<br>From laptop to fleet.
 
-Whether one developer runs it locally or a fleet of agents drives thousands of workflows in parallel, the engine, DSL, and protocol stay the same. MCP is the [Model Context Protocol](https://modelcontextprotocol.io/) — the wire format agents already speak.
+Whether running locally or with a fleet of agents, the engine, DSL, and protocol stay the same.
 
 - ✓ **Core engine** — Deterministic execution, one step at a time. Resumable and replayable.
 - ✓ **DSL** — Author workflows in YAML, JSON, or TypeScript that compile to one tree shape.
 - ✓ **CLI tool** — Drive a workflow from any shell or agent with `next`, `eval`, and `submit`.
 - → **STDIO MCP server** — Native protocol for local agents; skip the CLI plumbing.
 - … **HTTP MCP server** — Host central workflows any fleet of agents can reach.
+
+> MCP is the [Model Context Protocol](https://modelcontextprotocol.io/) — the wire format agents already speak.
 
 ## Dive in.
 

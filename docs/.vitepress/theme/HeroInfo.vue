@@ -25,9 +25,8 @@ const { frontmatter } = useData();
 		/>
 	</h1>
 	<p class="tagline">
-		Replace the skill file you hope your agent reads with a tree the
-		runtime walks, <b>one step at a time</b>.
-	</p>
+    Treat agent instructions like the software they are. Clear steps, predictable behavior, real answers when something goes wrong.
+  </p>
 </template>
 
 <style scoped>
