@@ -1,11 +1,11 @@
 ---
 title: Authoring trees
-description: Reference for an agent (or human) authoring an abtree tree. Covers the full YAML field reference — file shape, step kinds, retries, $ref fragments — plus a worked example and validation tooling.
+description: Reference for an agent (or human) authoring an abtree tree. Covers the full field reference — file shape, step kinds, retries, $ref fragments — plus a worked example and validation tooling.
 ---
 
 # Authoring trees
 
-Authoring an abtree tree means writing a YAML file that an agent can drive deterministically through `abtree next`, `abtree eval`, and `abtree submit`. Trees live in `.abtree/trees/<slug>/TREE.yaml` (project-local) or `~/.abtree/trees/<slug>/TREE.yaml` (user-global). The folder name is the slug. Project-local shadows global on slug collision.
+Authoring an abtree tree means writing a tree file that an agent can drive deterministically through `abtree next`, `abtree eval`, and `abtree submit`. Trees live in `.abtree/trees/<slug>/TREE.yaml` (project-local) or `~/.abtree/trees/<slug>/TREE.yaml` (user-global). The folder name is the slug. Project-local shadows global on slug collision.
 
 ::: tip
 Run `abtree docs schema` to print the JSON Schema, or reference the published copy via the YAML language-server comment:
@@ -88,7 +88,7 @@ Any node can carry `retries: N` (a positive integer). On failure the runtime wip
 
 ## `$ref` fragments
 
-Split a tree across multiple YAML files using JSON-Schema-style `$ref`. Relative paths, absolute paths, and URLs are dereferenced at load time:
+Split a tree across multiple files using JSON-Schema-style `$ref`. Relative paths, absolute paths, and URLs are dereferenced at load time:
 
 ```yaml
 tree:

@@ -33,7 +33,7 @@ If every child has an `evaluate` precondition that might fail, the selector fail
 
 ## Ordering inside a `parallel`
 
-Do not depend on parallel children running in YAML order. The agent receives requests for each child in turn but is free to satisfy them in any sequence. If you need ordering, use `sequence`.
+Do not depend on parallel children running in declaration order. The agent receives requests for each child in turn but is free to satisfy them in any sequence. If you need ordering, use `sequence`.
 
 ## `submit running` keeps the cursor put
 

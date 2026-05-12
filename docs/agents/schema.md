@@ -44,5 +44,5 @@ The schema is generated from `src/schemas.ts` via `src/schemas.ts:buildJsonSchem
 ## Next
 
 - [Discover trees](/registry) — browse the published behaviour-tree packages you can install and run.
-- [Authoring trees](/agents/author) — the YAML field reference the schema enforces.
+- [Authoring trees](/agents/author) — the field reference the schema enforces.
 - [Writing trees](/guide/writing-trees) — tutorial walkthrough that builds the bundled `hello-world` tree from scratch.

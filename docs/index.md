@@ -25,7 +25,7 @@ features:
     details: The runtime returns the next instruction and only the next instruction. No 2,000-line prompts, no skipped invariants, no agent shortcutting the order of operations.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="6" width="18" height="12"/><path d="M3 11h18M7 15h2M12 15h2"/></svg>'
     title: Persist every cursor move
-    details: Every execution writes a JSON document to disk after every state change. Kill the process, restart the agent hours or weeks later, and the runtime resumes from the same step.
+    details: Every execution persists to disk after every state change. Kill the process, restart the agent hours or weeks later, and the runtime resumes from the same step.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>'
     title: Render the trace as a diagram
     details: Every state change regenerates a Mermaid diagram. Green for success, red for failure. See exactly which path the agent took and where it stopped.

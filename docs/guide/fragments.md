@@ -5,7 +5,7 @@ description: Split a large tree across files using JSON-Schema-style $ref. abtre
 
 # Fragments
 
-A tree can grow past the point where one YAML file is comfortable. **Fragments** let you split it across files using JSON-Schema `$ref`. abtree dereferences every ref at execution-creation time, so the runtime — and every tool that inspects the execution document — sees a single merged tree.
+A tree can grow past the point where one file is comfortable. **Fragments** let you split it across files using JSON-Schema `$ref`. abtree dereferences every ref at execution-creation time, so the runtime — and every tool that inspects the execution document — sees a single merged tree.
 
 ## Why split a tree
 
@@ -73,7 +73,7 @@ The fragment slots in wherever it's referenced, as if you'd pasted it inline.
 When you call `abtree execution create <slug>`, abtree dereferences every `$ref` and writes the merged tree into the execution's `snapshot` field. The execution runs against that snapshot, not the live files. Two consequences:
 
 - Editing a fragment after creation does **not** affect in-flight executions. New executions pick up the change.
-- The snapshot is self-contained — you can share an execution JSON with a teammate and they don't need your fragment files.
+- The snapshot is self-contained — you can share an execution document with a teammate and they don't need your fragment files.
 
 ## Cycles
 
@@ -83,7 +83,7 @@ In practice this means: a tree-under-test can include a `$ref` back to itself (e
 
 ## Refactoring into fragments
 
-The motion: identify a coherent subtree, cut it into its own YAML file, replace it with a `$ref`. The whole point is that this should be a pure restructuring — no behaviour change.
+The motion: identify a coherent subtree, cut it into its own file, replace it with a `$ref`. The whole point is that this should be a pure restructuring — no behaviour change.
 
 The way to be sure is the [Testing trees](/guide/testing) suite. A tree with scenarios for its main paths means:
 

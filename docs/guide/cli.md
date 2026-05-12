@@ -15,7 +15,7 @@ Create a new execution from a tree.
 
 `<tree>` accepts either form:
 
-- A **slug** that resolves under `.abtree/trees/<slug>/` (project-local) or `~/.abtree/trees/<slug>/` (user-global). The directory carries a `package.json` whose `main` points at the tree YAML; project-local wins on duplicate slugs.
+- A **slug** that resolves under `.abtree/trees/<slug>/` (project-local) or `~/.abtree/trees/<slug>/` (user-global). The directory carries a `package.json` whose `main` points at the tree file; project-local wins on duplicate slugs.
 - A **path** — a `.yaml` or `.yml` file, or a directory containing a `package.json` whose `main` points at one. `.` for cwd and absolute paths both work. Use this for repos where the project itself is the tree (`./TREE.yaml`) or for installed packages (`./node_modules/<pkg>`).
 
 `<summary>` is a human label; kebab-cased, it becomes part of the execution ID.
@@ -37,7 +37,7 @@ abtree execution create hello-world "first run"
 | Exit code | Meaning |
 |---|---|
 | `0` | Execution created. |
-| `1` | Tree not found, slug malformed, or YAML failed validation. |
+| `1` | Tree not found, slug malformed, or the tree file failed validation. |
 
 ### `abtree execution list`
 
@@ -174,7 +174,7 @@ Print embedded documentation to stdout. Useful for piping into a tool, an agent,
 |---|---|
 | `abtree docs execute` | The execution protocol — what an agent does at each step. |
 | `abtree docs author` | The tree-authoring reference. |
-| `abtree docs schema` | The JSON Schema for tree YAML files. Byte-identical to the committed `tree.schema.json`. |
+| `abtree docs schema` | The JSON Schema for tree files. Byte-identical to the committed `tree.schema.json`. |
 | `abtree docs skill` | The agent skill content (same text `install skill` writes). |
 
 | Exit code | Meaning |

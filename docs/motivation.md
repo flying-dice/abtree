@@ -5,16 +5,14 @@ description: What abtree replaces (monolithic skill files), what it is not (an o
 
 # Motivation
 
-## What abtree replaces
-
 If you give an AI agent a large skill file — a `CLAUDE.md`, a system prompt, a long markdown playbook — you hand it a document and hope it follows the steps consistently. It does not. The agent skips steps it remembers from earlier in its context, confuses the order of operations, and interprets the same instruction differently on every run. The file grows as you try to compensate. The problem worsens.
 
-abtree replaces the skill file with a YAML behaviour tree. Instead of handing the agent the whole document, the runtime hands it one step at a time, verifies the result, and advances the cursor. The agent only ever sees the next request.
+abtree replaces the skill file with a behaviour tree. Instead of handing the agent the whole document, the runtime hands it one step at a time, verifies the result, and advances the cursor. The agent only ever sees the next request.
 
 | Before abtree | After abtree |
 |---|---|
-| A 400-line `CLAUDE.md` the agent reads once and interprets differently every run. | A YAML tree the agent follows one step at a time. |
-| No record of where the agent got to mid-run. | A JSON execution document persists the cursor after every step. |
+| A 400-line `CLAUDE.md` the agent reads once and interprets differently every run. | A tree the agent follows one step at a time. |
+| No record of where the agent got to mid-run. | An execution document persists the cursor after every step. |
 | Restarting the process restarts the workflow from scratch. | The next `abtree next` resumes from exactly where the agent left off. |
 
 ## What abtree is not

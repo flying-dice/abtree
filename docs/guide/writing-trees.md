@@ -1,11 +1,11 @@
 ---
 title: Writing trees
-description: Build the bundled hello-world tree from scratch — folder layout, YAML structure, state, primitives, retries. End-to-end tutorial that points at the reference for field-by-field detail.
+description: Build the bundled hello-world tree from scratch — folder layout, file structure, state, primitives, retries. End-to-end tutorial that points at the reference for field-by-field detail.
 ---
 
 # Writing trees
 
-This page walks you through writing a tree by re-creating the bundled `hello-world`. By the end you have a working tree you can drive with `abtree execution create`. For the full YAML field reference, see [Authoring trees](/agents/author).
+This page walks you through writing a tree by re-creating the bundled `hello-world`. By the end you have a working tree you can drive with `abtree execution create`. For the full field reference, see [Authoring trees](/agents/author).
 
 ## What you build
 
@@ -114,7 +114,7 @@ cd /path/to/your/repo/root
 abtree execution create hello-world "first run"
 ```
 
-If the YAML is well-formed, the CLI prints the new execution document and the slug becomes available to `abtree next`. If it is not, the CLI prints a path-prefixed validation error and exits non-zero.
+If the tree is well-formed, the CLI prints the new execution document and the slug becomes available to `abtree next`. If it is not, the CLI prints a path-prefixed validation error and exits non-zero.
 
 ## What you skipped
 
@@ -140,5 +140,5 @@ The bundled `improve-codebase` tree ships a real-world parallel: four metric sco
 ## Next
 
 - [Fragments](/guide/fragments) — split a large tree across files using `$ref`.
-- [Authoring trees](/agents/author) — full YAML field reference.
+- [Authoring trees](/agents/author) — full field reference.
 - [CLI reference](/guide/cli) — every command, every flag.

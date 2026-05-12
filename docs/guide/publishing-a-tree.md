@@ -9,7 +9,7 @@ Publish a behaviour tree as an installable node package, then list it on the reg
 
 ## Package the tree
 
-Publish your tree as a node package. The `package.json` declares a `main` field pointing at the tree YAML or JSON at the repo root:
+Publish your tree as a node package. The `package.json` declares a `main` field pointing at the tree file at the repo root:
 
 ```json
 {

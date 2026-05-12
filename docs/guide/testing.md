@@ -17,7 +17,7 @@ A test is a contract:
 
 Tests earn their keep in four concrete ways:
 
-- Tests pin down what the tree is supposed to do. A scenario reads like a story — given/when/then in plain English with the exact `$LOCAL` shape — and both humans and the agent can reason from it without re-reading the YAML.
+- Tests pin down what the tree is supposed to do. A scenario reads like a story — given/when/then in plain English with the exact `$LOCAL` shape — and both humans and the agent can reason from it without re-reading the tree.
 - Tests cache assumptions about the engine. "Selector exhausts both branches and the parent sequence aborts" is engine behaviour you would otherwise re-derive every time you debug. A scenario asserting it locks it in.
 - Tests catch engine bugs. Specs that pass on one version of abtree and fail on the next surface real issues in the runtime, not just in trees.
 - Tests make refactors safe. When a 30-node tree needs splitting into fragments, the scenarios are the regression suite — green before, green after, or the refactor is wrong.

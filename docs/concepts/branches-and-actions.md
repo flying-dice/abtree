@@ -174,5 +174,5 @@ The bundled `hello-world` tree covers the first three primitives (sequence, sele
 
 - [Using a tree](/guide/using-trees) — install a published tree and drive it with your agent.
 - [State](/concepts/state) — the two scopes the primitives read and write.
-- [Writing trees](/guide/writing-trees) — turn this into YAML.
+- [Writing trees](/guide/writing-trees) — turn this into a working tree.
 - [Inspecting executions](/guide/inspecting-executions) — how the runtime walks the tree at tick time.

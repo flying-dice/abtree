@@ -1,14 +1,14 @@
 ---
 title: Design a new tree
-description: A ten-step process for designing a new abtree behaviour tree. Start from the success state, work down to the root sequence, then validate that the YAML loads.
+description: A ten-step process for designing a new abtree behaviour tree. Start from the success state, work down to the root sequence, then validate that the tree loads.
 ---
 
 # Design a new tree
 
-The canonical ten-step process for designing a fresh abtree tree from a human brief. You produce a YAML tree at the end.
+The canonical ten-step process for designing a fresh abtree tree from a human brief. You produce a tree at the end.
 
 ::: tip Prerequisites
-Read [Branches and actions](/concepts/branches-and-actions) for the primitives and [Writing trees](/guide/writing-trees) for the YAML shape before starting.
+Read [Branches and actions](/concepts/branches-and-actions) for the primitives and [Writing trees](/guide/writing-trees) for the file shape before starting.
 :::
 
 The process is linear. Each step asks one question. You write down the answer before you move on.
@@ -106,10 +106,10 @@ Save as `.abtree/trees/<slug>/TREE.yaml` with a sibling `package.json` whose `ma
 abtree execution create <slug> "smoke test"
 ```
 
-If the YAML is malformed, the CLI prints the validation error and exits non-zero. If it loads, the tree is valid and ready to drive end-to-end.
+If the tree is malformed, the CLI prints the validation error and exits non-zero. If it loads, the tree is valid and ready to drive end-to-end.
 
 ## Next
 
 - [Idioms](/guide/idioms) — reusable shapes you reach for during design.
-- [Writing trees](/guide/writing-trees) — the YAML field reference.
+- [Writing trees](/guide/writing-trees) — the field reference.
 - [Branches and actions](/concepts/branches-and-actions) — primitive semantics in detail.

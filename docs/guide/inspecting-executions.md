@@ -152,5 +152,5 @@ For a richer dump, `abtree execution get <id>` returns the same JSON as the on-d
 ## Next
 
 - [CLI reference](/guide/cli) — every command that mutates these files.
-- [Writing trees](/guide/writing-trees) — the YAML the `snapshot` field captures.
+- [Writing trees](/guide/writing-trees) — the source the `snapshot` field captures.
 - [Branches and actions](/concepts/branches-and-actions) — the four primitives you see in the diagram.

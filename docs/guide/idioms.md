@@ -5,7 +5,7 @@ description: Reusable shapes for abtree behaviour trees — bounded retries, gat
 
 # Idioms
 
-Once you know the four primitives, most workflows reduce to a small set of recurring shapes. This page catalogues them. Each entry names the shape, shows the YAML, and states when to reach for it (and when not to).
+Once you know the four primitives, most workflows reduce to a small set of recurring shapes. This page catalogues them. Each entry names the shape, shows an example, and states when to reach for it (and when not to).
 
 If you have not picked the primitives for your tree yet, start with [Design a new tree](/guide/design-process).
 
@@ -219,7 +219,7 @@ The directive's body can describe any retrieval — read a file, fetch a URL, qu
 
 ## Split a large tree across files
 
-For trees that exceed a screenful of YAML, factor out reusable subtrees with JSON-Schema-style `$ref`. abtree resolves references at execution-creation time, so the runtime always sees one assembled snapshot. See [Fragments](/guide/fragments) for the full reference; the short form is:
+For trees that exceed a screenful, factor out reusable subtrees with JSON-Schema-style `$ref`. abtree resolves references at execution-creation time, so the runtime always sees one assembled snapshot. See [Fragments](/guide/fragments) for the full reference; the short form is:
 
 ```yaml
 tree:
