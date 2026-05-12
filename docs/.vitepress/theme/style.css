@@ -276,3 +276,13 @@
 .vp-doc .mermaid-container.dialog-fullscreen-active .diagram-wrapper {
 	overflow: hidden !important;
 }
+
+/* Hide flagged blocks on touch devices regardless of viewport width.
+ * Catches phones, tablets, and touch laptops — anything where the
+ * pointer is coarse and there's no hover capability. Use this on
+ * interactive demos that pan/zoom or animate beyond the screen. */
+@media (hover: none) and (pointer: coarse) {
+	.hide-on-touch {
+		display: none !important;
+	}
+}

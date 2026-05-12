@@ -369,12 +369,12 @@ onUnmounted(() => {
 	transform: translateY(3px);
 }
 
-/* On narrow viewports the typed source string (up to 52 chars on a
+/* On touch devices the typed source string (up to 52 chars on a
  * single line) wraps as the install animation grows the string
- * character by character, popping the page on every reflow. Hide the
- * whole card under 820px — the headline above the hero already makes
- * the same point in text. */
-@media (max-width: 820px) {
+ * character by character, popping the page on every reflow. Hide
+ * the card on any device without a hover-capable pointer — phones,
+ * tablets, and touch laptops alike — so the page stays stable. */
+@media (hover: none) and (pointer: coarse) {
 	.install-wrap {
 		display: none;
 	}

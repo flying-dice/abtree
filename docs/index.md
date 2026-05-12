@@ -38,11 +38,15 @@ features:
 
 <AbtreeDemo />
 
+<div class="hide-on-touch">
+
 ## See an execution
 
 Every state change refreshes an SVG of the tree. Children render in declaration order — the diagram mirrors execution flow, sequences in emerald, parallels in amber, actions in blue, and each card carries its own success or failure pip.
 
 <TreeSvg src="/example.svg" :height="520" />
+
+</div>
 
 ## Author in TypeScript
 
