@@ -114,6 +114,6 @@ Whether one developer runs it locally or a fleet of agents drives thousands of w
 - → **STDIO MCP server** — Native protocol for local agents; skip the CLI plumbing.
 - … **HTTP MCP server** — Host central workflows any fleet of agents can reach.
 
-## Trade hoping, for behaving.
+## Dive in.
 
 [Get started](/getting-started) · [Discover trees](/registry) · [View on GitHub](https://github.com/flying-dice/abtree)
