@@ -89,14 +89,10 @@ Whether you publish to npm, share through GitHub, or drop a tarball, abtree neve
 Whether you drive abtree from Claude Code, ChatGPT, or any shell-capable agent, the brief is the same. Paste it. The agent reads the runtime protocol with `abtree --help`, creates an execution, and walks the tree until the status is done. You watch.
 
 ```text
-Run the @abtree/srp-refactor workflow against this repo.
+Install the npm package @abtree/srp-refactor, then drive the workflow against this repo:
 
-First read the runtime protocol:
   abtree --help
-
-Then create an execution and drive it:
-  abtree execution create ./node_modules/@abtree/srp-refactor \
-    "Refactor the worst SRP violation in src/"
+  abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
 ```
 
 For the long-form walkthrough — install the CLI, add a tree, drive it from your agent — see [Get started](/getting-started).
