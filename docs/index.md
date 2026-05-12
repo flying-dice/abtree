@@ -60,7 +60,7 @@ The TypeScript DSL is one authoring path among three (YAML, JSON, TypeScript); s
 
 ## What abtree is
 
-abtree is a runtime. It reads a JSON, YAML, or TypeScript-compiled behaviour-tree file and, each time the agent asks to progress, returns the next instruction — one step at a time.
+abtree is an **Agent** first CLI tool. It reads a JSON or YAML behaviour-tree file and, each time the agent asks to progress, returns the next instruction — one step at a time.
 
 Your agent drives the execution through three commands:
 
@@ -68,6 +68,16 @@ Your agent drives the execution through three commands:
 - `abtree eval` — answer a precondition (`true` or `false`).
 - `abtree submit` — report the outcome of an instruction.
 
-Each call returns JSON, advances the cursor, and persists the execution to disk. The agent only ever sees the next step.
+Each call advances the cursor, and persists the execution state to disk. The agent only ever sees the next step.
+
+## Roadmap
+
+- **Core engine** — the backbone of the execution.
+- **DSL** — build workflows that compose and share.
+- **CLI tool** — the framework and commands that drive a workflow end-to-end.
+- **STDIO MCP server** — improve the agent experience.
+- **HTTP MCP server** — host central workflows any fleet of agents can use.
+
+The goal is a flexible workflow engine that scales from a single-developer setup to headless behaviour controllers running across a fleet, using the same behaviour-tree model at every tier.
 
 <AbtreeCta />
