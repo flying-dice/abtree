@@ -37,7 +37,7 @@ abtree is a runtime for agent workflows. Your agent drives execution through thr
 
 Workflows are plain JSON or YAML files. Author them by hand or compile them from the [TypeScript DSL](https://abtree.sh/guide/writing-trees). Ship them through npm, a GitHub ref, a private git server, or any transport you already use — abtree never sees the distribution; it only reads the file at the path you point it at.
 
-![example.png](example.png)
+![A behaviour tree walking the SRP refactor loop end-to-end](docs/public/example.svg)
 
 ## Read the docs
 
