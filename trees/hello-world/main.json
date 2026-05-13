@@ -54,15 +54,6 @@
 								"instruct": "Compose a relaxed evening greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
 							}
 						]
-					},
-					{
-						"type": "action",
-						"name": "Default_Greeting",
-						"steps": [
-							{
-								"instruct": "Compose a neutral greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
-							}
-						]
 					}
 				]
 			}

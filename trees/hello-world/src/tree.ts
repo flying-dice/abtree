@@ -49,11 +49,6 @@ export const tree = sequence("Hello_World", () => {
 				`Compose a relaxed evening greeting addressing ${userName} in ${language} with a ${tone} tone. Store at ${greeting}.`,
 			);
 		});
-		action("Default_Greeting", () => {
-			instruct(
-				`Compose a neutral greeting addressing ${userName} in ${language} with a ${tone} tone. Store at ${greeting}.`,
-			);
-		});
 	});
 });
 
