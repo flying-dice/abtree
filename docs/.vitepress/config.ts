@@ -234,6 +234,7 @@ export default defineConfig({
 			{ text: "Guide", link: "/guide/writing-trees" },
 			{ text: "Agents", link: "/agents/execute" },
 			{ text: "Discover trees", link: "/registry" },
+			{ text: "Blog", link: "/blogs/" },
 			{
 				text: "LLMs",
 				items: [
@@ -292,6 +293,16 @@ export default defineConfig({
 			{
 				text: "Discover trees",
 				items: [...REGISTRY_SIDEBAR],
+			},
+			{
+				text: "Blog",
+				items: [
+					{ text: "All posts", link: "/blogs/" },
+					{
+						text: "The midnight greeting",
+						link: "/blogs/the-midnight-greeting",
+					},
+				],
 			},
 		],
 
