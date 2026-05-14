@@ -15,7 +15,6 @@ const testSpec = local("test_spec", null);
 const targetExecutionId = local("target_execution_id", null);
 const finalLocal = local("final_local", null);
 const finalStatus = local("final_status", null);
-const mermaidDiagram = local("mermaid_diagram", null);
 const assertions = local("assertions", null);
 const overallResult = local("overall_result", null);
 const reportPath = local("report_path", null);
@@ -94,14 +93,8 @@ export const tree = sequence("Test_Runner", () => {
 		`);
 	});
 
-	action("Capture_Trace", () => {
+	action("Capture_Final_State", () => {
 		evaluate(`${targetExecutionId} is set`);
-		instruct(`
-			Read the mermaid trace at
-			\`.abtree/executions/<${targetExecutionId}>.mermaid\` and store its
-			full contents (verbatim) at ${mermaidDiagram}. If the file does
-			not exist, submit failure.
-		`);
 		instruct(`
 			Read the target execution's full $LOCAL via
 			\`abtree local read <${targetExecutionId}>\` and store the returned
@@ -174,17 +167,12 @@ export const tree = sequence("Test_Runner", () => {
 			  ## Assertions
 			  (table: Name | Expected | Actual | Pass — rendered from ${assertions})
 
-			  ## Trace
-			  \`\`\`mermaid
-			  <verbatim contents of ${mermaidDiagram}>
-			  \`\`\`
-
 			Write it next to the spec, in the same directory as ${testPath}.
 			The filename is \`<scenario-stem>__<YYYYMMDDTHHMMSSZ>.md\`, where
 			\`<scenario-stem>\` is the basename of ${testPath} with the
 			\`.yaml\` extension stripped (so
-			\`.abtree/trees/hello-world/tests/morning.yaml\` produces
-			\`.abtree/trees/hello-world/tests/morning__<ts>.md\`). Store the
+			\`trees/hello-world/tests/morning.yaml\` produces
+			\`trees/hello-world/tests/morning__<ts>.md\`). Store the
 			resulting path at ${reportPath}.
 		`);
 		evaluate(`${reportPath} is set`);

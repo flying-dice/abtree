@@ -36,12 +36,10 @@ You see a version number. If you do not, restart your terminal so the new `PATH`
 
 ```sh
 mkdir my-abtree-demo && cd my-abtree-demo
-mkdir -p .abtree/trees/hello-world
-curl -fsSL https://raw.githubusercontent.com/flying-dice/abtree/main/.abtree/trees/hello-world/TREE.yaml \
-  -o .abtree/trees/hello-world/TREE.yaml
+bun add @abtree/hello-world         # or npm/pnpm install
 ```
 
-`hello-world` is a small tree: classify the time of day, then pick the matching greeting from a four-way selector. It exercises three of the four behaviour-tree primitives — `sequence`, `selector`, and `action` — in a few dozen lines.
+`hello-world` is a small tree: classify the time of day, then pick the matching greeting from a four-way selector. It exercises three of the four behaviour-tree primitives — `sequence`, `selector`, and `action` — in a few dozen lines. The package installs the tree file at `node_modules/@abtree/hello-world/main.json`.
 
 ## 3. Hand it off to your agent
 
@@ -49,9 +47,9 @@ In Claude Code, ChatGPT, or any agent that runs shell commands, send:
 
 ```text
 Run the abtree hello-world tree end-to-end. Start by running
-'abtree --help' to learn the execution protocol, then create an
-execution with 'abtree execution create hello-world "first run"' and drive
-it through every step until you see status: done.
+'abtree --help' to learn the execution protocol, then create an execution with
+'abtree execution create ./node_modules/@abtree/hello-world/main.json "first run"'
+and drive it through every step until you see status: done.
 ```
 
 That is the entire human-side interaction. The agent reads the protocol from `--help`, creates an execution, and drives the loop autonomously.
@@ -73,7 +71,7 @@ The first `abtree next` on any execution is a runtime-level gate that hands the 
 The agent reads the protocol and acknowledges:
 
 ```sh
-abtree submit first-run__hello-world__1 success
+abtree submit first-run__abtree-hello-world__1 success
 ```
 
 After the gate, `abtree next` returns the tree's first real step:
@@ -89,8 +87,8 @@ After the gate, `abtree next` returns the tree's first real step:
 The agent does the work — checks the clock, classifies the hour as `morning` — then writes the result and submits:
 
 ```sh
-abtree local write first-run__hello-world__1 time_of_day "morning"
-abtree submit first-run__hello-world__1 success
+abtree local write first-run__abtree-hello-world__1 time_of_day "morning"
+abtree submit first-run__abtree-hello-world__1 success
 ```
 
 The next call returns an `evaluate`:
@@ -106,7 +104,7 @@ The next call returns an `evaluate`:
 The agent reads the expression, decides it holds, and answers:
 
 ```sh
-abtree eval first-run__hello-world__1 true
+abtree eval first-run__abtree-hello-world__1 true
 ```
 
 The loop repeats — `next` → do the work or judge the precondition → `submit` or `eval` — until:
@@ -119,32 +117,9 @@ The agent only ever sees the next request.
 
 ## 5. Read the execution diagram
 
-abtree regenerates a Mermaid diagram at `.abtree/executions/first-run__hello-world__1.mermaid` after every state change. A completed `hello-world` run looks like this — green nodes succeeded, uncoloured ones were skipped.
+abtree regenerates an SVG diagram at `.abtree/executions/first-run__abtree-hello-world__1.svg` (relative to the cwd you ran `abtree` from) after every state change. Open it in any browser or image viewer; green nodes succeeded, red nodes failed, uncoloured nodes were never ticked.
 
-```mermaid
----
-title: "hello-world (complete)"
----
-flowchart TD
-    Hello_World{{"Hello World\n[sequence]"}}
-    0_Determine_Time["Determine Time\n[action]"]
-    Hello_World --> 0_Determine_Time
-    style 0_Determine_Time fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_Choose_Greeting{{"Choose Greeting\n[selector]"}}
-    Hello_World --> 0_Choose_Greeting
-    style 0_Choose_Greeting fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_1_Morning_Greeting["Morning Greeting\n[action]"]
-    0_Choose_Greeting --> 0_1_Morning_Greeting
-    style 0_1_Morning_Greeting fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_1_Afternoon_Greeting["Afternoon Greeting\n[action]"]
-    0_Choose_Greeting --> 0_1_Afternoon_Greeting
-    0_1_Evening_Greeting["Evening Greeting\n[action]"]
-    0_Choose_Greeting --> 0_1_Evening_Greeting
-    0_1_Default_Greeting["Default Greeting\n[action]"]
-    0_Choose_Greeting --> 0_1_Default_Greeting
-```
-
-The cursor advanced through the sequence. The selector chose Morning Greeting after its `evaluate` precondition held — the afternoon, evening, and default branches were never entered.
+For the `hello-world` run above, the cursor advanced through the root sequence (`Hello_World` → `Determine_Time` → `Choose_Greeting`) and the selector chose `Morning_Greeting` after its `evaluate` precondition held — the afternoon, evening, and default branches were never entered.
 
 ## What that gives you
 

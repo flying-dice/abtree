@@ -16,44 +16,80 @@
 				]
 			},
 			{
-				"type": "selector",
-				"name": "Choose_Greeting",
+				"type": "sequence",
+				"name": "Compose_Greeting",
 				"children": [
 					{
 						"type": "action",
-						"name": "Morning_Greeting",
+						"name": "Spawn_Compose_Greeting",
 						"steps": [
 							{
-								"evaluate": "$LOCAL.time_of_day is \"morning\""
+								"instruct": "Delegate the next stretch of the tree to a subagent. Exit token: DLG__Compose_Greeting__30271666. Failure token: DLG__Compose_Greeting__30271666__FAILED. ORDERING — submit success for THIS step BEFORE spawning the subagent, because the runtime advances the cursor only on submit. Otherwise the subagent's first `abtree next` would return this same instruct. Use model: \"haiku\". If your harness does not support model selection, ignore this hint. BRIEF: Pick the time-of-day branch matching $LOCAL.time_of_day and compose a single short greeting sentence addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Write the sentence to $LOCAL.greeting. Procedure: (1) Call `abtree submit <execution> success` for this step now. (2) Spawn a subagent with this brief: drive `abtree next/eval/submit` on this execution. For evaluates, read every referenced $LOCAL/$GLOBAL path from the store before calling `abtree eval`. When you process an instruct named `Return_To_Parent_Compose_Greeting`, follow its text: submit success for that step, then return ONLY the literal token `DLG__Compose_Greeting__30271666` to your parent and do not call `abtree next` again. If `abtree next` ever returns `{status:\"done\"}` or `{status:\"failure\"}`, return ONLY the literal token `DLG__Compose_Greeting__30271666__FAILED`. (3) Block on the subagent. (4) Verify the returned reply equals exactly `DLG__Compose_Greeting__30271666`. Any other reply (including `DLG__Compose_Greeting__30271666__FAILED` or extra text) means the scope failed — surface that and stop driving. (5) On successful verification, call `abtree next` to receive the next post-scope action."
+							}
+						]
+					},
+					{
+						"type": "selector",
+						"name": "Choose_Greeting",
+						"children": [
+							{
+								"type": "action",
+								"name": "Morning_Greeting",
+								"steps": [
+									{
+										"evaluate": "$LOCAL.time_of_day is \"morning\""
+									},
+									{
+										"instruct": "Compose a cheerful morning greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+									}
+								]
 							},
 							{
-								"instruct": "Compose a cheerful morning greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+								"type": "action",
+								"name": "Afternoon_Greeting",
+								"steps": [
+									{
+										"evaluate": "$LOCAL.time_of_day is \"afternoon\""
+									},
+									{
+										"instruct": "Compose a warm afternoon greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+									}
+								]
+							},
+							{
+								"type": "action",
+								"name": "Evening_Greeting",
+								"steps": [
+									{
+										"evaluate": "$LOCAL.time_of_day is \"evening\""
+									},
+									{
+										"instruct": "Compose a relaxed evening greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+									}
+								]
 							}
 						]
 					},
 					{
 						"type": "action",
-						"name": "Afternoon_Greeting",
+						"name": "Return_To_Parent_Compose_Greeting",
 						"steps": [
 							{
-								"evaluate": "$LOCAL.time_of_day is \"afternoon\""
+								"evaluate": "$LOCAL.greeting is set"
 							},
 							{
-								"instruct": "Compose a warm afternoon greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
+								"instruct": "Subagent exit point for scope `Compose_Greeting`. Submit success for this step, then return ONLY the literal token `DLG__Compose_Greeting__30271666` to your parent. Do not call `abtree next` again — the parent will resume from here."
 							}
 						]
-					},
+					}
+				]
+			},
+			{
+				"type": "action",
+				"name": "Announce_Greeting",
+				"steps": [
 					{
-						"type": "action",
-						"name": "Evening_Greeting",
-						"steps": [
-							{
-								"evaluate": "$LOCAL.time_of_day is \"evening\""
-							},
-							{
-								"instruct": "Compose a relaxed evening greeting addressing $GLOBAL.user_name in $GLOBAL.language with a $GLOBAL.tone tone. Store at $LOCAL.greeting."
-							}
-						]
+						"instruct": "Read $LOCAL.greeting via `abtree local read` and print it verbatim to the human. This step runs in the parent agent after the delegated subagent has returned."
 					}
 				]
 			}

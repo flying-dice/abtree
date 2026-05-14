@@ -5,6 +5,15 @@ description: Testing in abtree is itself a tree — the agent walks the tree-und
 
 # Test a tree
 
+abtree supports two complementary testing approaches:
+
+- **BDD specs** (this page) — YAML scenarios that an agent walks via [`@abtree/test-tree`](/registry). Side effects are replayed from fixtures; the runner writes a markdown report comparing the run's final state against the spec's `then` assertions. Best fit when scenarios read as given/when/then English and tree authors need to add coverage without writing TypeScript.
+- **Programmatic harness** — see [Programmatic test harness](/guide/test-harness). A TypeScript `when().respond()` DSL via [`@abtree/testing`](https://github.com/flying-dice/abtree/tree/main/packages/testing) that drives the tree deterministically over either the CLI or MCP transport. Best fit for regression suites with precise step-by-step assertions.
+
+The rest of this page covers the BDD/spec approach.
+
+## How the BDD runner works
+
 The test framework is itself a tree: [`@abtree/test-tree`](/registry) (find it in the registry). When you run a test, the agent executes `@abtree/test-tree`. That tree drives a fresh execution of the tree under test in **pretend mode**, so it never pushes a branch, opens a merge request, or hits an API. External side effects are replayed from fixtures in the spec. At the end, the runner compares the final `$LOCAL` and the path walked against the spec's expectations and writes a report.
 
 A test is a contract:
@@ -27,8 +36,8 @@ Tests earn their keep in four concrete ways:
 Specs and reports live next to the tree they cover:
 
 ```
-.abtree/trees/hello-world/
-  TREE.yaml
+trees/hello-world/
+  main.json
   TEST__morning.yaml                          ← spec
   REPORT__morning__20260510T224915Z.md        ← latest run
 ```
@@ -94,12 +103,12 @@ When the tree under test directs an external side effect (pretend mode — the r
 ## Run a test
 
 ```sh
-abtree execution create test-tree "test hello-world morning"
+abtree execution create ./node_modules/@abtree/test-tree/main.json "test hello-world morning"
 ```
 
 ```sh
 abtree local write <execution-id> test_path \
-  '"/abs/path/.abtree/trees/hello-world/TEST__morning.yaml"'
+  '"/abs/path/trees/hello-world/TEST__morning.yaml"'
 ```
 
 ```sh
@@ -115,11 +124,13 @@ A report captures both halves of the contract: the final state and the path walk
 - **Header** — scenario name, tree, spec path, target execution id, and a headline `Overall: PASS | FAIL`.
 - **Final `$LOCAL`** — every key/value the target held at termination.
 - **Assertions** — Name / Expected / Actual / Pass, one row per predicate from `then`. The headline verdict is `AND` over the `Pass` column.
-- **Trace** — a Mermaid diagram of the path walked. Green nodes ran and succeeded, red ran and failed, uncoloured never ticked. (Red nodes in a passing report are normal — a selector branch failing on purpose is part of the expected path.)
 
-Real reports ship inside each tree's own repository — browse [Discover trees](/registry) to find a tree, follow the link to its source, and look in the `tests/` directory (or for `TEST__*.yaml` / `REPORT__*.md`) next to the `TREE.yaml`.
+The live SVG diagram of the path walked sits alongside the target execution at `.abtree/executions/<id>.svg` — green nodes ran and succeeded, red ran and failed, uncoloured never ticked. (Red nodes in a passing run are normal — a selector branch failing on purpose is part of the expected path.)
+
+Real reports ship inside each tree's own repository — browse [Discover trees](/registry) to find a tree, follow the link to its source, and look in the `tests/` directory (or for `TEST__*.yaml` / `REPORT__*.md`) next to the tree file.
 
 ## Next
 
+- [Programmatic test harness](/guide/test-harness) — the complementary TypeScript approach via `@abtree/testing`.
 - [Discover trees](/registry) — browse the published trees, including `@abtree/test-tree` itself.
 - [Inspecting executions](/guide/inspecting-executions) — what the green/red nodes mean in the trace.

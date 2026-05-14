@@ -62,7 +62,7 @@ export const registry: RegistryEntry[] = [
 	{
 		name: "@abtree/test-tree",
 		description:
-			"Run a BDD test spec against a target tree. Captures the mermaid trace, compares the run's final $LOCAL against the spec's `then` assertions, and writes a markdown report next to the spec.",
+			"Run a BDD test spec against a target tree. Compares the run's final $LOCAL against the spec's `then` assertions and writes a markdown report next to the spec.",
 		link: `${MONOREPO}/test-tree`,
 	},
 ];

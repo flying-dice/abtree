@@ -27,7 +27,7 @@ Paste this brief into Claude Code, ChatGPT, or any shell-capable agent<!-- optio
 Install the npm package @abtree/<slug>, then drive the workflow<!-- optional: against this repo -->:
 
   abtree --help
-  abtree execution create ./node_modules/@abtree/<slug> "<workflow-specific summary, parameterised with <placeholders> as needed>"
+  abtree execution create ./node_modules/@abtree/<slug>/main.json "<workflow-specific summary, parameterised with <placeholders> as needed>"
 ```
 
 ![tree](./tree.svg)

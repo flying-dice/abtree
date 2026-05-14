@@ -26,7 +26,7 @@ The workflow edits documentation files in your working tree. **Commit or stash f
 | `documentation-sitemap.initial.md` | `Snapshot_Initial_Sitemap` (first cycle only; before state). |
 | `DOCUMENTATION_CHANGE_REPORT.md` | `Change_Report` (before-vs-after summary). |
 
-The standard `.abtree/executions/<id>.{json,mermaid,svg}` artefacts are also written — see [Using a tree → What gets written](https://abtree.sh/guide/using-trees#what-gets-written).
+The standard `.abtree/executions/<id>.{json,svg}` artefacts are also written — see [Using a tree → What gets written](https://abtree.sh/guide/using-trees#what-gets-written).
 
 ## Develop this workflow
 

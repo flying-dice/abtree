@@ -10,7 +10,7 @@ Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace 
 Install the npm package @abtree/improve-tree, then drive the workflow against this repo:
 
   abtree --help
-  abtree execution create ./node_modules/@abtree/improve-tree "Improve <path-to-tree> tree by analysing .abtree/executions/<execution-id>.json"
+  abtree execution create ./node_modules/@abtree/improve-tree/main.json "Improve <path-to-tree> tree by analysing .abtree/executions/<execution-id>.json"
 ```
 
 ![tree](./tree.svg)

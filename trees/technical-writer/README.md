@@ -10,7 +10,7 @@ Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace 
 Install the npm package @abtree/technical-writer, then drive the workflow against this repo:
 
   abtree --help
-  abtree execution create ./node_modules/@abtree/technical-writer "Document <documentation goal> in docs/"
+  abtree execution create ./node_modules/@abtree/technical-writer/main.json "Document <documentation goal> in docs/"
 ```
 
 ![tree](./tree.svg)

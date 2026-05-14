@@ -1,9 +1,5 @@
 #!/usr/bin/env bun
-import {
-	rebuildMermaid,
-	rebuildSvg,
-	setMutationListener,
-} from "@abtree/runtime";
+import { rebuildSvg, setMutationListener } from "@abtree/runtime";
 import { Command } from "commander";
 import AUTHOR_DOC from "../../docs/agents/author.md" with { type: "text" };
 import EXECUTE_DOC from "../../docs/agents/execute.md" with { type: "text" };
@@ -17,26 +13,28 @@ import {
 	cmdExecutionList,
 	cmdExecutionReset,
 	cmdGlobalRead,
+	cmdInstallMcpStdio,
 	cmdInstallSkill,
 	cmdLocalRead,
 	cmdLocalWrite,
 	cmdNext,
 	cmdRender,
+	cmdServe,
 	cmdSubmit,
 	cmdUpgrade,
 } from "./src/commands.ts";
 import {
 	parseEvalResult,
 	parseExecutionId,
+	parseNote,
 	parseScopePath,
 	parseSubmitStatus,
 	parseSummary,
-	parseTreeSlug,
+	parseTreePath,
 } from "./src/parse-args.ts";
 import { VERSION } from "./src/version.ts";
 
 setMutationListener((id) => {
-	rebuildMermaid(id);
 	rebuildSvg(id);
 });
 
@@ -90,11 +88,11 @@ const execution = program.command("execution").description("Manage executions");
 execution
 	.command("create")
 	.description("Create a new execution")
-	.argument("<tree>", "Tree slug")
+	.argument("<tree>", "Path to a .json/.yaml/.yml tree file")
 	.argument("<summary...>", "Execution summary")
-	.action(async (treeSlug: string, summaryParts: string[]) => {
+	.action(async (treePath: string, summaryParts: string[]) => {
 		await cmdExecutionCreate(
-			parseTreeSlug(treeSlug),
+			parseTreePath(treePath),
 			parseSummary(summaryParts.join(" ")),
 		);
 	});
@@ -135,8 +133,13 @@ program
 	.description("Submit evaluation result")
 	.argument("<execution>", "Execution ID")
 	.argument("<result>", "true or false")
-	.action((executionId: string, result: string) => {
-		cmdEval(parseExecutionId(executionId), parseEvalResult(result));
+	.option("-n, --note <text>", "Optional note explaining the decision")
+	.action((executionId: string, result: string, opts: { note?: string }) => {
+		cmdEval(
+			parseExecutionId(executionId),
+			parseEvalResult(result),
+			parseNote(opts.note),
+		);
 	});
 
 program
@@ -144,14 +147,35 @@ program
 	.description("Submit instruction outcome")
 	.argument("<execution>", "Execution ID")
 	.argument("<status>", "success, failure, or running")
-	.action((executionId: string, status: string) => {
-		cmdSubmit(parseExecutionId(executionId), parseSubmitStatus(status));
+	.option("-n, --note <text>", "Optional note explaining the decision")
+	.action((executionId: string, status: string, opts: { note?: string }) => {
+		cmdSubmit(
+			parseExecutionId(executionId),
+			parseSubmitStatus(status),
+			parseNote(opts.note),
+		);
+	});
+
+program
+	.command("serve")
+	.description("Start the abtree inspector webapp pointed at an executions directory")
+	.argument(
+		"[path]",
+		"Path to an `.abtree` dir (or an executions/ dir directly)",
+		".abtree",
+	)
+	.option("-p, --port <port>", "HTTP port", "3000")
+	.action(async (pathArg: string, opts: { port?: string }) => {
+		await cmdServe(pathArg, opts);
 	});
 
 program
 	.command("render")
 	.description("Render a tree to SVG (stdout by default; -o to write a file)")
-	.argument("<tree>", "Tree slug or path (e.g. './my-tree', './main.json')")
+	.argument(
+		"<tree>",
+		"Path to a .json/.yaml/.yml tree file (e.g. './main.json')",
+	)
 	.option("-o, --output <path>", "Write SVG to this file instead of stdout")
 	.option(
 		"-t, --title <title>",
@@ -159,7 +183,7 @@ program
 	)
 	.action(
 		async (treeArg: string, opts: { output?: string; title?: string }) => {
-			await cmdRender(parseTreeSlug(treeArg), opts);
+			await cmdRender(parseTreePath(treeArg), opts);
 		},
 	);
 
@@ -217,6 +241,27 @@ install
 		await cmdInstallSkill(SKILL_CONTENT, opts);
 	});
 
+const installMcp = install
+	.command("mcp")
+	.description("Register the abtree MCP server with an MCP client");
+
+installMcp
+	.command("stdio")
+	.description(
+		"Register the abtree STDIO MCP server. Prompts for target client, or pass --target to skip the prompt.",
+	)
+	.option(
+		"--target <target>",
+		"Target client: claude-code-project | claude-code-user | claude-desktop",
+	)
+	.option(
+		"--command <command>",
+		'Override the launch command (default: "abtree"). Use a path or alternate launcher when "abtree" is not on PATH.',
+	)
+	.action(async (opts: { target?: string; command?: string }) => {
+		await cmdInstallMcpStdio(opts);
+	});
+
 program
 	.command("upgrade")
 	.description("Upgrade abtree to the latest release from GitHub")
@@ -228,5 +273,20 @@ program
 			await cmdUpgrade(opts);
 		},
 	);
+
+program
+	.command("mcp")
+	.description(
+		"Run abtree as an MCP server over stdio (tools + resources mirror the CLI surface)",
+	)
+	.action(async () => {
+		const { runMcpServer } = await import("./src/mcp/server.ts");
+		await runMcpServer({
+			execute: EXECUTE_DOC,
+			author: AUTHOR_DOC,
+			schema: TREE_SCHEMA,
+			skill: SKILL_CONTENT,
+		});
+	});
 
 program.parse();

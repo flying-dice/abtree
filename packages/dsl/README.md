@@ -59,4 +59,40 @@ const program = sequence("Hello_World", (n) => {
 - **In-body declarations** — calling `local()` / `global()` inside a composite/action body attaches state to that node (with the key mangled as `<NodeName>__<key>` to avoid cross-component collisions). Module-scope declarations register into a tree-wide `ambient` bucket instead. The runtime flattens everything at execution-create.
 - **Branded refs** — `local()` returns `LocalRef<T>` and `global()` returns `GlobalRef<T>`. At runtime they're plain strings (so template-literal interpolation just works); at the type level they carry the scope and the value type — so a `LocalRef` can't be silently passed where a `GlobalRef` is expected.
 
+## Delegating to a subagent
+
+`delegate(name, options, body)` declares a scope of the tree that runs in a spawned subagent. The DSL desugars it into a normal `sequence` named `<name>` with three sections — a `Spawn_<name>` marker action, the user's body children verbatim, and a `Return_To_Parent_<name>` marker action carrying a build-time-generated exit token. The runtime does not know about delegation; it just walks the desugared nodes.
+
+```ts
+import { action, delegate, evaluate, instruct, local, selector, sequence } from "@abtree/dsl";
+
+const greeting = local("greeting", null);
+const timeOfDay = local("time_of_day", null);
+
+sequence("Hello_World", () => {
+  action("Determine_Time", () => { instruct(`Classify and store at ${timeOfDay}.`); });
+
+  delegate("Compose_Greeting", {
+    brief: `Pick the branch matching ${timeOfDay} and compose a single sentence at ${greeting}.`,
+    model: "haiku",
+    output: greeting,
+  }, () => {
+    selector("Choose_Greeting", () => {
+      action("Morning_Greeting",   () => { evaluate(`${timeOfDay} is "morning"`);   instruct(`…`); });
+      action("Afternoon_Greeting", () => { evaluate(`${timeOfDay} is "afternoon"`); instruct(`…`); });
+    });
+  });
+
+  action("Announce_Greeting", () => { instruct(`Read ${greeting} and print it.`); });
+});
+```
+
+`DelegateOptions` — all optional:
+
+- **`brief`** — free-form text describing what the subagent should do. Baked into the Spawn instruct under a `BRIEF:` label.
+- **`model`** — advisory model hint (e.g. `"haiku"`, `"sonnet"`, `"opus"`). Honoured only if the parent agent's harness supports model selection; abtree does not enforce it.
+- **`output`** — a `$LOCAL` ref the inner work is expected to populate. Adds a leading `evaluate("${output} is set")` step on `Return_To_Parent_<name>` so the scope fails when the subagent submitted success for every inner action without actually writing the declared slot.
+
+For the full pattern (why delegation, when to use it, pitfalls), see the [delegating-to-subagents guide](https://abtree.sh/guide/delegating-to-subagents).
+
 See the inline TSDoc on every export for full reference.

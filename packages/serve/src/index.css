@@ -1,0 +1,28 @@
+@import "../styles/globals.css";
+
+@layer base {
+  :root {
+    @apply font-sans;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-background text-foreground antialiased;
+  }
+}
+
+/* ReactFlow defaults play nicely with our shadcn neutral palette. */
+.react-flow__node {
+  @apply !rounded-lg;
+}
+
+.react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+.react-flow__controls {
+  @apply !rounded-md !border !border-border !bg-card !shadow-sm;
+}
+
+.react-flow__controls-button {
+  @apply !border-border !bg-card !text-foreground hover:!bg-muted;
+}

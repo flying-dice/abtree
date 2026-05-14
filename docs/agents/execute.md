@@ -21,17 +21,19 @@ Never read tree files directly. All interaction goes through this CLI.
 ```text
 No arguments         → execution list; resume an existing execution or pick a tree
 <execution-id>       → resume that execution
-<tree-slug>          → create a new execution (remaining args = summary)
+<tree-file-path>     → create a new execution (remaining args = summary)
 list                 → show all executions
 ```
 
 ## Create an execution
 
 ```text
-abtree execution create <tree> <summary>
+abtree execution create <path-to-tree-file> <summary>
 abtree local write <execution> change_request "<request>"
 abtree next <execution>   ← begin execution loop
 ```
+
+`<path-to-tree-file>` is a literal absolute or relative path to a `.json`, `.yaml`, or `.yml` tree file. No slug lookup, no `package.json` inference — point at the file you want to run.
 
 ## Drive the loop
 
@@ -56,11 +58,13 @@ Procedure — do **not** skip steps:
    Record the actual returned value. Do not skip this step even if you wrote the value yourself one command ago.
 
 3. Apply the expression's truth condition against those actual values and only those values. No inference from context, memory, or "obvious" assumptions.
-4. Call `abtree eval <execution> true|false`.
+4. Call `abtree eval <execution> true|false [--note "<one sentence>"]`.
 
 ::: warning Strict
 Skipping step 2 corrupts the gate. The store is the source of truth, not your context. Even when the answer feels obvious, read it.
 :::
+
+**Optional: explain your decision.** Pass `--note "<one sentence>"` (CLI) or `note:` (MCP) to record *why* you submitted what you did — name the values from `$LOCAL` / `$GLOBAL` that drove the call. The engine ignores the content; the note is recorded in `execution.trace` for later review of how the agent reasoned through the tree. Skip it on trivial transitions; include it whenever the choice was non-obvious.
 
 ### Response: `instruct`
 
@@ -73,11 +77,13 @@ Procedure:
 1. Read the instruction in full.
 2. Perform the work named. Use real tools — file I/O, web search, shell commands, sub-agents — as the instruction directs.
 3. Write any produced values to `$LOCAL` via `abtree local write`.
-4. Call `abtree submit <execution> success|failure|running`. Use `running` only when waiting on something external (a human approval, a long-running tool). Do not use `running` to skip an instruct.
+4. Call `abtree submit <execution> success|failure|running [--note "<one sentence>"]`. Use `running` only when waiting on something external (a human approval, a long-running tool). Do not use `running` to skip an instruct.
 
 ::: warning Strict
 Every value written to `$LOCAL` must come from an explicit source named in the instruction (a tool, a command, a `$LOCAL`/`$GLOBAL` path, or a literal fallback). If the source is ambiguous, call `abtree submit <execution> failure`. Do not infer, guess, or invent.
 :::
+
+**Optional: explain your decision.** Pass `--note "<one sentence>"` (CLI) or `note:` (MCP) to record what you did and why you marked the action success/failure/running. The note is recorded in `execution.trace` for later review. A `running` note is especially useful — capture *what* you are waiting on. The same field is available on the protocol acknowledgement; a rejection note explains why you walked away from the tree.
 
 ### Response: `done` or `failure`
 
@@ -88,9 +94,15 @@ Every value written to `$LOCAL` must come from an explicit source named in the i
 
 Tree terminated. Report the outcome to the human.
 
-## Available trees
+## Finding trees
 
-Trees ship as installable node packages — browse [Discover trees](/registry) and `bun add` / `pnpm add` / `npm install` the ones you need, then run them via `abtree execution create ./node_modules/<pkg> "<summary>"`. Project-local trees can also live at `.abtree/trees/<slug>/` (with a `package.json` declaring `main`) and run as `abtree execution create <slug> "<summary>"`.
+Trees ship as installable node packages — browse [Discover trees](/registry) and `bun add` / `pnpm add` / `npm install` the ones you need, then run them by path to the file they expose, e.g.:
+
+```text
+abtree execution create ./node_modules/@abtree/hello-world/main.json "<summary>"
+```
+
+Project-local trees can live anywhere in the working tree; pass the path to their `.json`/`.yaml`/`.yml` file directly.
 
 ## State commands
 

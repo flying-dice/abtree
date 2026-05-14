@@ -272,8 +272,17 @@ export default defineConfig({
 					{ text: "Fragments", link: "/guide/fragments" },
 					{ text: "Design a new tree", link: "/guide/design-process" },
 					{ text: "Idioms", link: "/guide/idioms" },
+					{
+						text: "Delegating to subagents",
+						link: "/guide/delegating-to-subagents",
+					},
+					{
+						text: "Driving abtree over MCP",
+						link: "/guide/mcp",
+					},
 					{ text: "Anti-patterns", link: "/guide/anti-patterns" },
 					{ text: "Testing trees", link: "/guide/testing" },
+					{ text: "Programmatic test harness", link: "/guide/test-harness" },
 					{
 						text: "Inspecting executions",
 						link: "/guide/inspecting-executions",

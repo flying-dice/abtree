@@ -1,6 +1,7 @@
 import {
 	action,
 	ambient,
+	delegate,
 	evaluate,
 	global,
 	instruct,
@@ -30,25 +31,48 @@ export const tree = sequence("Hello_World", () => {
 		`);
 	});
 
-	selector("Choose_Greeting", () => {
-		action("Morning_Greeting", () => {
-			evaluate(`${timeOfDay} is "morning"`);
-			instruct(
-				`Compose a cheerful morning greeting addressing ${userName} in ${language} with a ${tone} tone. Store at ${greeting}.`,
-			);
-		});
-		action("Afternoon_Greeting", () => {
-			evaluate(`${timeOfDay} is "afternoon"`);
-			instruct(
-				`Compose a warm afternoon greeting addressing ${userName} in ${language} with a ${tone} tone. Store at ${greeting}.`,
-			);
-		});
-		action("Evening_Greeting", () => {
-			evaluate(`${timeOfDay} is "evening"`);
-			instruct(
-				`Compose a relaxed evening greeting addressing ${userName} in ${language} with a ${tone} tone. Store at ${greeting}.`,
-			);
-		});
+	delegate(
+		"Compose_Greeting",
+		{
+			brief: `
+				Pick the time-of-day branch matching ${timeOfDay} and compose
+				a single short greeting sentence addressing ${userName} in
+				${language} with a ${tone} tone. Write the sentence to
+				${greeting}.
+			`,
+			model: "haiku",
+			output: greeting,
+		},
+		() => {
+			selector("Choose_Greeting", () => {
+				action("Morning_Greeting", () => {
+					evaluate(`${timeOfDay} is "morning"`);
+					instruct(
+						`Compose a cheerful morning greeting addressing ${userName} in ${language} with a ${tone} tone. Store at ${greeting}.`,
+					);
+				});
+				action("Afternoon_Greeting", () => {
+					evaluate(`${timeOfDay} is "afternoon"`);
+					instruct(
+						`Compose a warm afternoon greeting addressing ${userName} in ${language} with a ${tone} tone. Store at ${greeting}.`,
+					);
+				});
+				action("Evening_Greeting", () => {
+					evaluate(`${timeOfDay} is "evening"`);
+					instruct(
+						`Compose a relaxed evening greeting addressing ${userName} in ${language} with a ${tone} tone. Store at ${greeting}.`,
+					);
+				});
+			});
+		},
+	);
+
+	action("Announce_Greeting", () => {
+		instruct(`
+			Read ${greeting} via \`abtree local read\` and print it verbatim
+			to the human. This step runs in the parent agent after the
+			delegated subagent has returned.
+		`);
 	});
 });
 

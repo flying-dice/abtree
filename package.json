@@ -8,13 +8,20 @@
 		"trees/*"
 	],
 	"scripts": {
+		"lint": "biome check .",
+		"lint:ci": "biome ci .",
+		"lint:fix": "biome check . --write",
 		"release": "semantic-release",
 		"schema": "bun packages/runtime/scripts/generate-schema.ts",
 		"build": "bun packages/cli/scripts/build.ts",
 		"docs:registry": "bun scripts/generate-registry-md.ts",
 		"docs:dev": "bun run docs:registry && vitepress dev docs --host",
 		"docs:build": "bun run docs:registry && vitepress build docs",
-		"docs:preview": "vitepress preview docs"
+		"docs:preview": "vitepress preview docs",
+		"test:regression:build": "bun tests/build.ts",
+		"test:regression:cli": "bun run test:regression:build && bun tests/run-cli.ts",
+		"test:regression:mcp": "bun run test:regression:build && bun tests/run-mcp.ts",
+		"test:regression": "bun run test:regression:build && bun tests/run-cli.ts && bun tests/run-mcp.ts"
 	},
 	"dependencies": {
 		"@abtree/cli": "workspace:*",
@@ -22,7 +29,9 @@
 		"@abtree/runtime": "workspace:*"
 	},
 	"devDependencies": {
+		"@abtree/testing": "workspace:*",
 		"@biomejs/biome": "2.4.14",
+		"@modelcontextprotocol/sdk": "1.29.0",
 		"@semantic-release/commit-analyzer": "^13.0.0",
 		"@semantic-release/exec": "^6.0.3",
 		"@semantic-release/github": "^10.0.0",
@@ -31,7 +40,6 @@
 		"@vue/server-renderer": "3.5.34",
 		"semantic-release": "^24.0.0",
 		"vitepress": "^2.0.0-alpha.17",
-		"vitepress-mermaid-renderer": "^1.1.23",
 		"vitepress-plugin-llms": "^1.12.2",
 		"vue": "3.5.34"
 	},

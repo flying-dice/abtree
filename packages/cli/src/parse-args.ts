@@ -16,8 +16,8 @@ export function parseExecutionId(val: string): string {
 	return val;
 }
 
-export function parseTreeSlug(val: string): string {
-	if (!val || typeof val !== "string") die("Tree slug is required");
+export function parseTreePath(val: string): string {
+	if (!val || typeof val !== "string") die("Tree file path is required");
 	return val;
 }
 
@@ -43,4 +43,10 @@ export function parseSubmitStatus(
 	if (val !== "success" && val !== "failure" && val !== "running")
 		die('Status must be "success", "failure", or "running"');
 	return val as "success" | "failure" | "running";
+}
+
+export function parseNote(val?: string): string | undefined {
+	if (typeof val !== "string") return undefined;
+	const t = val.trim();
+	return t.length === 0 ? undefined : t;
 }

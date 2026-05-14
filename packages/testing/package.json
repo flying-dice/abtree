@@ -1,0 +1,30 @@
+{
+	"name": "@abtree/testing",
+	"version": "0.1.0",
+	"description": "Test harness for driving abtree executions deterministically. Exposes an AgentHarness class with a when().respond() DSL plus CLI and MCP Transport implementations.",
+	"type": "module",
+	"main": "src/index.ts",
+	"homepage": "https://github.com/flying-dice/abtree/tree/main/packages/testing",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/flying-dice/abtree.git",
+		"directory": "packages/testing"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"src",
+		"README.md"
+	],
+	"keywords": [
+		"abtree",
+		"behaviour-tree",
+		"bt",
+		"testing",
+		"harness"
+	],
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "1.29.0"
+	}
+}

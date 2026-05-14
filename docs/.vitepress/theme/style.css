@@ -198,7 +198,7 @@
  *
  * VitePress defaults to 1440px page / 1376px doc container / 752px article
  * which leaves a lot of empty space on wide displays — especially on doc
- * pages with embedded mermaid diagrams and YAML blocks.
+ * pages with embedded SVG diagrams and YAML blocks.
  * -------------------------------------------------------------------------- */
 
 :root {
@@ -224,57 +224,6 @@
 	.VPDoc:not(.has-sidebar) .content {
 		max-width: 1120px !important;
 	}
-}
-
-/**
- * Mermaid: vitepress-mermaid-renderer renders the SVG at its natural size
- * inside a fixed-height, overflow-hidden container, with `.mermaid` set to
- * `display: inline-block`. The result on first paint is a diagram clipped
- * to the wrapper's top-left. These overrides center the SVG and let the
- * container grow with its content while keeping pan/zoom controls usable.
- *
- * Selectors are overqualified (`.vp-doc .mermaid-container`) so we win the
- * cascade against the renderer's stylesheet, which is injected later into
- * <head> at runtime.
- * -------------------------------------------------------------------------- */
-
-.vp-doc .mermaid-container {
-	min-height: 0 !important;
-	max-height: none !important;
-	height: auto !important;
-	overflow: visible !important;
-	padding: 1rem 0;
-}
-
-.vp-doc .mermaid-container .diagram-wrapper {
-	display: flex !important;
-	align-items: center;
-	justify-content: center;
-	min-height: 0 !important;
-	height: auto !important;
-	overflow: visible !important;
-}
-
-.vp-doc .mermaid-container .mermaid {
-	display: flex !important;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	max-width: 100%;
-	transform-origin: 50% 50% !important;
-}
-
-.vp-doc .mermaid-container .mermaid svg {
-	max-width: 100% !important;
-	height: auto !important;
-	display: block;
-	margin: 0 auto;
-}
-
-/* Fullscreen / dialog mode keeps its own sizing — let the renderer handle it. */
-.vp-doc .mermaid-container.dialog-fullscreen-active,
-.vp-doc .mermaid-container.dialog-fullscreen-active .diagram-wrapper {
-	overflow: hidden !important;
 }
 
 /* Hide flagged blocks on touch devices regardless of viewport width.

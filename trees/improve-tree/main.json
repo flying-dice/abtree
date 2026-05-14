@@ -11,10 +11,10 @@
 				"name": "Identify_Target",
 				"steps": [
 					{
-						"instruct": "If $LOCAL.session_ref is set, use it. Otherwise pick the most recent non-current execution from `abtree execution list` and write its id to $LOCAL.session_ref. Read `.abtree/executions/<id>.json` to derive the tree slug — store at $LOCAL.tree_slug. Extract evidence from the execution: how far it got, which nodes failed, retry counts, $LOCAL keys that ended up null vs populated, any stage_halt or failure statuses. Also read the tree YAML at `.abtree/trees/<tree_slug>/TREE.yaml`. Store the evidence (a structured object summarising the run) at $LOCAL.session_evidence."
+						"instruct": "If $LOCAL.session_ref is set, use it. Otherwise pick the most recent non-current execution from `abtree execution list` and write its id to $LOCAL.session_ref. If $LOCAL.tree_path is not already set, ask the user for the absolute or repo-relative path to the source tree file (`.json`/ `.yaml`/`.yml`) the session ran against and store it at $LOCAL.tree_path — abtree does not record the source path on the execution document, so the caller has to supply it. Read `.abtree/executions/<id>.json` and the parsed tree definition at `.abtree/snapshots/<execution.snapshot>.json` to extract evidence from the run: how far it got, which nodes failed, retry counts, $LOCAL keys that ended up null vs populated, any stage_halt or failure statuses. Store the evidence (a structured object summarising the run) at $LOCAL.session_evidence."
 					},
 					{
-						"evaluate": "$LOCAL.tree_slug is set and $LOCAL.session_evidence is set"
+						"evaluate": "$LOCAL.tree_path is set and $LOCAL.session_evidence is set"
 					}
 				]
 			},
@@ -42,7 +42,7 @@
 								"evaluate": "$LOCAL.session_evidence is set"
 							},
 							{
-								"instruct": "Read $GLOBAL.authoring_guide for the tree authoring conventions. Propose concrete improvements to the tree at `.abtree/trees/$LOCAL.tree_slug/TREE.yaml`. Each improvement is an object: { kind: rename|reword|split|merge|add-evaluate|add-retries|other, target: node_name or yaml path, change: short description of the edit, rationale: what $LOCAL.session_evidence motivates it }. Don't propose work the codebase already does well. Store the list at $LOCAL.improvements."
+								"instruct": "Read $GLOBAL.authoring_guide for the tree authoring conventions. Propose concrete improvements to the tree at $LOCAL.tree_path. Each improvement is an object: { kind: rename|reword|split|merge|add-evaluate|add-retries|other, target: node_name or yaml path, change: short description of the edit, rationale: what $LOCAL.session_evidence motivates it }. Don't propose work the codebase already does well. Store the list at $LOCAL.improvements."
 							}
 						]
 					}
@@ -56,7 +56,7 @@
 						"evaluate": "$LOCAL.effectiveness_score is set and $LOCAL.improvements is set"
 					},
 					{
-						"instruct": "Write a draft plan to plans/<YYYY-MM-DD>-improve-$LOCAL.tree_slug.md. Frontmatter: id, title, status: draft, author (from git config user.name), created (today), reviewed_by (empty). Body sections: ## Summary — one paragraph naming the tree, the session id, and the headline score. ## Effectiveness score — the score and the observations (each with node_path, severity, evidence). ## Improvements — the proposal list with kind/target/change/rationale. ## Open questions — anything that needs codeowner input before the changes are applied. Store the relative path at $LOCAL.plan_path."
+						"instruct": "Write a draft plan to plans/<YYYY-MM-DD>-improve-<basename of $LOCAL.tree_path>.md (strip the .json/.yaml/.yml extension from the basename). Frontmatter: id, title, status: draft, author (from git config user.name), created (today), reviewed_by (empty). Body sections: ## Summary — one paragraph naming the tree (refer to it by $LOCAL.tree_path), the session id, and the headline score. ## Effectiveness score — the score and the observations (each with node_path, severity, evidence). ## Improvements — the proposal list with kind/target/change/rationale. ## Open questions — anything that needs codeowner input before the changes are applied. Store the relative path at $LOCAL.plan_path."
 					},
 					{
 						"evaluate": "$LOCAL.plan_path is set"
@@ -71,7 +71,7 @@
 						"evaluate": "$LOCAL.plan_path is set"
 					},
 					{
-						"instruct": "Stage $LOCAL.plan_path, create a single commit with message \"docs(plans): improve-tree review of $LOCAL.tree_slug (session $LOCAL.session_ref)\", then push to the current branch's upstream. Capture the new HEAD SHA into $LOCAL.commit_sha. If the working tree had unrelated modifications, stage only $LOCAL.plan_path — do not bundle them. If push fails (no upstream, network, etc.), submit failure with the error message rather than retrying."
+						"instruct": "Stage $LOCAL.plan_path, create a single commit with message \"docs(plans): improve-tree review of $LOCAL.tree_path (session $LOCAL.session_ref)\", then push to the current branch's upstream. Capture the new HEAD SHA into $LOCAL.commit_sha. If the working tree had unrelated modifications, stage only $LOCAL.plan_path — do not bundle them. If push fails (no upstream, network, etc.), submit failure with the error message rather than retrying."
 					}
 				]
 			}
@@ -81,7 +81,7 @@
 	"state": {
 		"local": {
 			"session_ref": null,
-			"tree_slug": null,
+			"tree_path": null,
 			"session_evidence": null,
 			"effectiveness_score": null,
 			"improvements": null,

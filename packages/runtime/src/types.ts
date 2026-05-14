@@ -44,6 +44,26 @@ export type ParsedTree = {
 	root: NormalizedNode;
 };
 
+export type TraceKind = "evaluate" | "instruct" | "protocol";
+
+// One entry of the execution audit log. Append-only; written by coreEval /
+// coreSubmit after each decision. The engine ignores `note` — it exists for
+// post-hoc inspection of how the agent reasoned through the tree.
+export interface TraceEntry {
+	ts: string;
+	kind: TraceKind;
+	// Cursor as the agent acted on it (captured before any engine mutation).
+	cursor: string;
+	name: string;
+	// Raw submission from the agent: "true" | "false" for eval; "success" |
+	// "failure" | "running" for performing-phase submit; "accept" | "reject" |
+	// "running" for protocol acknowledgement.
+	submitted: string;
+	// Engine-side status string returned to the agent (e.g. "evaluation_passed").
+	outcome: string;
+	note?: string;
+}
+
 export interface ExecutionRow {
 	id: string;
 	tree: string;
@@ -57,6 +77,8 @@ export interface ExecutionRow {
 	// Until true, `abtree next` returns a synthetic instruct demanding the agent
 	// read `abtree docs execute` and submit success to accept.
 	protocol_accepted: boolean;
+	// Append-only audit log of agent decisions. Empty at create; cleared on reset.
+	trace: TraceEntry[];
 	created_at: string;
 	updated_at: string;
 }

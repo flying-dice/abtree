@@ -24,6 +24,9 @@
 	"dependencies": {
 		"@inquirer/prompts": "^8.4.2",
 		"@abtree/runtime": "workspace:*",
-		"commander": "^12"
+		"@abtree/serve": "workspace:*",
+		"@modelcontextprotocol/sdk": "1.29.0",
+		"commander": "^12",
+		"zod": "^4.4.3"
 	}
 }

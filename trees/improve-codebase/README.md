@@ -10,7 +10,7 @@ Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. The work
 Install the npm package @abtree/improve-codebase, then drive the workflow against this repo:
 
   abtree --help
-  abtree execution create ./node_modules/@abtree/improve-codebase "Run an improvement cycle on src/"
+  abtree execution create ./node_modules/@abtree/improve-codebase/main.json "Run an improvement cycle on src/"
 ```
 
 ![tree](./tree.svg)

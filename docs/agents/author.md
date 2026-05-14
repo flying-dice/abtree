@@ -5,7 +5,7 @@ description: Reference for an agent (or human) authoring an abtree tree. Covers 
 
 # Authoring trees
 
-Authoring an abtree tree means writing a tree file that an agent can drive deterministically through `abtree next`, `abtree eval`, and `abtree submit`. Trees live in `.abtree/trees/<slug>/TREE.yaml` (project-local) or `~/.abtree/trees/<slug>/TREE.yaml` (user-global). The folder name is the slug. Project-local shadows global on slug collision.
+Authoring an abtree tree means writing a tree file that an agent can drive deterministically through `abtree next`, `abtree eval`, and `abtree submit`. A tree is a single `.json`/`.yaml`/`.yml` file. Put it anywhere in your working tree and run it by path; the tree file's own `name` field is the slug abtree uses inside execution IDs.
 
 ::: tip
 Run `abtree docs schema` to print the JSON Schema, or reference the published copy via the YAML language-server comment:
@@ -48,14 +48,14 @@ There are four — three composites and one leaf. For the conceptual semantics s
 | `parallel` | Tick all children. No short-circuit. | success iff all children succeeded. |
 | `action` | Leaf. Carries a list of `steps`, each `evaluate` or `instruct`. | success iff every step succeeded. |
 
-Every node carries a `name` (used in `abtree next` output and the Mermaid render). Composites carry `children: [...]`. Actions carry `steps: [...]`.
+Every node carries a `name` (used in `abtree next` output and the SVG trace). Composites carry `children: [...]`. Actions carry `steps: [...]`.
 
 ## Naming conventions
 
 | Element | Convention | Example |
 |---|---|---|
 | Tree slug (`name` and folder) | kebab-case | `hello-world`, `improve-codebase` |
-| Node name | PascalCase with underscores; Mermaid renders `_` as a space | `Choose_Greeting`, `Check_Weather` |
+| Node name | PascalCase with underscores; the SVG trace renders `_` as a space | `Choose_Greeting`, `Check_Weather` |
 | Composite name | describes the decision | `Choose_Greeting`, `Gather_Context`, `Write_With_Retries` |
 | Action name | describes the work | `Determine_Time`, `Compose_Response` |
 | Root sequence name | usually `<Tree>_Workflow` | `Hello_World_Workflow` |
@@ -142,14 +142,14 @@ tree:
 
 | Mechanism | What it covers |
 |---|---|
-| Schema check | The repository test suite parses every tree in `.abtree/trees/` through `TreeFileSchema`. |
+| Schema check | The repository test suite parses every bundled tree under `trees/` through `TreeFileSchema`. |
 | CLI errors | Malformed trees fail `abtree execution create` with a path-prefixed message: `tree.steps: Too small: expected array to have >=1 items`. |
 | Editor LSP | The `# yaml-language-server: $schema=...` comment enables completions, tooltips, and inline error highlights in any YAML LSP client. |
 
 ## Reporting (per tree authored)
 
 ```text
-[tree-slug] ✓ valid → run `abtree execution create <slug> "smoke test"` to confirm it loads
+[tree-path] ✓ valid → run `abtree execution create <path> "smoke test"` to confirm it loads
 ```
 
 ## Next

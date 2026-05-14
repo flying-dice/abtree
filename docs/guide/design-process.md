@@ -100,10 +100,10 @@ Write the root `sequence`, then expand each child in turn. After the sketch, wal
 
 ## 10. Save and validate
 
-Save as `.abtree/trees/<slug>/TREE.yaml` with a sibling `package.json` whose `main` is `TREE.yaml`. Run:
+Save the tree to a `.json`/`.yaml`/`.yml` file wherever fits your project. Run:
 
 ```sh
-abtree execution create <slug> "smoke test"
+abtree execution create ./path/to/your-tree.yaml "smoke test"
 ```
 
 If the tree is malformed, the CLI prints the validation error and exits non-zero. If it loads, the tree is valid and ready to drive end-to-end.

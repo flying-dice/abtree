@@ -35,7 +35,7 @@ The `$schema` keyword as a top-level YAML field is also accepted by the parser i
 
 ## CI validation
 
-The repository test suite parses every YAML in `.abtree/trees/` through `TreeFileSchema` to catch malformed trees. A separate CI job regenerates `tree.schema.json` from the zod source on every push and fails the build if the committed file has drifted — contributors run `bun run schema` whenever they touch the zod schema in `src/schemas.ts`.
+The repository test suite parses every bundled tree under `trees/` through `TreeFileSchema` to catch malformed trees. A separate CI job regenerates `tree.schema.json` from the zod source on every push and fails the build if the committed file has drifted — contributors run `bun run schema` whenever they touch the zod schema in `src/schemas.ts`.
 
 ## Source of truth
 

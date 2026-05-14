@@ -1,6 +1,6 @@
 # @abtree/test-tree
 
-An [abtree](https://abtree.sh) fragment that runs a BDD test spec against a target tree, captures its mermaid trace, compares the run's final state against the spec's `then` assertions, and writes a markdown test report with the diagram embedded.
+An [abtree](https://abtree.sh) fragment that runs a BDD test spec against a target tree, compares the run's final state against the spec's `then` assertions, and writes a markdown test report.
 
 ## Run it
 
@@ -10,7 +10,7 @@ Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace 
 Install the npm package @abtree/test-tree, then drive the workflow:
 
   abtree --help
-  abtree execution create ./node_modules/@abtree/test-tree "Run the BDD spec at tests/<scenario>.yaml"
+  abtree execution create ./node_modules/@abtree/test-tree/main.json "Run the BDD spec at tests/<scenario>.yaml"
 
 The runner reads $LOCAL.test_path from the execution. Seed it before
 the first `abtree next`:
@@ -37,7 +37,7 @@ A minimal spec:
 
 ```yaml
 feature: "What the tree does"
-tree: <target-tree-slug>
+tree: <path-to-target-tree-file>
 scenario:
   name: <human-readable scenario name>
   given: <one-line context>
@@ -76,7 +76,6 @@ If an instruction would normally require external authorisation and there's no f
 | `target_execution_id` | runner | id of the run-under-test |
 | `final_local` | runner | full `$LOCAL` of the target execution at termination |
 | `final_status` | runner | `"done"` or `"failure"` |
-| `mermaid_diagram` | runner | verbatim contents of `.abtree/executions/<id>.mermaid` |
 | `assertions` | runner | `[{ name, expected, actual, pass }, …]` |
 | `overall_result` | runner | `"pass"` or `"fail"` |
 | `report_path` | runner | path to the rendered markdown report |
@@ -85,7 +84,6 @@ If an instruction would normally require external authorisation and there's no f
 
 The generated `<scenario>__<timestamp>.md` contains:
 
-- Title, target tree slug, spec path, target execution id, overall PASS/FAIL.
+- Title, target tree path, spec path, target execution id, overall PASS/FAIL.
 - A table of the final `$LOCAL`.
 - A table of each assertion (Name | Expected | Actual | Pass).
-- The full mermaid trace inline.

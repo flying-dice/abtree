@@ -37,8 +37,10 @@ fixtures:
           - intent_analysis
           - plan_path
           - codeowner_approved
-    tree_yaml_read:
-      path: .abtree/trees/refine-plan/TREE.yaml
+    tree_path_prompt:
+      value: ./node_modules/@abtree/refine-plan/main.json
+    snapshot_read:
+      path: .abtree/snapshots/<snapshot-etag>.json
       bytes: 7142
     authoring_guide_load:
       command: "abtree docs author"
@@ -48,7 +50,7 @@ fixtures:
       bytes: 1820
     git_commit:
       sha: 7c2bafc91d3e44a8915f6a3e2c0c7a1d1e8b9f02
-      message: "docs(plans): improve-tree review of refine-plan (session test-tree-run-structured-logging-happy-p__refine-plan__1)"
+      message: "docs(plans): improve-tree review of ./node_modules/@abtree/refine-plan/main.json (session test-tree-run-structured-logging-happy-p__refine-plan__1)"
       files:
         - plans/2026-05-11-improve-refine-plan.md
     git_push:
@@ -65,8 +67,9 @@ scenario:
     - Identify_Target shells `abtree execution list`, picks the most recent non-current execution per fixtures.side_effects.execution_list
     - Identify_Target writes $LOCAL.session_ref = "test-tree-run-structured-logging-happy-p__refine-plan__1"
     - Identify_Target reads the execution JSON per fixtures.side_effects.execution_read
-    - Identify_Target sets $LOCAL.tree_slug = "refine-plan", writes session evidence to $LOCAL.session_evidence
-    - Identify_Target evaluate → true ($LOCAL.tree_slug set, $LOCAL.session_evidence set)
+    - Identify_Target prompts the user for the tree path, receives the value from fixtures.side_effects.tree_path_prompt, writes $LOCAL.tree_path
+    - Identify_Target reads the snapshot at .abtree/snapshots/<etag>.json per fixtures.side_effects.snapshot_read, writes session evidence to $LOCAL.session_evidence
+    - Identify_Target evaluate → true ($LOCAL.tree_path set, $LOCAL.session_evidence set)
     - Score_And_Find runs both children in parallel
     - Score_Effectiveness writes $LOCAL.effectiveness_score = { score: 0.81, observations: [...] }
     - Find_Improvements writes $LOCAL.improvements = [reword Save_Plan to write null draft_path immediately, ...]
@@ -75,7 +78,7 @@ scenario:
   then:
     local:
       session_ref: equals fixtures.side_effects.execution_list.most_recent_non_current.id
-      tree_slug: refine-plan
+      tree_path: ./node_modules/@abtree/refine-plan/main.json
       session_evidence: non-empty
       effectiveness_score: non-empty
       improvements: non-empty

@@ -3,7 +3,6 @@ import { useData } from "vitepress";
 
 // frontmatter is referenced from the template; biome's Vue SFC checker
 // only sees the script block.
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { frontmatter } = useData();
 </script>
 

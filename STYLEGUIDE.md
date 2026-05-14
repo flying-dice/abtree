@@ -73,8 +73,8 @@ term, don't lecture about it.
 - **File names:** kebab-case (`getting-started.md`, `branches-and-actions.md`).
 - **Tree slugs (YAML names and folder names):** kebab-case (`hello-world`, `improve-codebase`).
 - **Behaviour-tree node names** in YAML: PascalCase with underscores
-  (`Choose_Greeting`, `Check_Weather`) — these render as spaces in
-  Mermaid diagrams.
+  (`Choose_Greeting`, `Check_Weather`) — the SVG trace renders `_`
+  as a space.
 - **Heading hierarchy:** every page has exactly one `h1` (the title);
   sections are `h2`; subsections `h3`. Don't skip levels.
 

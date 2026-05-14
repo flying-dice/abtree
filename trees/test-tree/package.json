@@ -1,7 +1,7 @@
 {
 	"name": "@abtree/test-tree",
 	"version": "0.1.0",
-	"description": "abtree fragment: run a BDD test spec against its target tree and write a markdown report embedding the mermaid trace.",
+	"description": "abtree fragment: run a BDD test spec against its target tree and write a markdown report of the run.",
 	"main": "main.json",
 	"homepage": "https://github.com/flying-dice/abtree/tree/main/trees/test-tree",
 	"repository": {

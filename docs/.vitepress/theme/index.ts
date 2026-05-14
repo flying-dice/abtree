@@ -1,9 +1,7 @@
 // https://vitepress.dev/guide/custom-theme
 import type { Theme } from "vitepress";
-import { useData } from "vitepress";
 import DefaultTheme from "vitepress/theme";
-import { createMermaidRenderer } from "vitepress-mermaid-renderer";
-import { h, nextTick, watch } from "vue";
+import { h } from "vue";
 import "./style.css";
 import AbtreeContrast from "./AbtreeContrast.vue";
 import AbtreeCta from "./AbtreeCta.vue";
@@ -25,23 +23,8 @@ export default {
 		app.component("AbtreeCta", AbtreeCta);
 		app.component("InstallDemo", InstallDemo);
 	},
-	Layout: () => {
-		const { isDark } = useData();
-
-		const initMermaid = () => {
-			createMermaidRenderer({
-				theme: isDark.value ? "dark" : "neutral",
-			});
-		};
-
-		nextTick(() => initMermaid());
-		watch(
-			() => isDark.value,
-			() => initMermaid(),
-		);
-
-		return h(DefaultTheme.Layout, null, {
+	Layout: () =>
+		h(DefaultTheme.Layout, null, {
 			"home-hero-info": () => h(HeroInfo),
-		});
-	},
+		}),
 } satisfies Theme;

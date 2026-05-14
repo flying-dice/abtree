@@ -262,19 +262,15 @@ function scrollBottom() {
 	});
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function lineIndent(text: string): string {
 	return text.match(/^(\s*)/)?.[1] ?? "";
 }
-// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function lineHasMarker(text: string): boolean {
 	return /^\s*- /.test(text);
 }
-// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function lineRest(text: string): string {
 	return text.replace(/^\s*- /, "");
 }
-// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function markerStatusFor(line: YamlLine): NodeStatus | undefined {
 	if (!line.node) return undefined;
 	if (line.step) return stepStatuses.value[line.node]?.[line.step];
@@ -396,7 +392,6 @@ function run() {
 	}, t + 400);
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function expand() {
 	timers.forEach(clearTimeout);
 	timers = [];
@@ -430,7 +425,6 @@ function expand() {
 	cliLines.value = allLines;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in <template>
 function collapse() {
 	expanded.value = false;
 	run();

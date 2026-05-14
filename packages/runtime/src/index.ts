@@ -7,17 +7,13 @@
 export * from "./cursor.ts";
 export { generateExecutionId } from "./execution-id.ts";
 export { type LoadedTree, loadTree } from "./loader.ts";
-export { rebuildMermaid } from "./mermaid.ts";
 export { getNodeAtPath, getPathForNode } from "./node-path.ts";
 export {
 	ABTREE_DIR,
 	EXECUTIONS_DIR,
 	ensureDir,
-	HOME_ABTREE_DIR,
-	HOME_TREES_DIR,
+	refreshPaths,
 	SNAPSHOTS_DIR,
-	TREE_SOURCES,
-	TREES_DIR,
 } from "./paths.ts";
 export { ExecutionStore, setMutationListener } from "./repos.ts";
 export { RuntimeStore } from "./runtime-store.ts";
@@ -32,8 +28,9 @@ export {
 	tickRoot,
 } from "./tree.ts";
 export {
-	type EntryResolution,
-	resolveEntryYaml,
+	type ResolvedTreeArg,
+	resolveTreeArg,
+	sanitiseSlug,
 } from "./tree-arg.ts";
 export type {
 	AbtNode,
@@ -52,6 +49,8 @@ export type {
 	RuntimeState,
 	Step,
 	TickResult,
+	TraceEntry,
+	TraceKind,
 	TreeFile,
 } from "./types.ts";
 export { die, out } from "./utils.ts";

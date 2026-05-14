@@ -19,7 +19,7 @@ Publish your tree as a node package. The `package.json` declares a `main` field 
 }
 ```
 
-The folder you ship as the package root is the same shape as a project-local tree under `.abtree/trees/<slug>/`. Anything you bundle alongside the entry file — fragments, playbooks, tests — installs into `node_modules/<pkg>/` for the consumer.
+The package root contains the tree file the runtime loads (set as `main` in `package.json`) plus anything you want bundled alongside — fragments, playbooks, tests. Consumers run the tree by literal path under `node_modules/<pkg>/`, e.g. `abtree execution create ./node_modules/@your-scope/your-tree/TREE.yaml "<summary>"`.
 
 ## Publish to npm
 

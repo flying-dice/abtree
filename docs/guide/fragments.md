@@ -20,7 +20,7 @@ Treat each fragment as a single responsibility — one thing the spine can name 
 Keep fragments next to the tree that owns them:
 
 ```
-.abtree/trees/big-workflow/
+trees/big-workflow/
   TREE.yaml
   fragments/
     auth.yaml
@@ -31,7 +31,7 @@ Keep fragments next to the tree that owns them:
 The spine file references each piece:
 
 ```yaml
-# .abtree/trees/big-workflow/TREE.yaml
+# trees/big-workflow/TREE.yaml
 name: big-workflow
 version: 1.0.0
 description: Composed of separately-authored fragments.
@@ -51,7 +51,7 @@ tree:
 A fragment file is just a node — one composite or one action. It does not carry the top-level `name`, `version`, `description`, or `state` keys; those live on the root only.
 
 ```yaml
-# .abtree/trees/big-workflow/fragments/auth.yaml
+# trees/big-workflow/fragments/auth.yaml
 type: sequence
 name: Auth_Sequence
 children:
@@ -70,7 +70,7 @@ The fragment slots in wherever it's referenced, as if you'd pasted it inline.
 
 ## Resolution happens at execution-creation
 
-When you call `abtree execution create <slug>`, abtree dereferences every `$ref` and writes the merged tree into the execution's `snapshot` field. The execution runs against that snapshot, not the live files. Two consequences:
+When you call `abtree execution create <tree-file>`, abtree dereferences every `$ref` and writes the merged tree into the execution's `snapshot` field. The execution runs against that snapshot, not the live files. Two consequences:
 
 - Editing a fragment after creation does **not** affect in-flight executions. New executions pick up the change.
 - The snapshot is self-contained — you can share an execution document with a teammate and they don't need your fragment files.

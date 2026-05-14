@@ -19,7 +19,7 @@ hero:
       link: /concepts/how-it-works
 ---
 
-## One instruction.<br>At a time.
+## One instruction at a time
 
 Agents start guessing when they try to do too much. Hide the full plan, ask for a single instruction, and allow your agent to focus on the present. The agent only ever sees the next step. The plan stays in the tree, not in the prompt.
 
@@ -51,25 +51,25 @@ the ranked list to <span class="attention-var">$LOCAL.violations</span>.</pre>
   </div>
 </div>
 
-## Observability<br>built in.
+## Observability built in
 
 Never guess where your agent got stuck. The runtime shows the tree in real time, logging each step. So you can see exactly what ran, what was skipped, and how far it got.
 
 <TreeSvg src="/example.svg" :height="520" />
 
-## YAML. JSON.<br>TypeScript.
+## YAML. JSON. TypeScript.
 
 Whether you prefer code first or plain text, the TypeScript DSL gives composability and IDE support; YAML and JSON give a no tooling approach.
 
 <AbtreeDsl />
 
-## Share<br>with the tools you love.
+## Share with the tools you love
 
 Publish to npm, share through GitHub or bring your own tooling.
 
 <InstallDemo />
 
-## Hand over<br>to your agent.
+## Hand over to your agent
 
 Claude Code, ChatGPT, or any shell-capable agent, the brief is the same. Paste it. The agent understands and walks the tree until the end.
 
@@ -82,7 +82,7 @@ Install the npm package @abtree/srp-refactor, then drive the workflow against th
 
 > For the long-form walkthrough — install the CLI, add a tree, drive it from your agent — see [Get started](/getting-started).
 
-## The same model.<br>From laptop to fleet.
+## From local to fleet
 
 Whether running locally or with a fleet of agents, the engine, DSL, and protocol stay the same.
 
@@ -94,6 +94,6 @@ Whether running locally or with a fleet of agents, the engine, DSL, and protocol
 
 > MCP is the [Model Context Protocol](https://modelcontextprotocol.io/) — the wire format agents already speak.
 
-## Dive in.
+## Dive in
 
 [Get started](/getting-started) · [Discover trees](/registry) · [View on GitHub](https://github.com/flying-dice/abtree)

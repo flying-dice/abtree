@@ -24,6 +24,19 @@ const { values } = parseArgs({
 
 const root = resolve(import.meta.dir, "../../..");
 const entrypoint = resolve(root, "packages/cli/index.ts");
+const serveDir = resolve(root, "packages/serve");
+
+// Pre-build the inspector frontend so its dist/ assets exist when the
+// CLI bundles. The CLI's `serve` subcommand statically imports those
+// files via `with { type: "file" }` to embed them into the binary.
+console.log("→ building inspector frontend");
+const frontend = Bun.spawnSync({
+	cmd: ["bun", "run", "build"],
+	cwd: serveDir,
+	stdout: "inherit",
+	stderr: "inherit",
+});
+if (!frontend.success) process.exit(frontend.exitCode ?? 1);
 
 function compile(outfile: string, bunTarget?: string) {
 	const outPath = resolve(root, outfile);

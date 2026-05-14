@@ -12,7 +12,6 @@ function pageFor(entry: RegistryEntry): string {
 
 const query = ref("");
 
-// biome-ignore lint/correctness/noUnusedVariables: bound via <template>; biome can't see Vue SFC template references.
 const filtered = computed<RegistryEntry[]>(() => {
 	const q = query.value.trim().toLowerCase();
 	if (!q) return registry;

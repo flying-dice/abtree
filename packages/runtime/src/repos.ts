@@ -8,7 +8,12 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { EXECUTIONS_DIR, ensureDir } from "./paths.ts";
-import type { ExecutionDoc, ExecutionRow, RuntimeState } from "./types.ts";
+import type {
+	ExecutionDoc,
+	ExecutionRow,
+	RuntimeState,
+	TraceEntry,
+} from "./types.ts";
 
 function emptyRuntime(): RuntimeState {
 	return { node_status: {}, step_index: {}, retry_count: {} };
@@ -16,7 +21,7 @@ function emptyRuntime(): RuntimeState {
 
 // Registered at startup; runs after every successful writeDoc.
 // Lets the store own the "after every state change, refresh derived
-// artifacts" invariant without depending on mermaid.ts directly.
+// artifacts" invariant without depending on the renderer directly.
 let mutationListener: ((id: string) => void) | null = null;
 
 export function setMutationListener(fn: (id: string) => void): void {
@@ -35,11 +40,15 @@ function executionPath(id: string): string {
 export function readDocInternal(id: string): ExecutionDoc | null {
 	const path = executionPath(id);
 	if (!existsSync(path)) return null;
+	let doc: ExecutionDoc;
 	try {
-		return JSON.parse(readFileSync(path, "utf-8"));
+		doc = JSON.parse(readFileSync(path, "utf-8"));
 	} catch (_e) {
 		throw new Error(`Corrupt execution file: ${id}`);
 	}
+	// Back-compat: pre-trace execution docs on disk have no `trace` field.
+	if (!Array.isArray(doc.trace)) doc.trace = [];
+	return doc;
 }
 
 export function writeDocInternal(doc: ExecutionDoc): void {
@@ -137,7 +146,10 @@ export const ExecutionStore = {
 	update(
 		id: string,
 		fields: Partial<
-			Pick<ExecutionRow, "status" | "cursor" | "phase" | "protocol_accepted">
+			Pick<
+				ExecutionRow,
+				"status" | "cursor" | "phase" | "protocol_accepted" | "trace"
+			>
 		>,
 	): void {
 		const doc = readDoc(id);
@@ -147,6 +159,15 @@ export const ExecutionStore = {
 		if (fields.phase !== undefined) doc.phase = fields.phase;
 		if (fields.protocol_accepted !== undefined)
 			doc.protocol_accepted = fields.protocol_accepted;
+		if (fields.trace !== undefined) doc.trace = fields.trace;
+		doc.updated_at = new Date().toISOString();
+		writeDoc(doc);
+	},
+
+	appendTrace(id: string, entry: TraceEntry): void {
+		const doc = readDoc(id);
+		if (!doc) throw new Error(`Execution not found: ${id}`);
+		doc.trace.push(entry);
 		doc.updated_at = new Date().toISOString();
 		writeDoc(doc);
 	},

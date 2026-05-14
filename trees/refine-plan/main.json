@@ -75,7 +75,7 @@
 								"evaluate": "the agent is able to ask the user a question in this session (interactive human-in-the-loop, not a headless / unattended run)"
 							},
 							{
-								"instruct": "Ask the user directly: \"Do you approve the plan at $LOCAL.plan_path?\" Show them the path so they can read it. If they want changes first, treat this as a rejection. If they approve, have them: (1) edit the frontmatter of $LOCAL.plan_path and set `reviewed_by` to their git identity (matching the identifier used in CODEOWNERS); and (2) call `abtree local write <flow-id> codeowner_approved true`. Submit `running` while waiting. If they reject — not approving, or they'd rather route via MR — submit failure so the selector falls through to the MR path."
+								"instruct": "Ask the user directly: \"Do you approve the plan at $LOCAL.plan_path?\" Show them the path so they can read it. You drive the CLI on their behalf — do not ask them to run `abtree` commands. If they approve, set `reviewed_by` in the frontmatter of $LOCAL.plan_path to their git identity (matching the identifier used in CODEOWNERS) and write $LOCAL.codeowner_approved = true. Submit `running` while waiting for their answer. If they reject or want changes first, submit failure so the selector falls through to the MR path."
 							},
 							{
 								"evaluate": "$LOCAL.codeowner_approved is true"

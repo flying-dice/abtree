@@ -10,7 +10,7 @@ Paste this brief into Claude Code, ChatGPT, or any shell-capable agent:
 Install the npm package @abtree/srp-refactor, then drive the workflow against this repo:
 
   abtree --help
-  abtree execution create ./node_modules/@abtree/srp-refactor "Refactor the worst SRP violation in src/"
+  abtree execution create ./node_modules/@abtree/srp-refactor/main.json "Refactor the worst SRP violation in src/"
 ```
 
 ![tree](./tree.svg)
@@ -33,7 +33,7 @@ The refactor loop edits source files in your working tree. **Commit or stash fir
 | `SRP_REPORT_INITIAL.md` | `Snapshot_Initial_Score` (before state) |
 | `SRP_CHANGE_REPORT.md` | `Change_Report` (before-vs-after summary) |
 
-The standard `.abtree/executions/<id>.{json,mermaid,svg}` artefacts are also written — see [Using a tree → What gets written](https://abtree.sh/guide/using-trees#what-gets-written).
+The standard `.abtree/executions/<id>.{json,svg}` artefacts are also written — see [Using a tree → What gets written](https://abtree.sh/guide/using-trees#what-gets-written).
 
 ## Develop this workflow
 
@@ -61,4 +61,4 @@ bun run test:clean-on-first-pass
 bun run test:clean-on-second-pass
 ```
 
-Each script runs the spec through the test runner and writes a report next to the spec with the mermaid trace embedded.
+Each script runs the spec through the test runner and writes a report next to the spec.

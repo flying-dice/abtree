@@ -97,14 +97,14 @@ export const tree = sequence("Refine_Plan_Workflow", () => {
 			);
 			instruct(`
 				Ask the user directly: "Do you approve the plan at ${planPath}?"
-				Show them the path so they can read it. If they want changes
-				first, treat this as a rejection. If they approve, have them:
-				(1) edit the frontmatter of ${planPath} and set \`reviewed_by\` to
-				their git identity (matching the identifier used in CODEOWNERS);
-				and (2) call \`abtree local write <flow-id> codeowner_approved
-				true\`. Submit \`running\` while waiting. If they reject — not
-				approving, or they'd rather route via MR — submit failure so the
-				selector falls through to the MR path.
+				Show them the path so they can read it. You drive the CLI on
+				their behalf — do not ask them to run \`abtree\` commands. If
+				they approve, set \`reviewed_by\` in the frontmatter of
+				${planPath} to their git identity (matching the identifier used
+				in CODEOWNERS) and write ${codeownerApproved} = true. Submit
+				\`running\` while waiting for their answer. If they reject or
+				want changes first, submit failure so the selector falls through
+				to the MR path.
 			`);
 			evaluate(`${codeownerApproved} is true`);
 		});

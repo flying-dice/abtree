@@ -15,8 +15,8 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "bun run schema && bun packages/cli/scripts/build.ts --all && sed -i.bak 's|:-__ABTREE_VERSION__}|:-${nextRelease.gitTag}}|' install.sh && sed -i.bak 's|Version = \"__ABTREE_VERSION__\"|Version = \"${nextRelease.gitTag}\"|' install.ps1 && rm -f install.sh.bak install.ps1.bak && for f in trees/*/package.json packages/dsl/package.json; do sed -i.bak -E 's/\"version\": \"[^\"]+\"/\"version\": \"${nextRelease.version}\"/' \"$f\"; done && rm -f trees/*/package.json.bak packages/dsl/package.json.bak",
-        "publishCmd": "set -e; (cd packages/dsl && bun publish --access=public); for d in trees/*/; do (cd \"$d\" && bun publish --access=public); done"
+        "prepareCmd": "bun run schema && bun packages/cli/scripts/build.ts --all && sed -i.bak 's|:-__ABTREE_VERSION__}|:-${nextRelease.gitTag}}|' install.sh && sed -i.bak 's|Version = \"__ABTREE_VERSION__\"|Version = \"${nextRelease.gitTag}\"|' install.ps1 && rm -f install.sh.bak install.ps1.bak && for f in trees/*/package.json packages/dsl/package.json packages/testing/package.json; do sed -i.bak -E 's/\"version\": \"[^\"]+\"/\"version\": \"${nextRelease.version}\"/' \"$f\"; done && rm -f trees/*/package.json.bak packages/dsl/package.json.bak packages/testing/package.json.bak",
+        "publishCmd": "set -e; (cd packages/dsl && bun publish --access=public); (cd packages/testing && bun publish --access=public); for d in trees/*/; do (cd \"$d\" && bun publish --access=public); done"
       }
     ],
     [

@@ -9,34 +9,18 @@ This page walks you through writing a tree by re-creating the bundled `hello-wor
 
 ## What you build
 
-```text
-.abtree/trees/hello-world/
-├── TREE.yaml
-└── package.json
-```
+A single `hello-world.yaml` file. abtree reads tree files by literal path — no slug lookup, no `package.json` discovery, no conventional directory layout. Put the file wherever fits your project; the tree file's own `name` field is the slug abtree uses inside execution IDs.
 
-`TREE.yaml` defines the workflow. `package.json` declares the entry file so the CLI knows where to load the tree from. The folder name is the **slug** you pass to `abtree execution create`.
-
-## 1. Create the folder
+## 1. Create the file
 
 ```sh
-mkdir -p .abtree/trees/hello-world
-cd .abtree/trees/hello-world
+mkdir -p trees && cd trees
+touch hello-world.yaml
 ```
 
-Project-local trees live under `.abtree/trees/<slug>/` in the current working directory. User-global trees live under `~/.abtree/trees/<slug>/`. Project-local wins on slug collision.
+## 2. Write the top-level fields
 
-## 2. Declare the entry file
-
-```json
-{ "name": "hello-world", "main": "TREE.yaml" }
-```
-
-Save as `package.json`. The runtime never assumes `TREE.yaml` — `main` has to declare the entry.
-
-## 3. Write the top-level fields
-
-Create `TREE.yaml` with the four required scalars and the `state` block:
+Open `hello-world.yaml` with the four required scalars and the `state` block:
 
 ```yaml
 # yaml-language-server: $schema=https://abtree.sh/schemas/tree.schema.json
@@ -59,7 +43,7 @@ state:
 
 For the full field list (and the schema constraints on each field), see [File shape](/agents/author#file-shape).
 
-## 4. Add the root sequence
+## 3. Add the root sequence
 
 ```yaml
 tree:
@@ -76,9 +60,9 @@ tree:
 
 `tree:` is the root node. It is a single node — in practice almost always a `sequence`, so steps run in order. `Determine_Time` is the first child: one `action` with one `instruct` step.
 
-Node names use **PascalCase with underscores** (`Determine_Time`). Mermaid diagrams render `_` as a space, so `Choose_Greeting` becomes "Choose Greeting" in the trace.
+Node names use **PascalCase with underscores** (`Determine_Time`). The SVG trace renders `_` as a space, so `Choose_Greeting` becomes "Choose Greeting" in the diagram.
 
-## 5. Add the selector
+## 4. Add the selector
 
 ```yaml
     - type: selector
@@ -107,14 +91,13 @@ Node names use **PascalCase with underscores** (`Determine_Time`). Mermaid diagr
 
 The `selector` runs children in order until one succeeds. Each branch is gated by an `evaluate` precondition. The final child has no `evaluate`, so it always passes — that is the fallback for "none of the above matched". A selector with no winning child fails the whole branch.
 
-## 6. Validate it loads
+## 5. Validate it loads
 
 ```sh
-cd /path/to/your/repo/root
-abtree execution create hello-world "first run"
+abtree execution create ./trees/hello-world.yaml "first run"
 ```
 
-If the tree is well-formed, the CLI prints the new execution document and the slug becomes available to `abtree next`. If it is not, the CLI prints a path-prefixed validation error and exits non-zero.
+If the tree is well-formed, the CLI prints the new execution document and you can drive it with `abtree next`. If it is not, the CLI prints a path-prefixed validation error and exits non-zero.
 
 ## What you skipped
 
@@ -135,7 +118,7 @@ The bundled `improve-codebase` tree ships a real-world parallel: four metric sco
 - **Refactor it into fragments.** See [Fragments](/guide/fragments) for the `$ref` workflow and snapshot semantics.
 - **Add a retries config.** Any node can carry `retries: N`. See [Authoring trees](/agents/author#retries) for the reference behaviour.
 - **Pick the right shape for a new workflow.** See [Design a new tree](/guide/design-process) for the ten-step process and [Idioms](/guide/idioms) for the catalogue of reusable shapes.
-- **Test it.** See [Testing trees](/guide/testing) for the `@abtree/test-tree` workflow.
+- **Test it.** Two options: [Testing trees](/guide/testing) for BDD-style YAML specs via `@abtree/test-tree`, or [Programmatic test harness](/guide/test-harness) for deterministic TypeScript assertions via `@abtree/testing`.
 
 ## Next
 

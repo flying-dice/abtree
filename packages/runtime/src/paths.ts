@@ -9,24 +9,36 @@ function expandHome(p: string): string {
 }
 
 export const ABTREE_DIR = resolve(process.cwd(), ".abtree");
-export const TREES_DIR = join(ABTREE_DIR, "trees");
 
-// Executions directory — override with ABTREE_EXECUTIONS_DIR (absolute, relative, or ~/-prefixed).
-export const EXECUTIONS_DIR = process.env.ABTREE_EXECUTIONS_DIR
-	? resolve(expandHome(process.env.ABTREE_EXECUTIONS_DIR))
-	: join(ABTREE_DIR, "executions");
+function resolveExecutionsDir(): string {
+	return process.env.ABTREE_EXECUTIONS_DIR
+		? resolve(expandHome(process.env.ABTREE_EXECUTIONS_DIR))
+		: join(ABTREE_DIR, "executions");
+}
 
-// Snapshots directory — override with ABTREE_SNAPSHOTS_DIR.
-export const SNAPSHOTS_DIR = process.env.ABTREE_SNAPSHOTS_DIR
-	? resolve(expandHome(process.env.ABTREE_SNAPSHOTS_DIR))
-	: join(ABTREE_DIR, "snapshots");
+function resolveSnapshotsDir(): string {
+	return process.env.ABTREE_SNAPSHOTS_DIR
+		? resolve(expandHome(process.env.ABTREE_SNAPSHOTS_DIR))
+		: join(ABTREE_DIR, "snapshots");
+}
 
-export const HOME_ABTREE_DIR = join(homedir(), ".abtree");
-export const HOME_TREES_DIR = join(HOME_ABTREE_DIR, "trees");
+// `let` so callers that set `ABTREE_*_DIR` after this module has loaded
+// can call `refreshPaths()` to re-resolve. Standard ESM live bindings
+// then propagate the new value to every importer.
+export let EXECUTIONS_DIR = resolveExecutionsDir();
+export let SNAPSHOTS_DIR = resolveSnapshotsDir();
 
-// Tree lookup order: project-local first, then user-global.
-// First match wins, so a project tree can shadow a global one of the same slug.
-export const TREE_SOURCES: readonly string[] = [TREES_DIR, HOME_TREES_DIR];
+/**
+ * Re-read `ABTREE_EXECUTIONS_DIR` / `ABTREE_SNAPSHOTS_DIR` from
+ * `process.env` and update the exported bindings. Used by the webapp's
+ * `serve()` entrypoint, which can only set the env after its own
+ * synchronous setup has finished — by which time the runtime modules
+ * have already evaluated this file once.
+ */
+export function refreshPaths(): void {
+	EXECUTIONS_DIR = resolveExecutionsDir();
+	SNAPSHOTS_DIR = resolveSnapshotsDir();
+}
 
 export function ensureDir(dir: string) {
 	if (!existsSync(dir)) mkdirSync(dir, { recursive: true });

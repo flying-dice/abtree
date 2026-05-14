@@ -39,7 +39,7 @@ One fragment, one retry config — replaces `N` hand-written passes.
 
 #### When to reach for this
 
-The work is meaningful at each iteration: write code then run tests, revise a draft then review, gather data then check completeness. Each pass is a step you want to inspect in a Mermaid trace.
+The work is meaningful at each iteration: write code then run tests, revise a draft then review, gather data then check completeness. Each pass is a step you want to inspect in the SVG trace.
 
 #### Older alternative — selector of passes
 
@@ -99,7 +99,7 @@ When iteration is **not** meaningful at each step — polling a value, retrying 
 
 #### When to reach for this
 
-The inner step is uninteresting on its own — it does not warrant a Mermaid trace. The runtime sees one action; the loop is the agent's contract.
+The inner step is uninteresting on its own — it does not warrant its own node in the SVG trace. The runtime sees one action; the loop is the agent's contract.
 
 #### Trade-off
 
@@ -182,13 +182,13 @@ Each parallel branch can carry its own `evaluate: $LOCAL.x is set` precondition 
 
 When a chunk of work has well-known guidance — code-review checklists, design heuristics, security playbooks — store the **retrieval directive itself** in `$GLOBAL`. Actions invoke it by name.
 
-The natural home for a per-tree playbook is alongside its `TREE.yaml`. A common path is `.abtree/trees/<slug>/playbooks/<name>.md`:
+The natural home for a per-tree playbook is alongside the tree file. A common path is `trees/<name>/playbooks/<file>.md`:
 
 ```yaml
 state:
   global:
     review_playbook: |
-      Read the file at .abtree/trees/my-review/playbooks/review.md
+      Read the file at trees/my-review/playbooks/review.md
       (relative to the project root) and return its full body
       as text.
 
@@ -301,7 +301,7 @@ The idioms compose. A Write → Review → Retry workflow combines a selector of
 
 ## Next
 
-- [Testing trees](/guide/testing) — pin the idioms against regressions with `@abtree/test-tree`.
+- [Testing trees](/guide/testing) — pin the idioms against regressions with `@abtree/test-tree` (BDD specs) or [`@abtree/testing`](/guide/test-harness) (programmatic harness).
 - [Anti-patterns](/guide/anti-patterns) — shapes that look like idioms but are not.
 - [Naming conventions](/agents/author#naming-conventions) — slug, node, and `$LOCAL` / `$GLOBAL` key conventions.
 - [Discover trees](/registry) — installable behaviour-tree packages that exercise these idioms in real workflows.

@@ -62,6 +62,10 @@
  * @packageDocumentation
  */
 
+import { createHash } from "node:crypto";
+import pkg from "../package.json" with { type: "json" };
+import { returnInstruct, spawnInstruct } from "./delegate-templates.ts";
+
 // ─── node shape ──────────────────────────────────────────────────────────
 
 /**
@@ -528,6 +532,129 @@ export function evaluate(expression: string): void {
  */
 export function instruct(text: string): void {
 	actionFrame().steps.push({ instruct: text.trim().replace(/\s+/g, " ") });
+}
+
+// ─── delegate sugar ──────────────────────────────────────────────────────
+
+/**
+ * Author-supplied options for a {@link delegate} scope.
+ *
+ * All three fields are optional. They control how the boilerplate
+ * baked into the `Spawn_<name>` and `Return_To_Parent_<name>` marker
+ * actions reads, and whether the Return action gates on a `$LOCAL`
+ * write.
+ */
+export interface DelegateOptions {
+	/**
+	 * Free-form text describing what the subagent should do. Interpolated
+	 * verbatim into the Spawn instruct under a `BRIEF:` label so it is
+	 * distinguishable from the surrounding boilerplate.
+	 */
+	brief?: string;
+
+	/**
+	 * Model hint for the spawned subagent (e.g. `"haiku"`, `"sonnet"`,
+	 * `"opus"`). Advisory only — abtree does not enforce it; whether the
+	 * parent agent's harness honours the hint is up to the harness. The
+	 * generated Spawn instruct says so explicitly.
+	 */
+	model?: string;
+
+	/**
+	 * Optional `$LOCAL` reference the inner work is expected to populate.
+	 * When set, the `Return_To_Parent_<name>` action gets a leading
+	 * `evaluate("${output} is set")` step so the scope fails if the
+	 * subagent submitted success for every inner action without actually
+	 * writing the declared slot. (Inner-body action failures already
+	 * surface via the standard tree-walk failure path and do not need the
+	 * gate.)
+	 */
+	output?: LocalRef<unknown>;
+}
+
+// Build-time-deterministic exit token. Same scope name + same DSL version
+// → same token, so a regenerated tree file is reproducible across builds.
+// The token is a clean-exit signal, not a security boundary; baking it
+// into the tree file in plaintext is intentional.
+function deriveExitToken(scopeName: string): string {
+	const hash = createHash("sha256")
+		.update(`${scopeName}:${pkg.version}`)
+		.digest("hex")
+		.slice(0, 8);
+	return `DLG__${scopeName}__${hash}`;
+}
+
+/**
+ * Declare a delegated subagent scope.
+ *
+ * `delegate` is pure DSL sugar — the runtime does not know about it. It
+ * desugars into a fresh `sequence` named exactly `name` whose children
+ * are `[Spawn_<name>, ...body-children, Return_To_Parent_<name>]`:
+ *
+ * - The `Spawn_<name>` marker action carries an `instruct` that tells
+ *   the parent agent to submit success, spawn a subagent (honouring
+ *   `opts.brief` and `opts.model`), block until the subagent returns a
+ *   build-time-generated exit token, and resume.
+ * - The user's `body` children sit between the markers as ordinary
+ *   tree nodes. The spawned subagent drives them via `abtree
+ *   next/eval/submit` exactly like the parent would.
+ * - The `Return_To_Parent_<name>` marker action is the subagent's exit
+ *   point. Its `instruct` tells the subagent to submit success and
+ *   return only the exit token; if `opts.output` was supplied, the
+ *   action also gates on `${output} is set` so the scope fails when the
+ *   subagent didn't actually populate the declared slot.
+ *
+ * Wrapping the markers + body in their own `sequence` preserves
+ * single-unit semantics: a `delegate(...)` placed inside a `selector`
+ * parent behaves as "try this delegated path; on failure, fall through
+ * to the next sibling".
+ *
+ * Nested `delegate(...)` calls work by construction — each scope gets
+ * its own token derived from its own name.
+ *
+ * @example
+ * ```ts
+ * const greeting = local("greeting", null);
+ *
+ * delegate("Compose_Greeting", {
+ *   brief: "Pick the time-of-day branch and compose one short sentence.",
+ *   model: "haiku",
+ *   output: greeting,
+ * }, () => {
+ *   selector("Choose_Greeting", () => {
+ *     action("Morning_Greeting", () => { ... });
+ *     action("Afternoon_Greeting", () => { ... });
+ *     action("Evening_Greeting", () => { ... });
+ *   });
+ * });
+ * ```
+ *
+ * @param name - The scope's name. Becomes the wrapping sequence's name
+ *   and prefixes the marker actions (`Spawn_<name>`,
+ *   `Return_To_Parent_<name>`).
+ * @param options - Author-supplied {@link DelegateOptions}.
+ * @param body - Body callback. Register inner children with
+ *   {@link sequence} / {@link selector} / {@link parallel} /
+ *   {@link action} just as inside any other composite body.
+ *
+ * @returns The wrapping {@link CompositeNode}.
+ */
+export function delegate(
+	name: string,
+	options: DelegateOptions,
+	body: () => void,
+): CompositeNode {
+	const token = deriveExitToken(name);
+	return sequence(name, () => {
+		action(`Spawn_${name}`, () => {
+			instruct(spawnInstruct(name, token, options));
+		});
+		body();
+		action(`Return_To_Parent_${name}`, () => {
+			if (options.output) evaluate(`${options.output} is set`);
+			instruct(returnInstruct(name, token));
+		});
+	});
 }
 
 // ─── build helper ────────────────────────────────────────────────────────

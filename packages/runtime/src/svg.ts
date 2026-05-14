@@ -39,10 +39,9 @@ export interface RenderTreeSvgOptions {
 	walkthroughScript?: WalkthroughScript;
 }
 
-// Mermaid's flowchart TD layout is run through Dagre, which is free to reorder
-// siblings to minimise edge crossings. Behaviour trees encode execution order
-// in child ordering, so a "left to right" diagram is part of the meaning, not
-// a cosmetic preference. This renderer commits to a deterministic layout:
+// Behaviour trees encode execution order in child ordering, so a
+// "left to right" diagram is part of the meaning, not a cosmetic
+// preference. This renderer commits to a deterministic layout:
 //   - depth determines y (top → down)
 //   - declaration order determines x (left → right) within each parent slot
 

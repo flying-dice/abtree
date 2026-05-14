@@ -23,5 +23,8 @@
 		"bt",
 		"dsl",
 		"typescript"
-	]
+	],
+	"devDependencies": {
+		"@abtree/runtime": "workspace:*"
+	}
 }

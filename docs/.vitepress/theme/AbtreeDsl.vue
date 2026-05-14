@@ -301,7 +301,6 @@ function isInsideYamlString(line: string, idx: number): boolean {
 	return inStr;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const renderedTiles = computed(() =>
 	tiles.map((t) => ({
 		...t,

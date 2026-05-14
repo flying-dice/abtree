@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"abtree": {
+			"command": "bun",
+			"args": ["packages/cli/index.ts", "mcp"]
+		}
+	}
+}

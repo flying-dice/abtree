@@ -13,21 +13,18 @@ Every command outputs JSON to stdout. Errors go to stderr. See [Execution protoc
 
 Create a new execution from a tree.
 
-`<tree>` accepts either form:
+`<tree>` is a literal path — absolute or relative — to a `.json`, `.yaml`, or `.yml` tree file. No slug lookup, no `package.json` inference. For an installed npm package, pass `./node_modules/<pkg>/<file>`; for a project-local tree, pass the path you wrote it at.
 
-- A **slug** that resolves under `.abtree/trees/<slug>/` (project-local) or `~/.abtree/trees/<slug>/` (user-global). The directory carries a `package.json` whose `main` points at the tree file; project-local wins on duplicate slugs.
-- A **path** — a `.yaml` or `.yml` file, or a directory containing a `package.json` whose `main` points at one. `.` for cwd and absolute paths both work. Use this for repos where the project itself is the tree (`./TREE.yaml`) or for installed packages (`./node_modules/<pkg>`).
-
-`<summary>` is a human label; kebab-cased, it becomes part of the execution ID.
+`<summary>` is a human label; kebab-cased, it becomes part of the execution ID. The tree-slug segment of the ID is `sanitiseSlug(<tree-file's name field>)`.
 
 ```sh
-abtree execution create hello-world "first run"
+abtree execution create ./node_modules/@abtree/hello-world/main.json "first run"
 ```
 
 ```json
 {
-  "id": "first-run__hello-world__1",
-  "tree": "hello-world",
+  "id": "first-run__abtree-hello-world__1",
+  "tree": "abtree-hello-world",
   "summary": "first run",
   "local": { ... },
   "global": { ... }
@@ -37,7 +34,7 @@ abtree execution create hello-world "first run"
 | Exit code | Meaning |
 |---|---|
 | `0` | Execution created. |
-| `1` | Tree not found, slug malformed, or the tree file failed validation. |
+| `1` | Tree file not found, wrong extension, or the file failed validation. |
 
 ### `abtree execution list`
 
@@ -50,8 +47,8 @@ abtree execution list
 ```json
 [
   {
-    "id": "first-run__hello-world__1",
-    "tree": "hello-world",
+    "id": "first-run__abtree-hello-world__1",
+    "tree": "abtree-hello-world",
     "summary": "first run",
     "status": "running",
     "phase": "performing"
@@ -134,7 +131,7 @@ Submit the result of an `instruct` request.
 Read from `$LOCAL`. With no path, return the whole scope. With a dot-notation path, return one value.
 
 ```sh
-abtree local read first-run__hello-world__1 greeting
+abtree local read first-run__abtree-hello-world__1 greeting
 ```
 
 ```json
@@ -258,7 +255,7 @@ export ABTREE_EXECUTIONS_DIR=~/.local/state/abtree-executions
 abtree execution list   # all executions across every project, in one place
 ```
 
-Trees are still loaded from `.abtree/trees/<slug>/` (cwd) and `~/.abtree/trees/<slug>/` (global) when you pass a slug, or from any path you point `abtree execution create` at — only the executions directory is overridable.
+Trees are loaded from whatever path you pass to `abtree execution create` — only the executions and snapshots directories are overridable (`ABTREE_EXECUTIONS_DIR`, `ABTREE_SNAPSHOTS_DIR`).
 
 ## Exit codes (summary)
 

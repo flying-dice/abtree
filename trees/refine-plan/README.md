@@ -10,7 +10,7 @@ Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace 
 Install the npm package @abtree/refine-plan, then drive the workflow against this repo:
 
   abtree --help
-  abtree execution create ./node_modules/@abtree/refine-plan "Refine change request: <change request>"
+  abtree execution create ./node_modules/@abtree/refine-plan/main.json "Refine change request: <change request>"
 ```
 
 ![tree](./tree.svg)

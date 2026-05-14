@@ -10,7 +10,7 @@ Paste this brief into Claude Code, ChatGPT, or any shell-capable agent. Replace 
 Install the npm package @abtree/implement, then drive the workflow:
 
   abtree --help
-  abtree execution create ./node_modules/@abtree/implement "Implement plans/<plan-name>.md"
+  abtree execution create ./node_modules/@abtree/implement/main.json "Implement plans/<plan-name>.md"
 ```
 
 ![tree](./tree.svg)

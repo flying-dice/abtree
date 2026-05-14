@@ -24,7 +24,7 @@ abtree execution create ./node_modules/<pkg> "<summary>"
 - [`@abtree/refine-plan`](/trees/refine-plan) — Refine a change request into an approved plan: analyse intent, draft to a per-execution draft file, critique it in place, promote to `plans/`, then take it through codeowner approval (either in-session or via an assigned MR).
 - [`@abtree/srp-refactor`](/trees/srp-refactor) — Score a codebase for Single Responsibility violations, pause for the human to pick one to tackle, refactor it in a bounded loop (re-scoring after every pass), run a multi-agent code review, and finish with a before-vs-after change report.
 - [`@abtree/technical-writer`](/trees/technical-writer) — Take a documentation goal, ground it in the repo's styleguide, find or build a home in the docs tree, write to it, and gate-check structure / flow / atomicity. Up to three write/review passes before surfacing failure to the human.
-- [`@abtree/test-tree`](/trees/test-tree) — Run a BDD test spec against a target tree. Captures the mermaid trace, compares the run's final $LOCAL against the spec's `then` assertions, and writes a markdown report next to the spec.
+- [`@abtree/test-tree`](/trees/test-tree) — Run a BDD test spec against a target tree. Compares the run's final $LOCAL against the spec's `then` assertions and writes a markdown report next to the spec.
 
 <!-- catalogue:end -->
 

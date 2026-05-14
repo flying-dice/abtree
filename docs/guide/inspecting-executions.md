@@ -1,27 +1,26 @@
 ---
 title: Inspect an execution
-description: Decode an abtree execution — the JSON document, the Mermaid and SVG diagrams, every field, and how to debug a stuck cursor.
+description: Decode an abtree execution — the JSON document, the SVG diagram, every field, and how to debug a stuck cursor.
 ---
 
 # Inspect an execution
 
-You drove an execution. abtree wrote three files to disk. This page explains what is in them, where to find them, and what to look for when something does not go as expected.
+You drove an execution. abtree wrote two files to disk. This page explains what is in them, where to find them, and what to look for when something does not go as expected.
 
 ## File layout
 
-Every execution produces three files in `.abtree/executions/`:
+Every execution produces two files in `.abtree/executions/`:
 
 ```
 .abtree/
   executions/
-    first-run__hello-world__1.json     ← the full execution document
-    first-run__hello-world__1.mermaid  ← a live execution diagram (Mermaid)
-    first-run__hello-world__1.svg      ← the same diagram rendered to SVG
+    first-run__abtree-hello-world__1.json     ← the full execution document
+    first-run__abtree-hello-world__1.svg      ← a live execution diagram (SVG)
 ```
 
-The basename is the **execution ID** — kebab-cased summary, two underscores, tree slug, two underscores, an incrementing counter. abtree generates it for you when you run `abtree execution create`; it is stable for the life of the execution.
+The basename is the **execution ID** — kebab-cased summary, two underscores, sanitised tree name (taken from the tree file's `name` field), two underscores, an incrementing counter. abtree generates it for you when you run `abtree execution create`; it is stable for the life of the execution.
 
-All three files are regenerated atomically on every state change (every `eval`, `submit`, or `local write`). Open them in any editor, `cat` them, commit them, ship them as artefacts — they are plain text.
+Both files are regenerated atomically on every state change (every `eval`, `submit`, or `local write`). Open them in any editor, `cat` them, commit them, ship them as artefacts — the JSON is plain text and the SVG is plain XML.
 
 ## The JSON document
 
@@ -31,8 +30,8 @@ Top-level shape:
 
 ```json
 {
-  "id":         "first-run__hello-world__1",
-  "tree":       "hello-world",
+  "id":         "first-run__abtree-hello-world__1",
+  "tree":       "abtree-hello-world",
   "summary":    "first run",
   "status":     "running",
   "snapshot":   "<JSON-encoded tree definition>",
@@ -50,10 +49,10 @@ Top-level shape:
 | Field | Meaning |
 |---|---|
 | `id` | The execution ID. Matches the filename. |
-| `tree` | Slug of the tree this execution was created from. |
+| `tree` | Sanitised tree name (from the tree file's `name` field) used inside the execution ID. |
 | `summary` | The human label passed to `abtree execution create`. |
 | `status` | `running`, `complete`, or `failed`. The terminal state of the workflow. |
-| `snapshot` | A JSON-encoded copy of the tree definition at execution-creation time. The execution runs against this snapshot, not the live YAML — editing `.abtree/trees/<slug>/TREE.yaml` after creation does not affect existing executions. |
+| `snapshot` | A JSON-encoded copy of the tree definition at execution-creation time. The execution runs against this snapshot, not the live file — editing the tree file after creation does not affect existing executions. |
 | `cursor` | A JSON-encoded position inside the tree. `null` means "no step in flight"; otherwise an object like `{"path":[1,0],"step":1}` pointing at a node and a step within it. |
 | `phase` | `idle` (no current request), `performing` (an `instruct` is in flight, awaiting `submit`), or `evaluating` (an `evaluate` is in flight, awaiting `eval`). |
 | `created_at` / `updated_at` | ISO 8601 timestamps. `updated_at` advances on every mutation. |
@@ -82,53 +81,24 @@ Beside `local` and `global`, every execution document has a `runtime` field. Thi
 
 Older executions (created before the runtime/local split) had these keys mixed in with `local` under prefixes like `_node_status__*` and `_step__*`. abtree migrates them lazily on the next read — the legacy keys disappear from `local` and reappear under `runtime`.
 
-## The Mermaid diagram
+## The SVG diagram
 
-The `.mermaid` file is a live tree-shaped trace of what the runtime has done so far. Open it in any Mermaid renderer — GitHub previews them inline, VS Code has a preview extension, the `mermaid-cli` tool exports PNG and SVG.
+The `.svg` file is a live tree-shaped trace of what the runtime has done so far. Open it in any browser or image viewer — it is convenient for embedding in pull-request descriptions and for sharing a run with a teammate.
 
 Three colour states map directly to node outcome:
 
 | Node colour | Meaning |
 |---|---|
-| **Green** (`#4ade80`) | The node ran and succeeded. |
-| **Red** (`#f87171`) | The node ran and failed. |
+| **Green** | The node ran and succeeded. |
+| **Red** | The node ran and failed. |
 | **Uncoloured** (default substrate) | The runtime never reached this node — usually because a sibling selector branch won, or a parent already failed. |
 
 Two diagram shapes carry meaning too:
 
-- **`{{rhombus-style}}`** — a composite node (`sequence`, `selector`, or `parallel`). The label includes `[sequence]`, `[selector]`, or `[parallel]` so you know which.
-- **`["rectangle"]`** — an action (a leaf — work the agent performs).
+- **Diamond** — a composite node (`sequence`, `selector`, or `parallel`). The label includes `[sequence]`, `[selector]`, or `[parallel]` so you know which.
+- **Rectangle** — an action (a leaf — work the agent performs).
 
-A completed `hello-world` run looks like this:
-
-```mermaid
----
-title: "hello-world (complete)"
----
-flowchart TD
-    Hello_World{{"Hello World\n[sequence]"}}
-    0_Determine_Time["Determine Time\n[action]"]
-    Hello_World --> 0_Determine_Time
-    style 0_Determine_Time fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_Choose_Greeting{{"Choose Greeting\n[selector]"}}
-    Hello_World --> 0_Choose_Greeting
-    style 0_Choose_Greeting fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_1_Morning_Greeting["Morning Greeting\n[action]"]
-    0_Choose_Greeting --> 0_1_Morning_Greeting
-    style 0_1_Morning_Greeting fill:#4ade80,stroke:#16a34a,color:#052e16
-    0_1_Afternoon_Greeting["Afternoon Greeting\n[action]"]
-    0_Choose_Greeting --> 0_1_Afternoon_Greeting
-    0_1_Evening_Greeting["Evening Greeting\n[action]"]
-    0_Choose_Greeting --> 0_1_Evening_Greeting
-    0_1_Default_Greeting["Default Greeting\n[action]"]
-    0_Choose_Greeting --> 0_1_Default_Greeting
-```
-
-Every reachable node is green. The selector picked Morning Greeting; the afternoon, evening, and default branches stayed uncoloured because a sibling already won. The sequence advanced through every direct child top to bottom.
-
-## The SVG render
-
-The `.svg` file is the same diagram pre-rendered by the runtime. Open it in any browser or image viewer; it carries the same colour coding as the Mermaid source. The SVG is convenient for embedding in pull-request descriptions and for sharing a run with a teammate who has no Mermaid renderer to hand.
+A completed `hello-world` run shows every reachable node in green. The selector picked Morning Greeting; the afternoon, evening, and default branches stay uncoloured because a sibling already won. The root sequence advanced through every direct child top to bottom.
 
 ## Debug a stuck execution
 
@@ -145,7 +115,7 @@ Three pieces of the JSON document point at the cursor — together they convey w
 - **`status: running`, `phase: idle`, `cursor: null`.** Healthy mid-execution state between requests. Call `abtree next` to advance.
 - **`phase: performing` for hours.** The agent picked up an `instruct` and never reported back. The execution is waiting for `abtree submit <id> success | failure`. Resume it by submitting, or call `abtree execution reset <id>` to start over.
 - **`status: failed`.** A `selector` exhausted all its children, or an action in a `sequence` failed. Look at `runtime.node_status` to see which node was the immediate cause; look at the leaf's `evaluate` expression in the `snapshot` to see why it did not pass.
-- **The Mermaid diagram has red nodes but `status: running`.** A failure was recorded, but a parent selector has remaining children to evaluate. The execution is fine — read the next `abtree next` to see what is coming.
+- **The SVG diagram has red nodes but `status: running`.** A failure was recorded, but a parent selector has remaining children to evaluate. The execution is fine — read the next `abtree next` to see what is coming.
 
 For a richer dump, `abtree execution get <id>` returns the same JSON as the on-disk file, formatted to stdout. Useful for piping into `jq` or `python -m json.tool`.
 

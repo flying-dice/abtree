@@ -9,14 +9,7 @@
 //   // assertions inside runCase throw; the bun:test wrapper catches them.
 
 import { spawnSync } from "node:child_process";
-import {
-	copyFileSync,
-	cpSync,
-	existsSync,
-	mkdirSync,
-	mkdtempSync,
-	rmSync,
-} from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
@@ -41,9 +34,13 @@ export type TestStep =
 export type TestCase = {
 	name?: string;
 	description?: string;
-	tree: string; // tree slug; resolves to .abtree/trees/<slug>/TREE.yaml in the workspace
-	files?: Record<string, string>; // additional inline files (path under .abtree/trees/ → contents). Use "<slug>/TREE.yaml" for the main file and "<slug>/fragments/x.yaml" for fragments.
-	bundled?: string[]; // copy these files from the repo's .abtree/trees/ into the workspace (e.g. "hello-world/TREE.yaml", "<slug>/fragments/<name>.yaml")
+	// Fixture directory name. Resolves to either an inline-staged file
+	// (`spec.files["<tree>/TREE.yaml"]`) or `tests/trees/<tree>/TREE.yaml`.
+	tree: string;
+	// Inline files keyed by path relative to the workspace root. Use
+	// "<tree>/TREE.yaml" for the main file and "<tree>/fragments/x.yaml"
+	// for $ref fragments.
+	files?: Record<string, string>;
 	initial?: {
 		local?: Record<string, unknown>;
 		global?: Record<string, unknown>;
@@ -88,85 +85,32 @@ export async function runCase(specPath: string): Promise<void> {
 	const raw = await Bun.file(specPath).text();
 	const spec = Bun.YAML.parse(raw) as TestCase;
 
-	// Workspace
 	const tmp = mkdtempSync(join(tmpdir(), "abtree-harness-"));
 	try {
-		const treesDir = join(tmp, ".abtree", "trees");
-		mkdirSync(treesDir, { recursive: true });
-
-		// Copy bundled trees from the repo (e.g. ["hello-world/TREE.yaml"]).
-		for (const rel of spec.bundled ?? []) {
-			const src = join(REPO_ROOT, ".abtree", "trees", rel);
-			const dst = join(treesDir, rel);
-			mkdirSync(dirname(dst), { recursive: true });
-			if (!existsSync(src)) {
-				throw new Error(`bundled tree not found in repo: ${rel}`);
-			}
-			copyFileSync(src, dst);
-		}
-
-		// Inline files override / supplement bundled ones.
+		// Inline files: write each at <tmp>/<rel>.
 		for (const [rel, contents] of Object.entries(spec.files ?? {})) {
-			const dst = join(treesDir, rel);
+			const dst = join(tmp, rel);
 			mkdirSync(dirname(dst), { recursive: true });
 			await Bun.write(dst, contents);
 		}
 
-		// Tests dir co-located trees (under tests/trees/<slug>/TREE.yaml) —
-		// convenient for fixtures specific to one test case. spec.tree may
-		// either name a slug already present in the workspace (via inline
-		// files or bundled) or live as a fixture under tests/trees/.
+		// Resolve the primary tree file. Prefer an inline-staged TREE.yaml
+		// under <tmp>/<spec.tree>/TREE.yaml; otherwise copy from the
+		// fixture dir at tests/trees/<spec.tree>/.
 		const treeName = spec.tree;
-		const treePath = join(treesDir, treeName, "TREE.yaml");
-		if (!existsSync(treePath)) {
-			// fall back to tests/trees/<slug>/TREE.yaml
-			const fixtureSrc = join(import.meta.dir, "trees", treeName, "TREE.yaml");
-			if (existsSync(fixtureSrc)) {
-				cpSync(join(import.meta.dir, "trees"), treesDir, { recursive: true });
-			} else {
+		const stagedTreePath = join(tmp, treeName, "TREE.yaml");
+		if (!existsSync(stagedTreePath)) {
+			const fixtureSrc = join(import.meta.dir, "trees", treeName);
+			if (!existsSync(join(fixtureSrc, "TREE.yaml"))) {
 				throw new Error(
-					`tree '${treeName}' not found in workspace or tests/trees/`,
+					`tree '${treeName}' not found in spec.files or tests/trees/`,
 				);
 			}
+			cpSync(fixtureSrc, join(tmp, treeName), { recursive: true });
 		}
 
-		// Slug-based execution looks up package.json:main — every staged
-		// tree gets a minimal one pointing at its TREE.yaml so tests don't
-		// each have to declare it.
-		for (const slug of new Set(
-			[...(spec.bundled ?? []), ...Object.keys(spec.files ?? {})].map(
-				(rel) => rel.split("/")[0],
-			),
-		)) {
-			if (!slug) continue;
-			const pkgPath = join(treesDir, slug, "package.json");
-			if (!existsSync(pkgPath)) {
-				await Bun.write(
-					pkgPath,
-					JSON.stringify(
-						{ name: slug, version: "1.0.0", main: "TREE.yaml" },
-						null,
-						"\t",
-					),
-				);
-			}
-		}
-		// Same for the spec's primary tree (it may have come from
-		// tests/trees/ rather than bundled/files).
-		const primaryPkg = join(treesDir, treeName, "package.json");
-		if (!existsSync(primaryPkg)) {
-			await Bun.write(
-				primaryPkg,
-				JSON.stringify(
-					{ name: treeName, version: "1.0.0", main: "TREE.yaml" },
-					null,
-					"\t",
-				),
-			);
-		}
-
-		// 1. Create execution.
-		const create = abt(tmp, ["execution", "create", treeName, "harness"]);
+		// 1. Create execution by absolute path to the tree file.
+		const create = abt(tmp, ["execution", "create", stagedTreePath, "harness"]);
 		if (create.exit !== 0) {
 			throw new Error(
 				`execution create failed (exit ${create.exit}): ${create.stderr || fmt(create.stdout)}`,

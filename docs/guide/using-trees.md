@@ -105,13 +105,12 @@ The agent walks the tree and persists state to a new `.abtree/` directory at the
 
 ## What gets written
 
-Every execution writes the same three artefacts under `.abtree/executions/`:
+Every execution writes the same two artefacts under `.abtree/executions/`:
 
 | Path | Purpose |
 |---|---|
 | `.abtree/executions/<id>.json` | Full execution document — input, output, every state mutation. |
-| `.abtree/executions/<id>.mermaid` | Live Mermaid diagram of the run, regenerated on every state change. |
-| `.abtree/executions/<id>.svg` | Live SVG diagram of the run, same trigger. |
+| `.abtree/executions/<id>.svg` | Live SVG diagram of the run, regenerated on every state change. |
 
 Individual trees also write workflow-specific files (reports, plans, and so on) — see the tree's own README.
 
